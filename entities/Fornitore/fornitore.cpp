@@ -15,8 +15,8 @@ Fornitore::Fornitore(
     assert(nome.length() > 0 && nome.length() <= 100);
     Nome = nome;
 
-    // La lunghezza della Partita IVA deve essere di massimo 11 caratteri
-    assert(iva.length() > 0 && iva.length() <= 11);
+    // La lunghezza dell'IVA è di 11 caratteri
+    assert(iva.length() == 11);
     IVA = iva;
 
     //La lunghezza della mail deve essere di massimo 50 caratteri
