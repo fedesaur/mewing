@@ -1,6 +1,17 @@
 #define customer_h
 
 #include <string>
+#include "../../lib/con2db/pgsql.h"
+#include <cassert>
+// Su VSC mi da errore con l'include (probabilmente perchè uso Windows)
+
+struct Indirizzo{
+    std::string via;
+    int civico;
+    std::string cap;
+    std::string city;
+    std::string stato;
+};
 
 class Customer{
     public:
@@ -15,4 +26,13 @@ class Customer{
         std::string cognome,
         std::string mail,
         int città);
+
+        void AggiungiIndirizzo(
+            Con2DB db1,
+            std::string via,
+            int civico,
+            std::string cap,
+            std::string city,
+            std::string stato
+        );
 };
