@@ -27,6 +27,11 @@ class Customer{
         std::string mail,
         int città);
 
+        void AggiungiProdottoCarrello(
+            Con2DB db1,
+            int prodID,
+            int quantity
+        );
         void AggiungiIndirizzo(
             Con2DB db1,
             std::string via,

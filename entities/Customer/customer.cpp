@@ -25,7 +25,6 @@ Customer::Customer(
 
     Abita = città;   
 }
-
 void AggiungiIndirizzo(
     Con2DB db1,
     std::string via,
