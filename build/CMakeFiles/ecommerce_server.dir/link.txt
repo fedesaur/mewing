@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/ecommerce_server.dir/src/main.cpp.o -o ecommerce_server  -lpq -lhiredis 

@@ -1,0 +1,3 @@
+/home/federica/mewing/build/CMakeFiles/ecommerce_server.dir
+/home/federica/mewing/build/CMakeFiles/edit_cache.dir
+/home/federica/mewing/build/CMakeFiles/rebuild_cache.dir
