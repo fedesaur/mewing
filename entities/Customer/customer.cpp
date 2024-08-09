@@ -26,15 +26,23 @@ Customer::Customer(
     Abita = città;   
 }
 void AggiungiIndirizzo(
-    Con2DB db1,
     std::string via,
     int civico,
     std::string cap,
     std::string city,
     std::string stato
 ){
-    // Res immagazzina le risposte del database ed eventuali errori
-    PGResult *res
+    /* Effettua la connessione al database
+    (Conviene farla in un posto unico come un main)
+    */ 
+
+    Con2DB db1("Simone",
+    "4032",
+    "Simy8000",
+    "12345",
+    "SUPERDB")
+    PGResult *res // res immagazzina le risposte del database ed eventuali errori
+    char comando[1000] // comando conserva le query da eseguire nel database
     
     // Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
     assert(via.length() > 0 && via.length() <= 100);
@@ -51,7 +59,7 @@ void AggiungiIndirizzo(
     */
     sprintf(comando,
     "INSERT INTO Indirizzo (via, civico, cap, citta, stato)
-        VALUES (\'%s\', \'%d\', \'%s\', \'%s\', \'%s\') 
+        VALUES (\'%s\', %d, \'%s\', \'%s\', \'%s\') 
         ON CONFLICT DO NOTHING",
 	    via, civico, cap, city, stato);
     res = db1.ExecSQLcmd(comando);
