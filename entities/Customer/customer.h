@@ -2,8 +2,8 @@
 
 #include <string>
 #include "../../lib/con2db/pgsql.h"
+#include "../../lib/con2redis/src/con2redis.h"
 #include <cassert>
-// Su VSC mi da errore con l'include (probabilmente perchè uso Windows)
 
 struct Indirizzo{
     std::string via;

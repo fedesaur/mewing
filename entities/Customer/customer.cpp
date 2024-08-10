@@ -10,20 +10,15 @@ Customer::Customer(
     std::string mail,
     int città
 ){
-    ID = id;
-    
-    // La lunghezza del nome deve essere di massimo 20 caratteri
+     // Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
     assert(nome.length() > 0 && nome.length() <= 20);
-    Nome = nome;
-
-    // La lunghezza del cognome deve essere di massimo 20 caratteri
     assert(cognome.length() > 0 && cognome.length() <= 20);
-    Cognome = cognome;
-
-    //La lunghezza della mail deve essere di massimo 50 caratteri
     assert(mail.length() > 0 && mail.length() <= 50);
-    Mail = mail;
 
+    ID = id;
+    Nome = nome;
+    Cognome = cognome;
+    Mail = mail;
     Abita = città;   
 }
 void AggiungiIndirizzo(
@@ -72,6 +67,7 @@ void AggiungiIndirizzo(
         VALUES (\'%s\', %d, \'%s\', \'%s\', \'%s\') 
         ON CONFLICT DO NOTHING",
 	    via, civico, cap, city, stato);
-    res = db1.ExecSQLcmd(comando);
+    printf("%s", comando);
+    //res = db1.ExecSQLcmd(comando);
     PQclear(res);
 }
