@@ -1,5 +1,6 @@
 #include "customer.h"
 
+#define STREAM_NAME "Customer_Stream"
 
 // Costruttore di Customer
 Customer::Customer(
@@ -35,14 +36,15 @@ void AggiungiIndirizzo(
     /* Effettua la connessione al database
     (Conviene farla in un posto unico come un main)
     */ 
-
     Con2DB db1("Simone",
     "4032",
     "Simy8000",
     "12345",
-    "SUPERDB")
-    PGResult *res // res immagazzina le risposte del database ed eventuali errori
-    char comando[1000] // comando conserva le query da eseguire nel database
+    "SUPERDB");
+    redisContext *c2r; // c2r contiene le info sul contesto
+    redisReply *reply; // reply contiene le risposte da Redis
+    PGResult *res; // res immagazzina le risposte del database ed eventuali errori
+    char comando[1000]; // comando conserva le query da eseguire nel database
     
     // Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
     assert(via.length() > 0 && via.length() <= 100);
@@ -51,6 +53,14 @@ void AggiungiIndirizzo(
     assert(city.length() > 0 && city.length() <= 30);
     assert(stato.length() > 0 && stato.length() <= 30);
 
+    /* Effettua la connessione a Redis
+    (Anche qui, controllare se conviene metterlo in un main)
+    */
+    c2r = redisConnect("localhost", 6379);
+
+    // Crea uno stream di nome STREAM_NAME (in questo caso Customer_Stream)
+    initStreams(c2r, STREAM_NAME);
+    
     /* sprintf si occupa di creare una stringa, dandogli un format e dei parametri
     sprintf(destinazione, formattazione, parametri)
     ESEMPIO:
