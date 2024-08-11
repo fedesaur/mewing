@@ -38,7 +38,7 @@ void AggiungiIndirizzo(
     "SUPERDB");
     redisContext *c2r; // c2r contiene le info sul contesto
     redisReply *reply; // reply contiene le risposte da Redis
-    PGResult *res; // res immagazzina le risposte del database ed eventuali errori
+    //PGresult *res; // res immagazzina le risposte del database ed eventuali errori
     char comando[1000]; // comando conserva le query da eseguire nel database
     
     // Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
@@ -63,11 +63,15 @@ void AggiungiIndirizzo(
     stringa sarà uguale a "10 + 12 fa 22, facile!"
     */
     sprintf(comando,
-    "INSERT INTO Indirizzo (via, civico, cap, citta, stato)
-        VALUES (\'%s\', %d, \'%s\', \'%s\', \'%s\') 
-        ON CONFLICT DO NOTHING",
-	    via, civico, cap, city, stato);
+    "INSERT INTO Indirizzo (via, civico, cap, citta, stato) VALUES (\'%s\', %d, \'%s\', \'%s\', \'%s\') ON CONFLICT DO NOTHING",
+	    via.c_str(), civico, cap.c_str(), city.c_str(), stato.c_str());
     printf("%s", comando);
     //res = db1.ExecSQLcmd(comando);
-    PQclear(res);
+    //PQclear(res);
+}
+
+int main()
+{
+    AggiungiIndirizzo("Viottolo", 3, "01234", "Roma", "Italia");
+    return 0;
 }
