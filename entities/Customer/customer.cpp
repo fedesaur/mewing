@@ -31,14 +31,9 @@ void AggiungiIndirizzo(
     /* Effettua la connessione al database
     (Conviene farla in un posto unico come un main)
     */ 
-    Con2DB db1("Simone",
-    "4032",
-    "Simy8000",
-    "12345",
-    "SUPERDB");
+
     redisContext *c2r; // c2r contiene le info sul contesto
     redisReply *reply; // reply contiene le risposte da Redis
-    //PGresult *res; // res immagazzina le risposte del database ed eventuali errori
     char comando[1000]; // comando conserva le query da eseguire nel database
     
     // Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
@@ -53,7 +48,12 @@ void AggiungiIndirizzo(
     */
     c2r = redisConnect("localhost", 6379);
 
-    // Crea uno stream di nome STREAM_NAME (in questo caso Customer_Stream)
+    // Se il Customer_Stream già esiste, lo cancella
+    reply = RedisCommand(c2r, "DEL %s", STREAM_NAME);
+    assertReply(c2r, reply);
+    dumpReply(reply, 0);
+
+    // Crea lo stream Customer_Stream
     initStreams(c2r, STREAM_NAME);
     
     /* sprintf si occupa di creare una stringa, dandogli un format e dei parametri
@@ -65,9 +65,7 @@ void AggiungiIndirizzo(
     sprintf(comando,
     "INSERT INTO Indirizzo (via, civico, cap, citta, stato) VALUES (\'%s\', %d, \'%s\', \'%s\', \'%s\') ON CONFLICT DO NOTHING",
 	    via.c_str(), civico, cap.c_str(), city.c_str(), stato.c_str());
-    printf("%s", comando);
-    //res = db1.ExecSQLcmd(comando);
-    //PQclear(res);
+    //printf("%s", comando);
 }
 
 int main()
