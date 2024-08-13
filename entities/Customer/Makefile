@@ -1,23 +1,20 @@
-#RDIR punta alla cartella in cui sono i file di Redis
-RDIR = ../../lib/con2redis/src
+IDIR = . #Punta alla cartella attuale
 BDIR = ../bin #Path per la cartella bin (da creare)
 ODIR = ../obj #Path per la cartella obj (da creare)
 
 #CC indica il compilatore da utilizzare, nel nostro caso g++
 CC = g++
 #CFLAGS indica le flag utilizzate per la compilazione 
-CFLAGS = -std=c++20 -lhiredis -lpq -I/usr/include/postgresql -I../../lib/con2db -I../../lib/con2redis
+CFLAGS = -std=c++20 -lhiredis -lpq -I/usr/include/postgresql -I -I/$(IDIR)
 
-#DEPS contiene i file .h le cui dipendenze sono necessarie per eseguire il programma
-DEPS = customer.h ../../lib/con2db/pgsql.h ../../lib/con2redis/src/redisfun.h
-
-#Prende tutti i file nella cartella attuale con estensione .cpp)
-SRC = $(wildcard *.cpp)
+DEPS = $(wildcard *.h) #DEPS contiene i file .h le cui dipendenze sono necessarie per eseguire il programma
+SRC = $(wildcard *.cpp) #Prende tutti i file nella cartella attuale con estensione .cpp)
+OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(SRC))
 
 #Prende tutti i file oggetto nella cartella di Redis
 con2redis_OBJ = $(widlcard ../../lib/con2redis/obj/*.o)
 
-all: crea_Bin_Obj con2db con2redis
+all: crea_Bin_Obj con2db con2redis server
 
 crea_Bin_Obj:
 	mkdir -p $(BDIR) #Crea la cartella bin
@@ -30,5 +27,13 @@ con2db:
 con2redis:
 	#Chiama il makefile in con2redis
 	$(MAKE) -C ../../lib/con2redis/src
+	
+server:
+	#Chiama il makefile in server (ancora da fare)
+	$(MAKE) -C ../../Server
+	
 # $(CC) = quello che sta scritto in CC. Scritto $(CC), mette il contenuto di CC e poi quello che segue
 compile: $(CC)  -o my_program customer.cpp ../../lib/con2db/pgsql.cpp ../../lib/con2redis/src/redisfun.cpp $(CFLAGS)
+
+clean:
+	rm -f $(ODIR)/*.o $(BDIR)/*  *~ $(IDIR)/*~ core 

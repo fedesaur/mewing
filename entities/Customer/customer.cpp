@@ -32,28 +32,19 @@ Customer::Customer(std::string nome, std::string cognome,std::string mail,int ci
     initStreams(c2r, READ_STREAM);
 	initStreams(c2r, WRITE_STREAM);
 
-
     /* Effettua la connessione al server:
     Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, char* streamOUT);
     Cambio il verso degli stream per ovvie ragioni
 	La porta 160 l'ho scelta a caso, vedere se cambiarla
     */
-	Server serv(REDIS_IP, REDIS_PORT, 160, WRITE_STREAM, READ_STREAM);
+	Server srv(REDIS_IP, REDIS_PORT, 160, WRITE_STREAM, READ_STREAM);
 
 	// Qui sotto tento un sistema di Autenticazione
 	reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, "UserID", 0);
     assertReplyType(c2r, reply, REDIS_REPLY_STRING);
     freeReplyObject(reply);
-
-
 }
-void Customer::AggiungiIndirizzo(
-    std::string via,
-    int civico,
-    std::string cap,
-    std::string city,
-    std::string stato
-)
+void Customer::AggiungiIndirizzo(std::string via, int civico, std::string cap,std::string city,std::string stato)
 {
     // Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
     assert(via.length() > 0 && via.length() <= 100);
@@ -61,10 +52,4 @@ void Customer::AggiungiIndirizzo(
     assert(cap.length() == 5);
     assert(city.length() > 0 && city.length() <= 30);
     assert(stato.length() > 0 && stato.length() <= 30);
-}
-
-int main()
-{
-    AggiungiIndirizzo("Viottolo", 3, "01234", "Roma", "Italia");
-    return 0;
 }
