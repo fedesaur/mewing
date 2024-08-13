@@ -1,29 +1,22 @@
 #include "customer.h"
 
 // Costruttore di Customer
-Customer::Customer(
-    int id,
-    std::string nome,
-    std::string cognome,
-    std::string mail,
-    int città
-)
+Customer::Customer(std::string nome, std::string cognome,std::string mail,int città)
 {
+	redisContext *c2r; // c2r contiene le info sul contesto
+    redisReply *reply; // reply contiene le risposte da Redis
+
     // Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
     assert(nome.length() > 0 && nome.length() <= 20);
     assert(cognome.length() > 0 && cognome.length() <= 20);
     assert(mail.length() > 0 && mail.length() <= 50);
 
-    ID = id;
     Nome = nome;
     Cognome = cognome;
     Mail = mail;
     Abita = città;
 
-
-    /* Effettua la connessione a Redis
-    (Anche qui, controllare se conviene metterlo in un main)
-    */
+    // Effettua la connessione a Redis
     c2r = redisConnect(REDIS_IP, REDIS_PORT);
 
     // In caso già esistano, elimina i due stream di lettura e scrittura
@@ -42,11 +35,19 @@ Customer::Customer(
 
     /* Effettua la connessione al server:
     Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, char* streamOUT);
+    Cambio il verso degli stream per ovvie ragioni
+	La porta 160 l'ho scelta a caso, vedere se cambiarla
     */
-	Server Server(REDIS_IP, REDIS_PORT, 160, WRITE_STREAM, READ_STREAM);
+	Server serv(REDIS_IP, REDIS_PORT, 160, WRITE_STREAM, READ_STREAM);
+
+	// Qui sotto tento un sistema di Autenticazione
+	reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, "UserID", 0);
+    assertReplyType(c2r, reply, REDIS_REPLY_STRING);
+    freeReplyObject(reply);
+
 
 }
-void AggiungiIndirizzo(
+void Customer::AggiungiIndirizzo(
     std::string via,
     int civico,
     std::string cap,

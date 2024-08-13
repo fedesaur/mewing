@@ -20,25 +20,17 @@ struct Indirizzo{
 };
 
 class Customer{
-    public:
-    	redisContext *c2r; // c2r contiene le info sul contesto
-    	redisReply *reply; // reply contiene le risposte da Redis
-        int ID = 0;
+	private:
+		// I parametri del Customer teniamoli privati per sicurezza
+		int ID = 0; //ID viene generato dal database
         std::string Nome = NULL;
         std::string Cognome = NULL;
         std::string Mail = NULL;
         int Abita = 0;
+    public:
+		// Costruttore di Customer
+        Customer(std::string nome, std::string cognome, std::string mail, int città);
 
-        Customer(int id,
-        std::string nome,
-        std::string cognome,
-        std::string mail,
-        int città);
-
-        void AggiungiProdottoCarrello(
-            int prodID,
-            int quantity
-        );
         void AggiungiIndirizzo(
             std::string via,
             int civico,

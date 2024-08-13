@@ -11,11 +11,14 @@
 
 class Server {
     public:
-        redisContext *c2r;
-        redisReply *reply;
         Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, char* streamOUT);
 	private:
+		redisContext *c2r;
+    	redisReply *reply;
+		char* WRITE_STREAM;
+		char* READ_STREAM;
 		void ConnectToRedis(char* RedisIP, int RedisPort, char* streamIN, char* streamOUT);
+		void Autenticazione(int serverPort);
 };
 
 

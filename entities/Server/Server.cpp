@@ -28,11 +28,12 @@ Server::Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, cha
         Effettua la connessione a Redis.
         (Per facilitare la lettura, l'ho spostato in un'altra funzione)
     */
-    ConnectToRedis(char* RedisIP, int RedisPort, char* streamIN, char* streamOUT);
+    ConnectToRedis(RedisIP, RedisPort, streamIN, streamOUT);
+    Autenticazione(serverPort);
 }
-
-void ConnectToRedis(char* RedisIP, int RedisPort, char* streamIN, char* streamOUT)
+void Server::ConnectToRedis(char* RedisIP, int RedisPort, char* streamIN, char* streamOUT)
 {
+
     c2r = redisConnect(RedisIP, RedisPort);
     // Se lo stream di lettura già esiste, lo cancella
     reply = RedisCommand(c2r, "DEL %s", streamIN);
@@ -46,4 +47,19 @@ void ConnectToRedis(char* RedisIP, int RedisPort, char* streamIN, char* streamOU
 
     initStreams(c2r, streamIN);
     initStreams(c2r, streamOUT);
+
+    READ_STREAM = streamIN;
+    WRITE_STREAM = streamOUT;
+}
+
+void Server::Autenticazione(int serverPort)
+{
+    reply = RedisCommand(c2r,
+             "XREADGROUP GROUP main server BLOCK 0 COUNT 1 NOACK STREAMS %s >",
+			 READ_STREAM);
+    assertReply(c2r, reply);
+    dumpReply(reply, 0);
+    freeReplyObject(reply);
+
+
 }
