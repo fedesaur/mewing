@@ -1,7 +1,5 @@
 #include "customer.h"
 
-#define STREAM_NAME "Customer_Stream"
-
 // Costruttore di Customer
 Customer::Customer(
     int id,
@@ -9,8 +7,9 @@ Customer::Customer(
     std::string cognome,
     std::string mail,
     int città
-){
-     // Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
+)
+{
+    // Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
     assert(nome.length() > 0 && nome.length() <= 20);
     assert(cognome.length() > 0 && cognome.length() <= 20);
     assert(mail.length() > 0 && mail.length() <= 50);
@@ -19,7 +18,33 @@ Customer::Customer(
     Nome = nome;
     Cognome = cognome;
     Mail = mail;
-    Abita = città;   
+    Abita = città;
+
+
+    /* Effettua la connessione a Redis
+    (Anche qui, controllare se conviene metterlo in un main)
+    */
+    c2r = redisConnect(REDIS_IP, REDIS_PORT);
+
+    // In caso già esistano, elimina i due stream di lettura e scrittura
+    reply = RedisCommand(c2r, "DEL %s", READ_STREAM);
+    assertReply(c2r, reply);
+    dumpReply(reply, 0);
+
+    reply = RedisCommand(c2r, "DEL %s", WRITE_STREAM);
+    assertReply(c2r, reply);
+    dumpReply(reply, 0);
+
+    // Crea gli stream per lettura e scrittura
+    initStreams(c2r, READ_STREAM);
+	initStreams(c2r, WRITE_STREAM);
+
+
+    /* Effettua la connessione al server:
+    Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, char* streamOUT);
+    */
+	Server Server(REDIS_IP, REDIS_PORT, 160, WRITE_STREAM, READ_STREAM);
+
 }
 void AggiungiIndirizzo(
     std::string via,
@@ -27,45 +52,14 @@ void AggiungiIndirizzo(
     std::string cap,
     std::string city,
     std::string stato
-){
-    /* Effettua la connessione al database
-    (Conviene farla in un posto unico come un main)
-    */ 
-
-    redisContext *c2r; // c2r contiene le info sul contesto
-    redisReply *reply; // reply contiene le risposte da Redis
-    char comando[1000]; // comando conserva le query da eseguire nel database
-    
+)
+{
     // Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
     assert(via.length() > 0 && via.length() <= 100);
     assert(civico >= 0);
     assert(cap.length() == 5);
     assert(city.length() > 0 && city.length() <= 30);
     assert(stato.length() > 0 && stato.length() <= 30);
-
-    /* Effettua la connessione a Redis
-    (Anche qui, controllare se conviene metterlo in un main)
-    */
-    c2r = redisConnect("localhost", 6379);
-
-    // Se il Customer_Stream già esiste, lo cancella
-    reply = RedisCommand(c2r, "DEL %s", STREAM_NAME);
-    assertReply(c2r, reply);
-    dumpReply(reply, 0);
-
-    // Crea lo stream Customer_Stream
-    initStreams(c2r, STREAM_NAME);
-    
-    /* sprintf si occupa di creare una stringa, dandogli un format e dei parametri
-    sprintf(destinazione, formattazione, parametri)
-    ESEMPIO:
-    sprintf(stringa, "%d + %d fa %d, facile!", 10, 12, 22)
-    stringa sarà uguale a "10 + 12 fa 22, facile!"
-    */
-    sprintf(comando,
-    "INSERT INTO Indirizzo (via, civico, cap, citta, stato) VALUES (\'%s\', %d, \'%s\', \'%s\', \'%s\') ON CONFLICT DO NOTHING",
-	    via.c_str(), civico, cap.c_str(), city.c_str(), stato.c_str());
-    //printf("%s", comando);
 }
 
 int main()

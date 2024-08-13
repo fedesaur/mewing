@@ -3,7 +3,13 @@
 #include <string>
 #include "../../lib/con2db/pgsql.h"
 #include "../../lib/con2redis/src/con2redis.h"
+#include "../Server/Server.h"
 #include <cassert>
+
+#define READ_STREAM "CustomerIN"
+#define WRITE_STREAM "CustomerOUT"
+#define REDIS_IP "localhost"
+#define REDIS_PORT 6379
 
 struct Indirizzo{
     std::string via;
@@ -15,6 +21,8 @@ struct Indirizzo{
 
 class Customer{
     public:
+    	redisContext *c2r; // c2r contiene le info sul contesto
+    	redisReply *reply; // reply contiene le risposte da Redis
         int ID = 0;
         std::string Nome = NULL;
         std::string Cognome = NULL;

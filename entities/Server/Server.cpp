@@ -24,8 +24,15 @@ Server::Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, cha
     // serverSocket = Socket a cui verrà collegato
     int clientSocket = accept(serverSocket, nullptr, nullptr);
 
+    /*
+        Effettua la connessione a Redis.
+        (Per facilitare la lettura, l'ho spostato in un'altra funzione)
+    */
+    ConnectToRedis(char* RedisIP, int RedisPort, char* streamIN, char* streamOUT);
+}
 
-    ///////////////REDIS//////////////////
+void ConnectToRedis(char* RedisIP, int RedisPort, char* streamIN, char* streamOUT)
+{
     c2r = redisConnect(RedisIP, RedisPort);
     // Se lo stream di lettura già esiste, lo cancella
     reply = RedisCommand(c2r, "DEL %s", streamIN);
@@ -39,6 +46,4 @@ Server::Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, cha
 
     initStreams(c2r, streamIN);
     initStreams(c2r, streamOUT);
-
-    // Chiude il socket: close(serverSocket);
 }

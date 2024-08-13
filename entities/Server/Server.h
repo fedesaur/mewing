@@ -14,6 +14,8 @@ class Server {
         redisContext *c2r;
         redisReply *reply;
         Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, char* streamOUT);
+	private:
+		void ConnectToRedis(char* RedisIP, int RedisPort, char* streamIN, char* streamOUT);
 };
 
 
