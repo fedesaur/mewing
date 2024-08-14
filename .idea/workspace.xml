@@ -10,7 +10,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5675aa8c-3773-47a0-bfee-758c2c4efca2" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/entities/Customer/customer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/customer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/entities/Server/Server.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Server/Server.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/entities/Server/Server.h" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Server/Server.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,6 +26,13 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MakefileLocalSettings">
+    <option name="projectSyncType">
+      <map>
+        <entry key="$PROJECT_DIR$/entities/Customer" value="RE_IMPORT" />
+      </map>
+    </option>
   </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -49,13 +60,6 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
-  <component name="RunManager">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
-  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -73,6 +77,8 @@
       <workItem from="1723536537463" duration="102000" />
       <workItem from="1723536707941" duration="1415000" />
       <workItem from="1723540816593" duration="304000" />
+      <workItem from="1723563650362" duration="99000" />
+      <workItem from="1723620841082" duration="2837000" />
     </task>
     <servers />
   </component>

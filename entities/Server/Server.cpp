@@ -50,16 +50,35 @@ void Server::ConnectToRedis(char* RedisIP, int RedisPort, char* streamIN, char* 
 
     READ_STREAM = streamIN;
     WRITE_STREAM = streamOUT;
+
+	return;
 }
 
 void Server::Autenticazione(int serverPort)
 {
+    std::cout << "Legge il messaggio di autenticazione\n";
     reply = RedisCommand(c2r,
-             "XREADGROUP GROUP main server BLOCK 0 COUNT 1 NOACK STREAMS %s >",
+             "XREADGROUP GROUP Autenticazione server COUNT 1 NOACK STREAMS %s >",
 			 READ_STREAM);
     assertReply(c2r, reply);
     dumpReply(reply, 0);
     freeReplyObject(reply);
-
-
+    std::cout << "Letta l'autorizzazione";
+    /*
+    switch(serverPort)
+    {
+            L'idea era di fare un tipo di autenticazione diversa per ogni tipo
+            di utente (dato che per ciascuno deve essere effettuata una query diversa)
+        case 160:
+            db("localhost", 160, "customer", "customer", "mewingDB");
+            break;
+        case 161:
+            db("localhost", 161, "fornitore", "fornitore", "mewingDB");
+            break;
+        case 162:
+            db("localhost", 162, "trasportatore", "trasportatore", "mewingDB");
+            break;
+    }
+    */
+    return;
 }

@@ -32,17 +32,23 @@ Customer::Customer(std::string nome, std::string cognome,std::string mail,int ci
     initStreams(c2r, READ_STREAM);
 	initStreams(c2r, WRITE_STREAM);
 
-    /* Effettua la connessione al server:
-    Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, char* streamOUT);
-    Cambio il verso degli stream per ovvie ragioni
-	La porta 160 l'ho scelta a caso, vedere se cambiarla
-    */
-	Server srv(REDIS_IP, REDIS_PORT, 160, WRITE_STREAM, READ_STREAM);
-
 	// Qui sotto tento un sistema di Autenticazione
+	std::cout << "Richiesta di autenticazione\n";
 	reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, "UserID", 0);
     assertReplyType(c2r, reply, REDIS_REPLY_STRING);
     freeReplyObject(reply);
+	std::cout << "Richiesta effettuata\n" << "Crea il gruppo per l'autenticazione\n";
+	reply = RedisCommand(c2r, "XGROUP GROUP %s Autenticazione 0", WRITE_STREAM);
+    assertReplyType(c2r, reply, REDIS_REPLY_STRING);
+    freeReplyObject(reply);
+	std::cout << "Gruppo per l'autenticazione creato";
+
+    /* Effettua la connessione al server:
+    Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, char* streamOUT);
+    Cambio il verso degli stream per ovvie ragioni.
+	La porta 160 l'ho scelta a caso, vedere se cambiarla
+    */
+	Server srv(REDIS_IP, REDIS_PORT, 160, WRITE_STREAM, READ_STREAM);
 }
 void Customer::AggiungiIndirizzo(std::string via, int civico, std::string cap,std::string city,std::string stato)
 {
