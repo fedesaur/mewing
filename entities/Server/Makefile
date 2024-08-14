@@ -10,7 +10,7 @@ DEPS = $(wildcard $(IDIR)/*.h) #DEPS contiene i file .h le cui dipendenze sono n
 SRC = $(wildcard *.cpp) #Prende tutti i file nella cartella attuale con estensione .cpp)
 OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(SRC))
 
-con2redis_OBJ = $(widlcard ../../lib/con2redis/obj/*.o) #File oggetto nella cartella di Redis
+con2redis_OBJ = $(wildcard ../../lib/con2redis/obj/*.o) #File oggetto nella cartella di Redis
 con2db_OBJ=$(wildcard ../../lib/con2db/*.o) #File oggetto nella cartella del DB
 
 #IMPORTANTE: Eseguire $(BDIR)/main ALLA FINE, dopo che sono stati avviati i vari make e creati i file oggetto
@@ -21,8 +21,7 @@ crea_Bin_Obj:
 	mkdir -p $(ODIR) #Crea la cartella obj
 	
 con2db:
-	#Chiama il makefile in con2db
-	$(MAKE) -C ../../lib/con2db #Attiva il Makefile
+	$(MAKE) -C ../../lib/con2db #Attiva il Makefile #Chiama il makefile in con2db
 	
 con2redis:
 	$(MAKE) -C ../../lib/con2redis/src	#Chiama il makefile in con2redis
