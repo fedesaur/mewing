@@ -2,16 +2,15 @@ IDIR = . #Punta alla cartella attuale
 BDIR = ./bin #Path per la cartella bin (da creare)
 ODIR = ./obj #Path per la cartella obj (da creare)
 
-#CC indica il compilatore da utilizzare, nel nostro caso g++
-CC = g++
+CC = g++ #CC indica il compilatore da utilizzare, nel nostro caso g++
 #CFLAGS indica le flag utilizzate per la compilazione 
 CFLAGS = -std=c++20 -lhiredis -lpq -I/usr/include/postgresql -I -I/$(IDIR)
 
-DEPS = $(wildcard *.h) #DEPS contiene i file .h le cui dipendenze sono necessarie per eseguire il programma
+DEPS = $(wildcard $(IDIR)/*.h) #DEPS contiene i file .h le cui dipendenze sono necessarie per eseguire il programma
 SRC = $(wildcard *.cpp) #Prende tutti i file nella cartella attuale con estensione .cpp)
 OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(SRC))
 
-con2redis_OBJ = $(widlcard ../../lib/con2redis/obj/*.o) #File oggetto nella cartella di Redis
+con2redis_OBJ = $(wildcard ../../lib/con2redis/obj/*.o) #File oggetto nella cartella di Redis
 con2db_OBJ=$(wildcard ../../lib/con2db/*.o) #File oggetto nella cartella del DB
 server_OBJ=$(wildcard ../Server/obj/*.o) #File oggetto nella cartella del Server
 

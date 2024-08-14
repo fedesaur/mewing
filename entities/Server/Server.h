@@ -17,7 +17,6 @@ class Server {
     	redisReply *reply;
 		char* WRITE_STREAM;
 		char* READ_STREAM;
-		Con2DB db;
 		void ConnectToRedis(char* RedisIP, int RedisPort, char* streamIN, char* streamOUT);
 		void Autenticazione(int serverPort);
 };

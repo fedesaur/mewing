@@ -61,9 +61,10 @@ void Server::Autenticazione(int serverPort)
              "XREADGROUP GROUP Autenticazione server COUNT 1 NOACK STREAMS %s >",
 			 READ_STREAM);
     assertReply(c2r, reply);
+    std::cout << reply << "Letta l'autorizzazione";
     dumpReply(reply, 0);
     freeReplyObject(reply);
-    std::cout << "Letta l'autorizzazione";
+
     /*
     switch(serverPort)
     {

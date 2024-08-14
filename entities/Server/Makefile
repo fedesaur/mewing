@@ -13,7 +13,6 @@ OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(SRC))
 con2redis_OBJ = $(wildcard ../../lib/con2redis/obj/*.o) #File oggetto nella cartella di Redis
 con2db_OBJ=$(wildcard ../../lib/con2db/*.o) #File oggetto nella cartella del DB
 
-#IMPORTANTE: Eseguire $(BDIR)/main ALLA FINE, dopo che sono stati avviati i vari make e creati i file oggetto
 all: crea_Bin_Obj con2db con2redis $(ODIR)/$(OBJ)
 
 crea_Bin_Obj:
@@ -26,10 +25,11 @@ con2db:
 con2redis:
 	$(MAKE) -C ../../lib/con2redis/src	#Chiama il makefile in con2redis
 
-$(ODIR)/%.o: %.cpp $(DEPS)
+
+$(ODIR)/%.o: Server.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
-	
+
 .PHONY: clean
 
 clean:
-	rm -f $(ODIR)/*.o *~ $(IDIR)/*~ core 
+	rm -f $(ODIR)/*.o *~ $(BDIR)/*~ core 
