@@ -26,7 +26,7 @@ con2redis:
 	$(MAKE) -C ../../lib/con2redis/src	#Chiama il makefile in con2redis
 
 
-$(ODIR)/%.o: Server.cpp $(DEPS)
+$(ODIR)/%.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 .PHONY: clean

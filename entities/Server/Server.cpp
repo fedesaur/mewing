@@ -1,6 +1,6 @@
 #include "Server.h"
 
-Server::Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, char* streamOUT)
+Server::Server(const char* RedisIP, int RedisPort, int serverPort, const char* streamIN, const char* streamOUT)
 {
     // Crea il socket
     int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -31,7 +31,7 @@ Server::Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, cha
     ConnectToRedis(RedisIP, RedisPort, streamIN, streamOUT);
     Autenticazione(serverPort);
 }
-void Server::ConnectToRedis(char* RedisIP, int RedisPort, char* streamIN, char* streamOUT)
+void Server::void ConnectToRedis(const char* RedisIP, int RedisPort, const char* streamIN, const char* streamOUT)
 {
 
     c2r = redisConnect(RedisIP, RedisPort);

@@ -11,13 +11,13 @@
 
 class Server {
     public:
-        Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, char* streamOUT);
+		Server(const char* RedisIP, int RedisPort, int serverPort, const char* streamIN, const char* streamOUT);
 	private:
 		redisContext *c2r;
     	redisReply *reply;
 		char* WRITE_STREAM;
 		char* READ_STREAM;
-		void ConnectToRedis(char* RedisIP, int RedisPort, char* streamIN, char* streamOUT);
+		void ConnectToRedis(const char* RedisIP, int RedisPort, const char* streamIN, const char* streamOUT);
 		void Autenticazione(int serverPort);
 };
 
