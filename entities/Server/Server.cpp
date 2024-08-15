@@ -29,11 +29,12 @@ Server::Server(const char* RedisIP, int RedisPort, int serverPort, const char* s
         (Per facilitare la lettura, l'ho spostato in un'altra funzione)
     */
     ConnectToRedis(RedisIP, RedisPort, streamIN, streamOUT);
-    Autenticazione(serverPort);
+    Autenticazione(serverPort); //Effettua l'autenticazione dell'Utente
 }
 void Server::void ConnectToRedis(const char* RedisIP, int RedisPort, const char* streamIN, const char* streamOUT)
 {
-
+    redisContext *c2r;
+    redisReply *reply;
     c2r = redisConnect(RedisIP, RedisPort);
     // Se lo stream di lettura già esiste, lo cancella
     reply = RedisCommand(c2r, "DEL %s", streamIN);
@@ -56,12 +57,15 @@ void Server::void ConnectToRedis(const char* RedisIP, int RedisPort, const char*
 
 void Server::Autenticazione(int serverPort)
 {
+    PGresult *res;
+    redisContext *c2r;
+    redisReply *reply;
+    char comando[1000];
     std::cout << "Crea il gruppo per l'autenticazione\n";
 	reply = RedisCommand(c2r, "XGROUP GROUP %s autenticazione 0", WRITE_STREAM);
     assertReply(c2r, reply);
     freeReplyObject(reply);
 	std::cout << "Gruppo per l'autenticazione creato";
-
     /*
         Con BLOCK, il server rimane in attesa per N tempo, sbloccandosi
         o quando scade il tempo o appena riceve un messaggio
@@ -74,23 +78,26 @@ void Server::Autenticazione(int serverPort)
     std::cout << reply;
     dumpReply(reply, 0);
     freeReplyObject(reply);
-
-
     /*
+        L'idea era di fare un tipo di autenticazione diversa per ogni tipo
+        di utente (dato che per ciascuno deve essere effettuata una query diversa)
+    */
     switch(serverPort)
     {
-            L'idea era di fare un tipo di autenticazione diversa per ogni tipo
-            di utente (dato che per ciascuno deve essere effettuata una query diversa)
         case 160:
-            db("localhost", 160, "customer", "customer", "mewingDB");
+            Con2DB db("localhost", 160, "customer", "customer", "mewingDB");
+            sprintf(comando,"SELECT COUNT(*) FROM customers WHERE mail = \'%s\' ", reply->mail);
+            res = db1.ExecSQLtuples(comando);
+            cout << res;
+            PQclear(res);
             break;
         case 161:
-            db("localhost", 161, "fornitore", "fornitore", "mewingDB");
+            Con2DB db("localhost", 161, "fornitore", "fornitore", "mewingDB");
             break;
         case 162:
-            db("localhost", 162, "trasportatore", "trasportatore", "mewingDB");
+            Con2DB db("localhost", 162, "trasportatore", "trasportatore", "mewingDB");
             break;
     }
-    */
+    
     return;
 }
