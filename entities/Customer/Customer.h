@@ -1,7 +1,6 @@
 #ifndef CUSTOMER_H
 #define CUSTOMER_H
 
-#include <thread>
 #include <string>
 #include <iostream>
 #include "../../lib/con2db/pgsql.h"

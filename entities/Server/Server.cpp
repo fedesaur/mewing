@@ -56,14 +56,25 @@ void Server::ConnectToRedis(char* RedisIP, int RedisPort, char* streamIN, char* 
 
 void Server::Autenticazione(int serverPort)
 {
+    std::cout << "Crea il gruppo per l'autenticazione\n";
+	reply = RedisCommand(c2r, "XGROUP GROUP %s autenticazione 0", WRITE_STREAM);
+    assertReply(c2r, reply);
+    freeReplyObject(reply);
+	std::cout << "Gruppo per l'autenticazione creato";
+
+    /*
+        Con BLOCK, il server rimane in attesa per N tempo, sbloccandosi
+        o quando scade il tempo o appena riceve un messaggio
+    */
     std::cout << "Legge il messaggio di autenticazione\n";
     reply = RedisCommand(c2r,
-             "XREADGROUP GROUP Autenticazione server COUNT 1 NOACK STREAMS %s >",
+             "XREADGROUP GROUP autenticazione server BLOCK 6000 COUNT 1 STREAMS %s >",
 			 READ_STREAM);
     assertReply(c2r, reply);
-    std::cout << reply << "Letta l'autorizzazione";
+    std::cout << reply;
     dumpReply(reply, 0);
     freeReplyObject(reply);
+
 
     /*
     switch(serverPort)
