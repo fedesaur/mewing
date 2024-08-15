@@ -1,4 +1,4 @@
-#include "customer.h"
+#include "Customer.h"
 
 // Costruttore di Customer
 Customer::Customer(std::string nome, std::string cognome,std::string mail,int città)
@@ -32,7 +32,26 @@ Customer::Customer(std::string nome, std::string cognome,std::string mail,int ci
     initStreams(c2r, READ_STREAM);
 	initStreams(c2r, WRITE_STREAM);
 
-	// Qui sotto tento un sistema di Autenticazione
+	/*
+		OVERCOMPLICATED: Qui creo un processo figlio perché la ricezione delle informazioni
+		per l'autenticazione è BLOCCANTE, quindi il processo rimarrebbe in attesa delle
+		informazioni per N tempo, ma le informazioni non arriverebbero mai, quindi
+		ho preferito questa opzione:
+		PADRE: Crea il server e attende le informazioni dal figlio
+		FIGLIO: Invia le informazioni per l'autenticazione al padre
+	*/
+	fork();
+	if (getpid() == 0)
+	{
+		/* Effettua la connessione al server:
+    	Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, char* streamOUT);
+    	Cambio il verso degli stream per ovvie ragioni.
+		La porta 160 l'ho scelta a caso, vedere se cambiarla
+    	*/
+		Server srv(REDIS_IP, REDIS_PORT, 160, WRITE_STREAM, READ_STREAM);
+		// Qui sotto tento un sistema di Autenticazione
+	}
+
 	std::cout << "Richiesta di autenticazione\n";
 	reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, "UserID", 0);
     assertReplyType(c2r, reply, REDIS_REPLY_STRING);
@@ -43,12 +62,7 @@ Customer::Customer(std::string nome, std::string cognome,std::string mail,int ci
     freeReplyObject(reply);
 	std::cout << "Gruppo per l'autenticazione creato";
 
-    /* Effettua la connessione al server:
-    Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, char* streamOUT);
-    Cambio il verso degli stream per ovvie ragioni.
-	La porta 160 l'ho scelta a caso, vedere se cambiarla
-    */
-	Server srv(REDIS_IP, REDIS_PORT, 160, WRITE_STREAM, READ_STREAM);
+
 }
 void Customer::AggiungiIndirizzo(std::string via, int civico, std::string cap,std::string city,std::string stato)
 {

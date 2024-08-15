@@ -1,6 +1,9 @@
-#define customer_h
+#ifndef CUSTOMER_H
+#define CUSTOMER_H
 
+#include <thread>
 #include <string>
+#include <iostream>
 #include "../../lib/con2db/pgsql.h"
 #include "../../lib/con2redis/src/con2redis.h"
 #include "../Server/Server.h"
@@ -39,3 +42,4 @@ class Customer{
             std::string stato
         );
 };
+#endif //CUSTOMER_H

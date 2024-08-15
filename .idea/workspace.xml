@@ -14,10 +14,8 @@
   <component name="ChangeListManager">
     <list default="true" id="5675aa8c-3773-47a0-bfee-758c2c4efca2" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entities/Customer/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entities/Server/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Server/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entities/Server/Server.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Server/Server.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entities/Server/Server.h" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Server/Server.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/entities/Customer/customer.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/entities/Customer/customer.h" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,11 +60,17 @@
       </map>
     </option>
   </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 0
 }</component>
   <component name="ProjectId" id="2kVHRR6bIUr9KOTqDrfTsBa1bED" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -88,13 +92,6 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
-  <component name="RunManager">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
-  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -115,6 +112,7 @@
       <workItem from="1723563650362" duration="99000" />
       <workItem from="1723620841082" duration="2837000" />
       <workItem from="1723663502123" duration="381000" />
+      <workItem from="1723704067672" duration="902000" />
     </task>
     <servers />
   </component>
