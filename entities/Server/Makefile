@@ -28,7 +28,7 @@ con2redis:
 
 # -c: Compila il file, ma non renderlo un eseguibile
 $(ODIR)/Server.o: Server.cpp $(DEPS)
-	$(CC) -c -o Server.o Server.cpp $(CFLAGS)
+	$(CC) -c -o $(ODIR)/Server.o Server.cpp $(CFLAGS)
 
 .PHONY: clean
 
