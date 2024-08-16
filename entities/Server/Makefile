@@ -8,7 +8,7 @@ CFLAGS = -std=c++20 -lhiredis -lpq -I/usr/include/postgresql -I -I/$(IDIR)
 
 DEPS = $(wildcard $(IDIR)/*.h) #DEPS contiene i file .h le cui dipendenze sono necessarie per eseguire il programma
 SRC = $(wildcard *.cpp) #Prende tutti i file nella cartella attuale con estensione .cpp)
-OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(SRC))
+OBJ = $(patsubst %.cpp, $(ODIR)/Server.o, $(SRC))
 
 con2redis_OBJ = $(wildcard ../../lib/con2redis/obj/*.o) #File oggetto nella cartella di Redis
 con2db_OBJ=$(wildcard ../../lib/con2db/*.o) #File oggetto nella cartella del DB
@@ -33,4 +33,4 @@ $(ODIR)/Server.o: Server.cpp $(DEPS)
 .PHONY: clean
 
 clean:
-	rm -f $(ODIR)/*.o *~ $(BDIR)/*~ core 
+	rmdir $(ODIR) $(BDIR)
