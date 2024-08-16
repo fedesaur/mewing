@@ -31,8 +31,8 @@ con2redis:
 server:
 	$(MAKE) -C ../Server #Chiama il makefile in server (ancora da fare)
 
-$(ODIR)/%.o: Customer.cpp $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+$(ODIR)/Customer.o: Customer.cpp $(DEPS)
+	$(CC) -c -o Customer.o Customer.cpp $(CFLAGS)
 	
 $(BDIR)/main: $(OBJ) $(DEPS) #Crea in bin il main da eseguire
 	$(CC) -o $@ $(OBJ) $(con2redis_OBJ) $(con2db_OBJ) $(server_OBJ) $(CFLAGS)
