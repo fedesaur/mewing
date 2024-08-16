@@ -31,7 +31,7 @@ Server::Server(const char* RedisIP, int RedisPort, int serverPort, const char* s
     ConnectToRedis(RedisIP, RedisPort, streamIN, streamOUT);
     Autenticazione(serverPort); //Effettua l'autenticazione dell'Utente
 }
-void Server::void ConnectToRedis(const char* RedisIP, int RedisPort, const char* streamIN, const char* streamOUT)
+void Server::ConnectToRedis(const char* RedisIP, int RedisPort, const char* streamIN, const char* streamOUT)
 {
     redisContext *c2r;
     redisReply *reply;
@@ -57,11 +57,30 @@ void Server::void ConnectToRedis(const char* RedisIP, int RedisPort, const char*
 
 void Server::Autenticazione(int serverPort)
 {
+    //Per ogni caso, prepara i dati corretti
+	switch(serverPort){
+        case 160:
+            PORT = "160";
+            USERNAME = "customer";
+            PASSWORD = "customer";
+            break;
+        case 161:
+            PORT = "161";
+	        USERNAME = "producer";
+	        PASSWORD = "producer";
+            break;
+        case 162:
+            PORT = "162";
+	        USERNAME = "courier";
+	        PASSWORD = "courier";
+            break;
+    }
+    Con2DB db("localhost", PORT, USERNAME, PASSWORD, "mewingDB");
     PGresult *res;
     redisContext *c2r;
     redisReply *reply;
     char comando[1000];
-    std::cout << "Crea il gruppo per l'autenticazione\n";
+
 	reply = RedisCommand(c2r, "XGROUP GROUP %s autenticazione 0", WRITE_STREAM);
     assertReply(c2r, reply);
     freeReplyObject(reply);
@@ -70,7 +89,6 @@ void Server::Autenticazione(int serverPort)
         Con BLOCK, il server rimane in attesa per N tempo, sbloccandosi
         o quando scade il tempo o appena riceve un messaggio
     */
-    std::cout << "Legge il messaggio di autenticazione\n";
     reply = RedisCommand(c2r,
              "XREADGROUP GROUP autenticazione server BLOCK 6000 COUNT 1 STREAMS %s >",
 			 READ_STREAM);
@@ -82,22 +100,5 @@ void Server::Autenticazione(int serverPort)
         L'idea era di fare un tipo di autenticazione diversa per ogni tipo
         di utente (dato che per ciascuno deve essere effettuata una query diversa)
     */
-    switch(serverPort)
-    {
-        case 160:
-            Con2DB db("localhost", 160, "customer", "customer", "mewingDB");
-            sprintf(comando,"SELECT COUNT(*) FROM customers WHERE mail = \'%s\' ", reply->mail);
-            res = db1.ExecSQLtuples(comando);
-            cout << res;
-            PQclear(res);
-            break;
-        case 161:
-            Con2DB db("localhost", 161, "fornitore", "fornitore", "mewingDB");
-            break;
-        case 162:
-            Con2DB db("localhost", 162, "trasportatore", "trasportatore", "mewingDB");
-            break;
-    }
-    
     return;
 }
