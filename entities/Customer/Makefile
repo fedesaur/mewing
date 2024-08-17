@@ -15,7 +15,7 @@ con2db_OBJ=$(wildcard ../../lib/con2db/*.o) #File oggetto nella cartella del DB
 server_OBJ=$(wildcard ../Server/obj/Server.o) #File oggetto nella cartella del Server
 
 #IMPORTANTE: Eseguire $(BDIR)/main ALLA FINE, dopo che sono stati avviati i vari make e creati i file oggetto
-all: crea_Bin_Obj con2db con2redis server $(BDIR)/main
+all: crea_Bin_Obj con2db con2redis $(BDIR)/main
 
 crea_Bin_Obj:
 	mkdir -p $(BDIR) #Crea la cartella bin
@@ -26,15 +26,12 @@ con2db:
 	
 con2redis:
 	$(MAKE) -C ../../lib/con2redis/src	#Chiama il makefile in con2redis
-	
-server:
-	$(MAKE) -C ../Server #Chiama il makefile in server (ancora da fare)
 
 #$@ = Nome del target
 #$< = Nome della prima dipendenza (in questo caso, Customer.cpp)
 #[N.B: Le dipendenze sono i file necessari per eseguire quel target e si scrivono sulla stessa riga del target]
-$(ODIR)/Customer.o: Customer.cpp $(DEPS)
-	$(CC) -o $@ -c $< $(CFLAGS)
+$(ODIR)/%.o: %.cpp $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 	
 $(BDIR)/main: $(OBJ) $(DEPS) #Crea in bin il main da eseguire
 	$(CC) -o $@ $(OBJ) $(con2redis_OBJ) $(con2db_OBJ) $(server_OBJ) $(CFLAGS)
