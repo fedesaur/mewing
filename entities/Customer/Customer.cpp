@@ -3,9 +3,6 @@
 // Costruttore di Customer
 Customer::Customer(std::string nome, std::string cognome,std::string mail,int città)
 {
-	redisContext *c2r; // c2r contiene le info sul contesto
-    redisReply *reply; // reply contiene le risposte da Redis
-
     // Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
     assert(nome.length() > 0 && nome.length() <= 20);
     assert(cognome.length() > 0 && cognome.length() <= 20);
@@ -15,7 +12,21 @@ Customer::Customer(std::string nome, std::string cognome,std::string mail,int ci
     Cognome = cognome;
     Mail = mail;
     Abita = città;
+}
+void Customer::AggiungiIndirizzo(std::string via, int civico, std::string cap,std::string city,std::string stato)
+{
+    // Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
+    assert(via.length() > 0 && via.length() <= 100);
+    assert(civico >= 0);
+    assert(cap.length() == 5);
+    assert(city.length() > 0 && city.length() <= 30);
+    assert(stato.length() > 0 && stato.length() <= 30);
+}
 
+void Customer::ConnectToServer()
+{
+	redisContext *c2r; // c2r contiene le info sul contesto
+    redisReply *reply; // reply contiene le risposte da Redis
     // Effettua la connessione a Redis
     c2r = redisConnect(REDIS_IP, REDIS_PORT);
 
@@ -56,14 +67,9 @@ Customer::Customer(std::string nome, std::string cognome,std::string mail,int ci
 	reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, "Mail", mail.c_str());
     assertReplyType(c2r, reply, REDIS_REPLY_STRING);
     freeReplyObject(reply);
-
 }
-void Customer::AggiungiIndirizzo(std::string via, int civico, std::string cap,std::string city,std::string stato)
+
+int main()
 {
-    // Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
-    assert(via.length() > 0 && via.length() <= 100);
-    assert(civico >= 0);
-    assert(cap.length() == 5);
-    assert(city.length() > 0 && city.length() <= 30);
-    assert(stato.length() > 0 && stato.length() <= 30);
+	ConnectToServer();
 }

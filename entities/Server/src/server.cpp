@@ -1,6 +1,6 @@
 #include "server.h"
 
-int main(int argc, char *argv[]) {
+int main() {
     // Creazione dell'oggetto Server
     Server server("127.0.0.1", 6379, 8080, "inputStream", "outputStream");
     return 0;
@@ -83,7 +83,7 @@ void Server::Autenticazione(int serverPort)
             break;
     }
     Con2DB db("localhost", PORT, USERNAME, PASSWORD, "mewingDB");
-    PGresult *res;
+    //PGresult *res;
     redisContext *c2r;
     redisReply *reply;
     char comando[1000];

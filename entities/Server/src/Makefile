@@ -28,24 +28,18 @@ create_dirs:
 	mkdir -p $(ODIR)
 
 con2db:
-	$(MAKE) -C ../../../lib/con2db
+	$(MAKE) -C ../../../lib/con2db/
 
 con2redis:
 	$(MAKE) -C ../../../lib/con2redis/src/
 
-server:
-	$(MAKE) -C ../../../server/src/
-
 $(ODIR)/%.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
-
-$(BDIR)/main: $(OBJ) $(DEPS)
-	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(server_OBJ) $(CFLAGS)
 
 .PHONY: clean
 
 clean:
-	rm -f $(ODIR)/*.o *~ $(IDIR)/*~ core 
+	rm -r $(ODIR) $(BDIR) 
 
 
 
