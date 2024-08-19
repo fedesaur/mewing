@@ -40,5 +40,6 @@ class Customer{
             std::string city,
             std::string stato
         );
+        void ConnectToServer();
 };
 #endif //CUSTOMER_H

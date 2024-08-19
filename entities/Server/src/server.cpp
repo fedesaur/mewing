@@ -84,7 +84,7 @@ void Server::Autenticazione(int serverPort)
     }
     Con2DB db("localhost", PORT, USERNAME, PASSWORD, "mewingDB");
     //PGresult *res;
-    redisContext *c2r;
+    redisContext *c2r=redisConnect("localhost",6379);
     redisReply *reply;
     char comando[1000];
 

@@ -12,6 +12,7 @@
 class Server {
     public:
 		Server(const char* RedisIP, int RedisPort, int serverPort, const char* streamIN, const char* streamOUT);
+		
 	private:
 		const char* WRITE_STREAM;
 		const char* READ_STREAM;

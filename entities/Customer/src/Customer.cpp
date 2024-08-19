@@ -41,7 +41,7 @@ void ConnectToServer()
 
     // Crea gli stream per lettura e scrittura
     initStreams(c2r, READ_STREAM);
-	initStreams(c2r, WRITE_STREAM);
+    initStreams(c2r, WRITE_STREAM);
 
 	/*
 		OVERCOMPLICATED: Qui creo un processo figlio perché la ricezione delle informazioni
@@ -59,7 +59,8 @@ void ConnectToServer()
     	Cambio il verso degli stream per ovvie ragioni.
 		La porta 160 l'ho scelta a caso, vedere se cambiarla
     	*/
-		Server srv(REDIS_IP, REDIS_PORT, 160, WRITE_STREAM, READ_STREAM);
+	    Server srv(REDIS_IP, REDIS_PORT, 160, WRITE_STREAM, READ_STREAM);
+
 
 	}
     // Qui sotto tento un sistema di Autenticazione

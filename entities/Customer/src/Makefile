@@ -1,45 +1,48 @@
-IDIR = . #Punta alla cartella attuale
-BDIR = ../bin #Path per la cartella bin (da creare)
-ODIR = ../obj #Path per la cartella obj (da creare)
+#IDIR=../hdr
+IDIR=.
+ODIR=../obj
+BDIR=../bin
 
-CC = g++ #CC indica il compilatore da utilizzare, nel nostro caso g++
-#CFLAGS indica le flag utilizzate per la compilazione 
+CC=g++
+# use this when connecting to Postgresql (library lpq)
+#CFLAGS=-std=c++11 -I. -I$(IDIR) -I/usr/include/postgresql -lpq -lm 
 CFLAGS=-std=c++20 -I. -I$(IDIR) -I/usr/include/postgresql -lpq -lm -lhiredis
 
-DEPS = $(wildcard $(IDIR)/*.h) #DEPS contiene i file .h le cui dipendenze sono necessarie per eseguire il programma
-SRC = $(wildcard *.cpp) #Prende tutti i file nella cartella attuale con estensione .cpp)
+# use this when no connection to Postgresql (library lpq) is needed
+#CFLAGS=-std=c++11 -I. -I$(IDIR) -lm 
+
+DEPS = $(wildcard $(IDIR)/*.h)
+#OBJ = $(wildcard $(ODIR)/*.o)
+SRC = $(wildcard *.cpp)
 OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(SRC))
 
-con2redis_OBJ = $(wildcard ../../../lib/con2redis/obj/*.o) #File oggetto nella cartella di Redis
-con2db_OBJ=$(wildcard ../../../lib/con2db/*.o) #File oggetto nella cartella del DB
-server_OBJ=$(wildcard ../../Server/obj/*.o) #File oggetto nella cartella del Server
+# con2db_OBJ=$(wildcard ../../con2db/*.o)
+con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
+con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
+server_OBJ=$(wildcard ../../../Server/obj/*.o)
 
-#IMPORTANTE: Eseguire $(BDIR)/main ALLA FINE, dopo che sono stati avviati i vari make e creati i file oggetto
-all: crea_Bin_Obj con2db con2redis server $(BDIR)/main
+all:	create_dirs con2db con2redis $(BDIR)/main
 
-crea_Bin_Obj:
-	mkdir -p $(BDIR) #Crea la cartella bin
-	mkdir -p $(ODIR) #Crea la cartella obj
-	
+create_dirs:
+	mkdir -p $(BDIR)
+	mkdir -p $(ODIR)
+
 con2db:
-	$(MAKE) -C ../../../lib/con2db #Chiama il makefile in con2db
-	
-con2redis:
-	$(MAKE) -C ../../../lib/con2redis/src/ #Chiama il makefile in con2redis
-	
-server:
-	$(MAKE) -C ../../Server/src/ #Chiama il makefile in Server
+	$(MAKE) -C ../../../lib/con2db
 
-#$@ = Nome del target
-#$< = Nome della prima dipendenza
-#[N.B: Le dipendenze sono i file necessari per eseguire quel target e si scrivono sulla stessa riga del target]
+con2redis:
+	$(MAKE) -C ../../../lib/con2redis/src/
+
+server:
+	$(MAKE) -C ../../../Server/src/
+
 $(ODIR)/%.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
-	
-$(BDIR)/main: $(OBJ) $(DEPS) #Crea in bin il main da eseguire
-	$(CC) -o $@ $(OBJ) $(con2redis_OBJ) $(con2db_OBJ) $(server_OBJ) $(CFLAGS)
-	
+
+$(BDIR)/main: $(OBJ) $(DEPS)
+	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(server_OBJ) $(CFLAGS)
+
 .PHONY: clean
 
 clean:
-	rm -r $(ODIR) $(BDIR) ../../Server/bin ../../Server/obj #Cancella bin e obj in Server
+	rm -f $(ODIR)/*.o *~ $(IDIR)/*~ core 
