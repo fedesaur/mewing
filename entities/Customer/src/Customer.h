@@ -31,7 +31,6 @@ class Customer{
         int Abita = 0;
     public:
 		// Costruttori di Customer
-		Customer();
         Customer(std::string nome, std::string cognome, std::string mail, int città);
 
 		// Metodi di Customer

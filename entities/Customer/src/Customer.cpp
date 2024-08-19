@@ -1,10 +1,6 @@
 #include "Customer.h"
 
 // Costruttore di Customer
-Customer::Customer()
-{
-
-}
 Customer::Customer(std::string nome, std::string cognome,std::string mail,int città)
 {
     // Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
@@ -76,7 +72,7 @@ void Customer::ConnectToServer()
 
 int main()
 {
-    Customer cst; // Crea un customer vuoto
+    Customer cst("Simone", "Camagna", "kek@gmail.com", 1); // Crea un customer vuoto
     cst.ConnectToServer(); // Chiama il metodo di customer
     return 0;
 }
