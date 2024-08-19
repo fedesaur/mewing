@@ -76,7 +76,7 @@ void Customer::ConnectToServer()
 
 int main()
 {
-	Customer cst; // Crea un customer vuoto
-	cst.ConnectToServer(); // Chiama il metodo di customer
+    Customer cst; // Crea un customer vuoto
+    cst.ConnectToServer(); // Chiama il metodo di customer
     return 0;
 }
