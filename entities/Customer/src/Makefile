@@ -19,7 +19,7 @@ OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(SRC))
 # con2db_OBJ=$(wildcard ../../con2db/*.o)
 con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
-server_OBJ=$(wildcard ../../../Server/obj/*.o)
+server_OBJ=$(wildcard ../../Server/obj/*.o)
 
 all:	create_dirs con2db con2redis $(BDIR)/main
 
@@ -34,7 +34,7 @@ con2redis:
 	$(MAKE) -C ../../../lib/con2redis/src/
 
 server:
-	$(MAKE) -C ../../../Server/src/
+	$(MAKE) -C ../../Server/src/
 
 $(ODIR)/%.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)

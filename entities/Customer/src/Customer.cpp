@@ -1,6 +1,10 @@
 #include "Customer.h"
 
 // Costruttore di Customer
+Customer::Customer()
+{
+
+}
 Customer::Customer(std::string nome, std::string cognome,std::string mail,int città)
 {
     // Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
@@ -23,7 +27,7 @@ void Customer::AggiungiIndirizzo(std::string via, int civico, std::string cap,st
     assert(stato.length() > 0 && stato.length() <= 30);
 }
 
-void ConnectToServer()
+void Customer::ConnectToServer()
 {
     redisContext *c2r; // c2r contiene le info sul contesto
     redisReply *reply; // reply contiene le risposte da Redis
@@ -72,6 +76,7 @@ void ConnectToServer()
 
 int main()
 {
-    ConnectToServer();
+	Customer cst; // Crea un customer vuoto
+	cst.ConnectToServer(); // Chiama il metodo di customer
     return 0;
 }

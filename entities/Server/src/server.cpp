@@ -1,12 +1,5 @@
 #include "server.h"
 
-int main() {
-    // Creazione dell'oggetto Server
-    Server server("127.0.0.1", 6379, 8080, "inputStream", "outputStream");
-    return 0;
-}
-
-
 Server::Server(const char* RedisIP, int RedisPort, int serverPort, const char* streamIN, const char* streamOUT)
 {
     // Crea il socket

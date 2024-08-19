@@ -30,9 +30,11 @@ class Customer{
         std::string Mail = NULL;
         int Abita = 0;
     public:
-		// Costruttore di Customer
+		// Costruttori di Customer
+		Customer();
         Customer(std::string nome, std::string cognome, std::string mail, int città);
 
+		// Metodi di Customer
         void AggiungiIndirizzo(
             std::string via,
             int civico,
@@ -40,6 +42,6 @@ class Customer{
             std::string city,
             std::string stato
         );
-        void ConnectToServer();
+		void ConnectToServer();
 };
 #endif //CUSTOMER_H
