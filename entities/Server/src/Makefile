@@ -25,7 +25,7 @@ create_dirs:
 	mkdir -p $(ODIR)
 
 con2db:
-	$(MAKE) -C ../../../lib/con2db/
+	$(MAKE) -C ../../../lib/con2db
 
 con2redis:
 	$(MAKE) -C ../../../lib/con2redis/src/

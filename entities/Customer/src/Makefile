@@ -15,14 +15,14 @@ con2db_OBJ=$(wildcard ../../../lib/con2db/*.o) #File oggetto nella cartella del 
 server_OBJ=$(wildcard ../../Server/obj/*.o) #File oggetto nella cartella del Server
 
 #IMPORTANTE: Eseguire $(BDIR)/main ALLA FINE, dopo che sono stati avviati i vari make e creati i file oggetto
-all: crea_Bin_Obj con2db con2redis server $(ODIR)/$(OBJ) $(BDIR)/main
+all: crea_Bin_Obj con2db con2redis server $(BDIR)/main
 
 crea_Bin_Obj:
 	mkdir -p $(BDIR) #Crea la cartella bin
 	mkdir -p $(ODIR) #Crea la cartella obj
 	
 con2db:
-	$(MAKE) -C ../../../lib/con2db/ #Chiama il makefile in con2db
+	$(MAKE) -C ../../../lib/con2db #Chiama il makefile in con2db
 	
 con2redis:
 	$(MAKE) -C ../../../lib/con2redis/src/ #Chiama il makefile in con2redis
