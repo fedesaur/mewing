@@ -28,7 +28,7 @@ con2db:
 	$(MAKE) -C ../../../lib/con2db
 
 con2redis:
-	$(MAKE) -C ../../../lib/con2redis/src/
+	$(MAKE) -C ../../../lib/con2redis/src
 
 $(ODIR)/%.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)

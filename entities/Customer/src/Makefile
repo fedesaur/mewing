@@ -31,10 +31,10 @@ con2db:
 	$(MAKE) -C ../../../lib/con2db
 
 con2redis:
-	$(MAKE) -C ../../../lib/con2redis/src/
+	$(MAKE) -C ../../../lib/con2redis/src
 
 server:
-	$(MAKE) -C ../../Server/src/
+	$(MAKE) -C ../../Server/src
 
 $(ODIR)/%.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
@@ -45,4 +45,4 @@ $(BDIR)/main: $(OBJ) $(DEPS)
 .PHONY: clean
 
 clean:
-	rm -f $(ODIR)/*.o *~ $(IDIR)/*~ core 
+	rm -r $(ODIR) $(BDIR) 
