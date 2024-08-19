@@ -5,7 +5,7 @@
 #include <iostream>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../../Server/src/server.h"
+#include "../../Server/src/server.cpp"
 #include <cassert>
 
 #define READ_STREAM "CustomerIN"
