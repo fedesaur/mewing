@@ -26,7 +26,6 @@ all:	$(ODIR)/$(OBJ)
 $(ODIR)/%.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-
 .PHONY: clean
 
 clean:

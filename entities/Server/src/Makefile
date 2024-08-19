@@ -1,7 +1,6 @@
-#IDIR=../hdr
 IDIR=.
-ODIR=../obj
-BDIR=../bin
+ODIR= ../obj
+BDIR= ../bin
 
 CC=g++
 # use this when connecting to Postgresql (library lpq)
@@ -16,12 +15,10 @@ DEPS = $(wildcard $(IDIR)/*.h)
 SRC = $(wildcard *.cpp)
 OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(SRC))
 
-# con2db_OBJ=$(wildcard ../../con2db/*.o)
 con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
-server_OBJ=$(wildcard ../../../server/obj/*.o)
 
-all:	create_dirs con2db con2redis $(BDIR)/main
+all:	create_dirs con2db con2redis $(ODIR)/$(OBJ)
 
 create_dirs:
 	mkdir -p $(BDIR)

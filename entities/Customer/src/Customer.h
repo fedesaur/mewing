@@ -3,9 +3,9 @@
 
 #include <string>
 #include <iostream>
-#include "../../lib/con2db/pgsql.h"
-#include "../../lib/con2redis/src/con2redis.h"
-#include "../Server/Server.h"
+#include "../../../lib/con2db/pgsql.h"
+#include "../../../lib/con2redis/src/con2redis.h"
+#include "../../Server/src/server.h"
 #include <cassert>
 
 #define READ_STREAM "CustomerIN"
@@ -32,7 +32,6 @@ class Customer{
     public:
 		// Costruttore di Customer
         Customer(std::string nome, std::string cognome, std::string mail, int città);
-		ConnectToServer();
 
         void AggiungiIndirizzo(
             std::string via,

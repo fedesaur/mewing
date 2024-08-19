@@ -23,9 +23,9 @@ void Customer::AggiungiIndirizzo(std::string via, int civico, std::string cap,st
     assert(stato.length() > 0 && stato.length() <= 30);
 }
 
-void Customer::ConnectToServer()
+void ConnectToServer()
 {
-	redisContext *c2r; // c2r contiene le info sul contesto
+    redisContext *c2r; // c2r contiene le info sul contesto
     redisReply *reply; // reply contiene le risposte da Redis
     // Effettua la connessione a Redis
     c2r = redisConnect(REDIS_IP, REDIS_PORT);
@@ -64,12 +64,13 @@ void Customer::ConnectToServer()
 	}
     // Qui sotto tento un sistema di Autenticazione
 	std::cout << "Richiesta di autenticazione\n";
-	reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, "Mail", mail.c_str());
+	reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, "Mail", "abc@gmail.com");
     assertReplyType(c2r, reply, REDIS_REPLY_STRING);
     freeReplyObject(reply);
 }
 
 int main()
 {
-	ConnectToServer();
+    ConnectToServer();
+    return 0;
 }

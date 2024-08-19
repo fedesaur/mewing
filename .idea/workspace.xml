@@ -13,12 +13,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5675aa8c-3773-47a0-bfee-758c2c4efca2" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entities/Customer/Customer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/Customer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entities/Customer/Customer.h" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/Customer.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entities/Customer/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/entities/Customer/Customer.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/entities/Customer/Customer.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/entities/Customer/Makefile" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/entities/Server/src/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Server/src/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entities/Server/src/server.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Server/src/server.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/con2redis/src/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/lib/con2redis/src/Makefile" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -120,6 +119,7 @@
       <workItem from="1723793287896" duration="1541000" />
       <workItem from="1723798228684" duration="1682000" />
       <workItem from="1724000313432" duration="372000" />
+      <workItem from="1724053091694" duration="145000" />
     </task>
     <servers />
   </component>
