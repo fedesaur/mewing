@@ -8,7 +8,6 @@
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
 #include <unistd.h>
-#include <mutex>
 
 class Server {
     public:

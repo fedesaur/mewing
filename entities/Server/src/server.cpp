@@ -22,14 +22,13 @@ Server::Server(const char* RedisIP, int RedisPort, int serverPort, const char* s
 
     // Accetta la connessione con il socket
     // serverSocket = Socket a cui verrà collegato
-    std::cout << "Server creato!"<< std::endl;
     int clientSocket = accept(serverSocket, nullptr, nullptr);
-    std::cout << "Server collegato!"<< std::endl;
+	std::cout << "Connesso al client!" << std::endl;
     /*
         Effettua la connessione a Redis.
         (Per facilitare la lettura, l'ho spostato in un'altra funzione)
     */
-    ConnectToRedis(RedisIP, RedisPort, streamIN, streamOUT);
+    //ConnectToRedis(RedisIP, RedisPort, streamIN, streamOUT);
 }
 void Server::ConnectToRedis(const char* RedisIP, int RedisPort, const char* streamIN, const char* streamOUT)
 {

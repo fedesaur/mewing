@@ -25,20 +25,41 @@ void Customer::AggiungiIndirizzo(std::string via, int civico, std::string cap,st
 
 void Customer::ConnectToServer()
 {
-	std::cout << "Sono il thread per il server!" << std::endl;
-	/* Effettua la connessione al server:
+    pid_t pid = fork();
+    if (pid > 0)
+    {
+    /* Effettua la connessione al server:
     Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, char* streamOUT);
     Cambio il verso degli stream per ovvie ragioni.
 	La porta 160 l'ho scelta a caso, vedere se cambiarla
     */
-	Server srv(REDIS_IP, REDIS_PORT, SERVER_PORT, WRITE_STREAM, READ_STREAM);
-	srv.Autenticazione(DB_PORT, USERNAME, PASSWORD);
+    std::cout << "Vado a creare il server!" << std::endl;
+    Server srv(REDIS_IP, REDIS_PORT, SERVER_PORT, WRITE_STREAM, READ_STREAM);}
+
+    /*
+	 Qui avviene la connessione del client al server.
+	 Questa connessione deve avvenire DOPO che il server
+	 è stato creato, altrimenti niente
+	*/
+	else
+	{
+	    int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+        sockaddr_in serverAddress;
+	    serverAddress.sin_port = htons(SERVER_PORT);
+	    serverAddress.sin_addr.s_addr = INADDR_ANY;
+        std::cout << "Socket client creato!" << std::endl;
+
+        int num = connect(clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
+        while (num == -1) {num = connect(clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress));}
+	    std::cout << "Connesso al server!" << std::endl;
+	    std::cout << num << std::endl;
+	    close(clientSocket);
+	}
     return;
 }
 
 void Customer::CreateSocket()
 {
-	std::cout << "Sono il thread per il socket!" << std::endl;
 	redisContext *c2r; // c2r contiene le info sul contesto
 	redisReply *reply; // reply contiene le risposte da Redis
 
@@ -59,19 +80,7 @@ void Customer::CreateSocket()
 	initStreams(c2r, WRITE_STREAM);
 	std::cout << "Stream Customer creati!" << std::endl;
 
-	/*
-	 Qui avviene la connessione del client al server.
-	 Questa connessione deve avvenire DOPO che il server
-	 è stato creato, altrimenti niente
-	*/
-	int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 
-	sockaddr_in serverAddress;
-	serverAddress.sin_port = htons(SERVER_PORT);
-	serverAddress.sin_addr.s_addr = INADDR_ANY;
-
-	connect(clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
-	std::cout << "Socket client creato!" << std::endl;
 
 	// Qui si tenta un processo di autenticazione tramite Redis
 	reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, "Mail", Mail.c_str());
@@ -80,19 +89,14 @@ void Customer::CreateSocket()
 	std::cout << "Richiesta di autenticazione inviata!" << std::endl;
 
 	// Finita la sua funzione, il socket viene chiuso
-	close(clientSocket);
+
 	return;
 }
 
 int main()
 {
     Customer cst("Simone", "Camagna", "kek@gmail.com", 1); // Crea un customer vuoto
-    std::thread server(&Customer::ConnectToServer, &cst);  // Thread per server
-	std::thread socket(&Customer::CreateSocket, &cst);  // Thread per socket
-
-    server.join();
-    socket.join();
-
+    cst.ConnectToServer();
     std::cout << "Fine!";
     return 0;
 }
