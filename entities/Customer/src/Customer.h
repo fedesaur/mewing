@@ -7,12 +7,17 @@
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../../Server/src/server.h"
 #include <cassert>
+#include <thread>
+#include <mutex>
 
 #define READ_STREAM "CustomerIN"
 #define WRITE_STREAM "CustomerOUT"
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
 #define SERVER_PORT 160
+#define DB_PORT "160"
+#define USERNAME "customer"
+#define PASSWORD "customer"
 
 struct Indirizzo{
     std::string via;
@@ -43,5 +48,6 @@ class Customer{
             std::string stato
         );
 	    void ConnectToServer();
+	    void CreateSocket();
 };
 #endif //CUSTOMER_H

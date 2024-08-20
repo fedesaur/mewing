@@ -25,28 +25,45 @@ void Customer::AggiungiIndirizzo(std::string via, int civico, std::string cap,st
 
 void Customer::ConnectToServer()
 {
-    redisContext *c2r; // c2r contiene le info sul contesto
-    redisReply *reply; // reply contiene le risposte da Redis
-    // Effettua la connessione a Redis
-    c2r = redisConnect(REDIS_IP, REDIS_PORT);
-    std::cout << "Stop 1" << std::endl;
+	std::cout << "Sono il thread per il server!" << std::endl;
+	/* Effettua la connessione al server:
+    Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, char* streamOUT);
+    Cambio il verso degli stream per ovvie ragioni.
+	La porta 160 l'ho scelta a caso, vedere se cambiarla
+    */
+	Server srv(REDIS_IP, REDIS_PORT, SERVER_PORT, WRITE_STREAM, READ_STREAM);
+	srv.Autenticazione(DB_PORT, USERNAME, PASSWORD);
+    return;
+}
 
-    // In caso già esistano, elimina i due stream di lettura e scrittura
-    reply = RedisCommand(c2r, "DEL %s", READ_STREAM);
-    assertReply(c2r, reply);
-    dumpReply(reply, 0);
-	std::cout << "Stop 2"<< std::endl;
+void Customer::CreateSocket()
+{
+	std::cout << "Sono il thread per il socket!" << std::endl;
+	redisContext *c2r; // c2r contiene le info sul contesto
+	redisReply *reply; // reply contiene le risposte da Redis
 
-    reply = RedisCommand(c2r, "DEL %s", WRITE_STREAM);
-    assertReply(c2r, reply);
-    dumpReply(reply, 0);
-	std::cout << "Stop 3"<< std::endl;
+	// Effettua la connessione a Redis
+	c2r = redisConnect(REDIS_IP, REDIS_PORT);
 
-    // Crea gli stream per lettura e scrittura
-    initStreams(c2r, READ_STREAM);
-    initStreams(c2r, WRITE_STREAM);
-	std::cout << "Stop 4"<< std::endl;
+	// In caso già esistano, elimina i due stream di lettura e scrittura
+	reply = RedisCommand(c2r, "DEL %s", READ_STREAM);
+	assertReply(c2r, reply);
+	dumpReply(reply, 0);
 
+	reply = RedisCommand(c2r, "DEL %s", WRITE_STREAM);
+	assertReply(c2r, reply);
+	dumpReply(reply, 0);
+
+	// Crea gli stream per lettura e scrittura
+	initStreams(c2r, READ_STREAM);
+	initStreams(c2r, WRITE_STREAM);
+	std::cout << "Stream Customer creati!" << std::endl;
+
+	/*
+	 Qui avviene la connessione del client al server.
+	 Questa connessione deve avvenire DOPO che il server
+	 è stato creato, altrimenti niente
+	*/
 	int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 
 	sockaddr_in serverAddress;
@@ -54,44 +71,28 @@ void Customer::ConnectToServer()
 	serverAddress.sin_addr.s_addr = INADDR_ANY;
 
 	connect(clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
-	std::cout << "Stop 5" << std::endl;
-	/*
-		OVERCOMPLICATED: Qui creo un processo figlio perché la ricezione delle informazioni
-		per l'autenticazione è BLOCCANTE, quindi il processo rimarrebbe in attesa delle
-		informazioni per N tempo, ma le informazioni non arriverebbero mai, quindi
-		ho preferito questa opzione:
-		PADRE: Crea il server e attende le informazioni dal figlio
-		FIGLIO: Invia le informazioni per l'autenticazione al padre
-	*/
-	fork();
+	std::cout << "Socket client creato!" << std::endl;
 
-	if (getpid() > 0)
-	{
-		/* Effettua la connessione al server:
-    	Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, char* streamOUT);
-    	Cambio il verso degli stream per ovvie ragioni.
-		La porta 160 l'ho scelta a caso, vedere se cambiarla
-    	*/
-	    Server srv(REDIS_IP, REDIS_PORT, SERVER_PORT, WRITE_STREAM, READ_STREAM);
-		std::cout << "Stop 7"<< std::endl;
+	// Qui si tenta un processo di autenticazione tramite Redis
+	reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, "Mail", Mail.c_str());
+	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
+	freeReplyObject(reply);
+	std::cout << "Richiesta di autenticazione inviata!" << std::endl;
 
-
-	}
-	std::cout << "Stop 6"<< std::endl;
-    // Qui sotto tento un sistema di Autenticazione
-	std::cout << "Richiesta di autenticazione\n";
-	reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, "Mail", "abc@gmail.com");
-    assertReplyType(c2r, reply, REDIS_REPLY_STRING);
-    freeReplyObject(reply);
-	std::cout << "Stop 8"<< std::endl;
-    return;
+	// Finita la sua funzione, il socket viene chiuso
+	close(clientSocket);
+	return;
 }
 
 int main()
 {
-	std::cout << "Inizio main" << std::endl;
     Customer cst("Simone", "Camagna", "kek@gmail.com", 1); // Crea un customer vuoto
-    std::cout << "Creato Customer" << std::endl;
-    cst.ConnectToServer(); // Chiama il metodo di customer
+    std::thread server(&Customer::ConnectToServer, &cst);  // Thread per server
+	std::thread socket(&Customer::CreateSocket, &cst);  // Thread per socket
+
+    server.join();
+    socket.join();
+
+    std::cout << "Fine!";
     return 0;
 }

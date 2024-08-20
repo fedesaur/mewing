@@ -15,6 +15,9 @@
     <list default="true" id="5675aa8c-3773-47a0-bfee-758c2c4efca2" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/entities/Customer/src/Customer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/src/Customer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/entities/Customer/src/Customer.h" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/src/Customer.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/entities/Server/src/server.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Server/src/server.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/entities/Server/src/server.h" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Server/src/server.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -118,7 +121,7 @@
       <workItem from="1724000313432" duration="372000" />
       <workItem from="1724053091694" duration="145000" />
       <workItem from="1724060680084" duration="1317000" />
-      <workItem from="1724135871271" duration="1453000" />
+      <workItem from="1724135871271" duration="6857000" />
     </task>
     <servers />
   </component>

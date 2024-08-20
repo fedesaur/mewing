@@ -22,14 +22,14 @@ Server::Server(const char* RedisIP, int RedisPort, int serverPort, const char* s
 
     // Accetta la connessione con il socket
     // serverSocket = Socket a cui verrà collegato
+    std::cout << "Server creato!"<< std::endl;
     int clientSocket = accept(serverSocket, nullptr, nullptr);
-
+    std::cout << "Server collegato!"<< std::endl;
     /*
         Effettua la connessione a Redis.
         (Per facilitare la lettura, l'ho spostato in un'altra funzione)
     */
     ConnectToRedis(RedisIP, RedisPort, streamIN, streamOUT);
-    Autenticazione(serverPort); //Effettua l'autenticazione dell'Utente
 }
 void Server::ConnectToRedis(const char* RedisIP, int RedisPort, const char* streamIN, const char* streamOUT)
 {
@@ -40,46 +40,31 @@ void Server::ConnectToRedis(const char* RedisIP, int RedisPort, const char* stre
     reply = RedisCommand(c2r, "DEL %s", streamIN);
     assertReply(c2r, reply);
     dumpReply(reply, 0);
+    std::cout << "Stop S2"<< std::endl;
 
     // Se lo stream di scrttura già esiste, lo cancella
     reply = RedisCommand(c2r, "DEL %s", streamOUT);
     assertReply(c2r, reply);
     dumpReply(reply, 0);
+    std::cout << "Stop S3"<< std::endl;
 
     initStreams(c2r, streamIN);
     initStreams(c2r, streamOUT);
+    std::cout << "Stop S4"<< std::endl;
 
     READ_STREAM = streamIN;
     WRITE_STREAM = streamOUT;
-
 	return;
 }
 
-void Server::Autenticazione(int serverPort)
+void Server::Autenticazione(const char* PORT, const char* USERNAME, const char* PASSWORD)
 {
-    //Per ogni caso, prepara i dati corretti
-	switch(serverPort){
-        case 160:
-            PORT = "160";
-            USERNAME = "customer";
-            PASSWORD = "customer";
-            break;
-        case 161:
-            PORT = "161";
-	        USERNAME = "producer";
-	        PASSWORD = "producer";
-            break;
-        case 162:
-            PORT = "162";
-	        USERNAME = "courier";
-	        PASSWORD = "courier";
-            break;
-    }
     Con2DB db("localhost", PORT, USERNAME, PASSWORD, "mewingDB");
     //PGresult *res;
     redisContext *c2r=redisConnect("localhost",6379);
     redisReply *reply;
     char comando[1000];
+    std::cout << "Stop S6"<< std::endl;
 
 	reply = RedisCommand(c2r, "XGROUP GROUP %s autenticazione 0", WRITE_STREAM);
     assertReply(c2r, reply);
