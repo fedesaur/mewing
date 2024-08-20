@@ -5,13 +5,14 @@
 #include <iostream>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../../Server/src/server.cpp"
+#include "../../Server/src/server.h"
 #include <cassert>
 
 #define READ_STREAM "CustomerIN"
 #define WRITE_STREAM "CustomerOUT"
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
+#define SERVER_PORT 160
 
 struct Indirizzo{
     std::string via;
@@ -24,11 +25,11 @@ struct Indirizzo{
 class Customer{
 	private:
 		// I parametri del Customer teniamoli privati per sicurezza
-		int ID = 0; //ID viene generato dal database
-        std::string Nome = NULL;
-        std::string Cognome = NULL;
-        std::string Mail = NULL;
-        int Abita = 0;
+		int ID; //ID viene generato dal database
+        std::string Nome;
+        std::string Cognome;
+        std::string Mail;
+        int Abita;
     public:
 		// Costruttori di Customer
         Customer(std::string nome, std::string cognome, std::string mail, int città);
@@ -41,6 +42,6 @@ class Customer{
             std::string city,
             std::string stato
         );
-	void ConnectToServer();
+	    void ConnectToServer();
 };
 #endif //CUSTOMER_H

@@ -21,7 +21,7 @@ con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
 server_OBJ=$(wildcard ../../Server/obj/*.o)
 
-all:	create_dirs con2db con2redis $(BDIR)/main
+all:	create_dirs con2db con2redis server customer $(BDIR)/main
 
 create_dirs:
 	mkdir -p $(BDIR)
@@ -36,8 +36,8 @@ con2redis:
 server:
 	$(MAKE) -C ../../Server/src
 
-$(ODIR)/%.o: %.cpp $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+customer: Customer.cpp Customer.h
+	$(CC) -c -o $(ODIR)/Customer.o $< $(CFLAGS)
 
 $(BDIR)/main: $(OBJ) $(DEPS)
 	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(server_OBJ) $(CFLAGS)

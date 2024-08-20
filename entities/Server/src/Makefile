@@ -18,7 +18,7 @@ OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(SRC))
 con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
 
-all:	create_dirs con2db con2redis $(ODIR)/$(OBJ)
+all:	create_dirs con2db con2redis server
 
 create_dirs:
 	mkdir -p $(BDIR)
@@ -30,8 +30,8 @@ con2db:
 con2redis:
 	$(MAKE) -C ../../../lib/con2redis/src
 
-$(ODIR)/%.o: %.cpp $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+server: server.cpp server.h
+	$(CC) -c -o $(ODIR)/server.o $< $(CFLAGS)
 
 .PHONY: clean
 

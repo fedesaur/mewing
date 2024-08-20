@@ -29,19 +29,23 @@ void Customer::ConnectToServer()
     redisReply *reply; // reply contiene le risposte da Redis
     // Effettua la connessione a Redis
     c2r = redisConnect(REDIS_IP, REDIS_PORT);
+    std::cout << "Stop 1";
 
     // In caso già esistano, elimina i due stream di lettura e scrittura
     reply = RedisCommand(c2r, "DEL %s", READ_STREAM);
     assertReply(c2r, reply);
     dumpReply(reply, 0);
+	std::cout << "Stop 2";
 
     reply = RedisCommand(c2r, "DEL %s", WRITE_STREAM);
     assertReply(c2r, reply);
     dumpReply(reply, 0);
+	std::cout << "Stop 3";
 
     // Crea gli stream per lettura e scrittura
     initStreams(c2r, READ_STREAM);
     initStreams(c2r, WRITE_STREAM);
+	std::cout << "Stop 4";
 
 	/*
 		OVERCOMPLICATED: Qui creo un processo figlio perché la ricezione delle informazioni
@@ -52,6 +56,7 @@ void Customer::ConnectToServer()
 		FIGLIO: Invia le informazioni per l'autenticazione al padre
 	*/
 	fork();
+	std::cout << "Stop 5";
 	if (getpid() > 0)
 	{
 		/* Effettua la connessione al server:
@@ -59,7 +64,8 @@ void Customer::ConnectToServer()
     	Cambio il verso degli stream per ovvie ragioni.
 		La porta 160 l'ho scelta a caso, vedere se cambiarla
     	*/
-	    Server srv(REDIS_IP, REDIS_PORT, 160, WRITE_STREAM, READ_STREAM);
+	    Server srv(REDIS_IP, REDIS_PORT, SERVER_PORT, WRITE_STREAM, READ_STREAM);
+		std::cout << "Stop 6";
 
 
 	}
@@ -68,6 +74,8 @@ void Customer::ConnectToServer()
 	reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, "Mail", "abc@gmail.com");
     assertReplyType(c2r, reply, REDIS_REPLY_STRING);
     freeReplyObject(reply);
+	std::cout << "Stop 7";
+    return;
 }
 
 int main()

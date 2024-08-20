@@ -14,11 +14,12 @@
   <component name="ChangeListManager">
     <list default="true" id="5675aa8c-3773-47a0-bfee-758c2c4efca2" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/entities/Customer/bin/main" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/bin/main" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/entities/Customer/obj/Customer.o" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/obj/Customer.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/entities/Customer/src/Customer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/src/Customer.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/entities/Customer/src/Customer.h" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/src/Customer.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/entities/Customer/src/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/src/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entities/Server/src/server.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Server/src/server.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/entities/Server/src/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Server/src/Makefile" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,13 +97,6 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
-  <component name="RunManager">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
-  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -129,6 +123,7 @@
       <workItem from="1724000313432" duration="372000" />
       <workItem from="1724053091694" duration="145000" />
       <workItem from="1724060680084" duration="1317000" />
+      <workItem from="1724135871271" duration="721000" />
     </task>
     <servers />
   </component>
