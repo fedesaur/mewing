@@ -29,24 +29,32 @@ void Customer::ConnectToServer()
     redisReply *reply; // reply contiene le risposte da Redis
     // Effettua la connessione a Redis
     c2r = redisConnect(REDIS_IP, REDIS_PORT);
-    std::cout << "Stop 1";
+    std::cout << "Stop 1" << std::endl;
 
     // In caso già esistano, elimina i due stream di lettura e scrittura
     reply = RedisCommand(c2r, "DEL %s", READ_STREAM);
     assertReply(c2r, reply);
     dumpReply(reply, 0);
-	std::cout << "Stop 2";
+	std::cout << "Stop 2"<< std::endl;
 
     reply = RedisCommand(c2r, "DEL %s", WRITE_STREAM);
     assertReply(c2r, reply);
     dumpReply(reply, 0);
-	std::cout << "Stop 3";
+	std::cout << "Stop 3"<< std::endl;
 
     // Crea gli stream per lettura e scrittura
     initStreams(c2r, READ_STREAM);
     initStreams(c2r, WRITE_STREAM);
-	std::cout << "Stop 4";
+	std::cout << "Stop 4"<< std::endl;
 
+	int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+
+	sockaddr_in serverAddress;
+	serverAddress.sin_port = htons(SERVER_PORT);
+	serverAddress.sin_addr.s_addr = INADDR_ANY;
+
+	connect(clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
+	std::cout << "Stop 5" << std::endl;
 	/*
 		OVERCOMPLICATED: Qui creo un processo figlio perché la ricezione delle informazioni
 		per l'autenticazione è BLOCCANTE, quindi il processo rimarrebbe in attesa delle
@@ -56,7 +64,7 @@ void Customer::ConnectToServer()
 		FIGLIO: Invia le informazioni per l'autenticazione al padre
 	*/
 	fork();
-	std::cout << "Stop 5";
+
 	if (getpid() > 0)
 	{
 		/* Effettua la connessione al server:
@@ -65,22 +73,25 @@ void Customer::ConnectToServer()
 		La porta 160 l'ho scelta a caso, vedere se cambiarla
     	*/
 	    Server srv(REDIS_IP, REDIS_PORT, SERVER_PORT, WRITE_STREAM, READ_STREAM);
-		std::cout << "Stop 6";
+		std::cout << "Stop 7"<< std::endl;
 
 
 	}
+	std::cout << "Stop 6"<< std::endl;
     // Qui sotto tento un sistema di Autenticazione
 	std::cout << "Richiesta di autenticazione\n";
 	reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, "Mail", "abc@gmail.com");
     assertReplyType(c2r, reply, REDIS_REPLY_STRING);
     freeReplyObject(reply);
-	std::cout << "Stop 7";
+	std::cout << "Stop 8"<< std::endl;
     return;
 }
 
 int main()
 {
+	std::cout << "Inizio main" << std::endl;
     Customer cst("Simone", "Camagna", "kek@gmail.com", 1); // Crea un customer vuoto
+    std::cout << "Creato Customer" << std::endl;
     cst.ConnectToServer(); // Chiama il metodo di customer
     return 0;
 }
