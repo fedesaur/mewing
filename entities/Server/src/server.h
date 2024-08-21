@@ -11,16 +11,21 @@
 
 class Server {
     public:
-		Server(const char* RedisIP, int RedisPort, int serverPort, const char* streamIN, const char* streamOUT);
-		void Autenticazione(const char* PORT, const char* USERNAME, const char* PASSWORD);
-		void handleClient(int clientSocket); // Definizione della funzione handleClient
-	private:
+		/*
+			Per ora accantoniamo la versione con i dati di Redis
+			Server(const char* RedisIP, int RedisPort, int serverPort, const char* streamIN, const char* streamOUT);
+		*/
 		int SERVER_SOCKET;
-		int CLIENT_SOCKET;
-		const char* WRITE_STREAM;
-		const char* READ_STREAM;
-		void ConnectToRedis(const char* RedisIP, int RedisPort, const char* streamIN, const char* streamOUT);
-		std::string extractUsernameFromCommand(const std::string& command); // Definizione della funzione extractUsernameFromCommand
+		Server(int serverPort);
+		void Autenticazione(const char* PORT, const char* USERNAME, const char* PASSWORD);
+		void accettaConnessioni();
+		void handleClient(int clientSocket); // Definizione della funzione handleClient
+		int getServerSocket();
+	private:
+		int SERVER_PORT;
+		//const char* WRITE_STREAM;
+		//const char* READ_STREAM;
+		//void ConnectToRedis(const char* RedisIP, int RedisPort, const char* streamIN, const char* streamOUT);
 };
 
 

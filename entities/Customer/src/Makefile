@@ -45,4 +45,4 @@ $(BDIR)/main: $(OBJ) $(DEPS)
 .PHONY: clean
 
 clean:
-	rm -r $(ODIR) $(BDIR) 
+	rm -r $(ODIR) $(BDIR) ../../Server/bin ../../Server/obj

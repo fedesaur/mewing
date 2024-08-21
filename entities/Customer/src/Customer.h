@@ -12,10 +12,11 @@
 #define WRITE_STREAM "CustomerOUT"
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
-#define SERVER_PORT 160
+#define SERVER_PORT 5000
 #define DB_PORT "160"
 #define USERNAME "customer"
 #define PASSWORD "customer"
+#define MAX_CONNECTIONS 100 //Numero di connessioni massime accettabili
 
 struct Indirizzo{
     std::string via;
@@ -33,10 +34,13 @@ class Customer{
         std::string Cognome;
         std::string Mail;
         int Abita;
+		int SERVER_SOCKET;
+		void handleClient(int clientSocket);
     public:
 		// Costruttori di Customer
-        Customer(std::string nome, std::string cognome, std::string mail, int città);
+        Customer();
 		// Metodi di Customer
+		void gestisciConnessioni();
         void AggiungiIndirizzo(
             std::string via,
             int civico,
