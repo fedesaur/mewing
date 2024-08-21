@@ -23,41 +23,6 @@ void Customer::AggiungiIndirizzo(std::string via, int civico, std::string cap,st
     assert(stato.length() > 0 && stato.length() <= 30);
 }
 
-void Customer::ConnectToServer()
-{
-    pid_t pid = fork();
-    if (pid > 0)
-    {
-    /* Effettua la connessione al server:
-    Server(char* RedisIP, int RedisPort, int serverPort, char* streamIN, char* streamOUT);
-    Cambio il verso degli stream per ovvie ragioni.
-	La porta 160 l'ho scelta a caso, vedere se cambiarla
-    */
-    std::cout << "Vado a creare il server!" << std::endl;
-    Server srv(REDIS_IP, REDIS_PORT, SERVER_PORT, WRITE_STREAM, READ_STREAM);}
-
-    /*
-	 Qui avviene la connessione del client al server.
-	 Questa connessione deve avvenire DOPO che il server
-	 è stato creato, altrimenti niente
-	*/
-	else
-	{
-	    int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
-        sockaddr_in serverAddress;
-	    serverAddress.sin_port = htons(SERVER_PORT);
-	    serverAddress.sin_addr.s_addr = INADDR_ANY;
-        std::cout << "Socket client creato!" << std::endl;
-
-        int num = connect(clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
-        while (num == -1) {num = connect(clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress));}
-	    std::cout << "Connesso al server!" << std::endl;
-	    std::cout << num << std::endl;
-	    close(clientSocket);
-	}
-    return;
-}
-
 void Customer::CreateSocket()
 {
 	redisContext *c2r; // c2r contiene le info sul contesto
@@ -95,8 +60,11 @@ void Customer::CreateSocket()
 
 int main()
 {
-    Customer cst("Simone", "Camagna", "kek@gmail.com", 1); // Crea un customer vuoto
-    cst.ConnectToServer();
-    std::cout << "Fine!";
+	/*
+		Crea un server che si prepara ad avviare una
+		connessione con l'utente
+	 */
+	Server server(REDIS_IP, REDIS_PORT, SERVER_PORT, WRITE_STREAM, READ_STREAM);
+	std::cout << "Connessione al server effettuata!" << std::endl;
     return 0;
 }

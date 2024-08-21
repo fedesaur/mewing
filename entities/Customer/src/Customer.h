@@ -7,8 +7,6 @@
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../../Server/src/server.h"
 #include <cassert>
-#include <thread>
-#include <chrono>
 
 #define READ_STREAM "CustomerIN"
 #define WRITE_STREAM "CustomerOUT"
@@ -38,7 +36,6 @@ class Customer{
     public:
 		// Costruttori di Customer
         Customer(std::string nome, std::string cognome, std::string mail, int città);
-
 		// Metodi di Customer
         void AggiungiIndirizzo(
             std::string via,
@@ -47,7 +44,6 @@ class Customer{
             std::string city,
             std::string stato
         );
-	    void ConnectToServer();
 	    void CreateSocket();
 };
 #endif //CUSTOMER_H

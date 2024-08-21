@@ -3,7 +3,8 @@
 Server::Server(const char* RedisIP, int RedisPort, int serverPort, const char* streamIN, const char* streamOUT)
 {
     // Crea il socket
-    int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    SERVER_SOCKET = socket(AF_INET, SOCK_STREAM, 0);
+	std::cout << "Socket del Server: " << SERVER_SOCKET << std::endl;
 
     // Specifica indirizzo del server
     sockaddr_in serverAddress;
@@ -14,16 +15,17 @@ Server::Server(const char* RedisIP, int RedisPort, int serverPort, const char* s
     // serverSocket = Socket NON associato
     // serverAddress = Struttura sockaddr a cui associare l'indirizzo del socket locale
     // sizeof(...) = Lunghezza (byte) del valore di serverAddress
-    bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
+    bind(SERVER_SOCKET, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
 
     // Attende che un socket lo comunichi (finché non succede, server rimane in ascolto)
     // 5 = Lunghezza MASSIMA delle connessioni in sospeso
-    listen(serverSocket, 5);
+    listen(SERVER_SOCKET, 5);
 
     // Accetta la connessione con il socket
     // serverSocket = Socket a cui verrà collegato
-    int clientSocket = accept(serverSocket, nullptr, nullptr);
+    CLIENT_SOCKET = accept(SERVER_SOCKET, nullptr, nullptr);
 	std::cout << "Connesso al client!" << std::endl;
+	std::cout << "Socket del Client: " << CLIENT_SOCKET << std::endl;
     /*
         Effettua la connessione a Redis.
         (Per facilitare la lettura, l'ho spostato in un'altra funzione)
