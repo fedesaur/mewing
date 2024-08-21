@@ -1,4 +1,5 @@
 #include "server.h"
+#include <string>
 
 Server::Server(const char* RedisIP, int RedisPort, int serverPort, const char* streamIN, const char* streamOUT)
 {
@@ -87,4 +88,49 @@ void Server::Autenticazione(const char* PORT, const char* USERNAME, const char* 
         di utente (dato che per ciascuno deve essere effettuata una query diversa)
     */
     return;
+}
+
+void Server::handleClient(int clientSocket) {
+    // Analizza il comando ricevuto
+    std::string command(buffer);
+
+    if (command.find("HELLO") == 0) {
+        // Gestisci la richiesta di saluto
+        std::string username = extractUsernameFromCommand(command); // Funzione per estrarre lo username dal comando
+
+        // Controlla se l'utente esiste in Redis (ad esempio, utilizzando HGET)
+        redisReply *reply = RedisCommand(c2r, "HGET users %s", username.c_str());
+        if (reply && reply->str) {
+            // Utente trovato, invia un saluto personalizzato
+            std::string response = "Ciao, " + std::string(reply->str) + "!";
+            send(clientSocket, response.c_str(), response.length(), 0);
+        } else {
+            // Utente non trovato, invia un saluto generico
+            send(clientSocket, "Ciao! Benvenuto nel nostro negozio.", 34, 0);
+        }
+        freeReplyObject(reply);
+    } else {
+        // ... (gestisci altri comandi)
+    }
+
+    // ... (codice esistente)
+}
+
+std::string extractUsernameFromCommand(const std::string& command) {
+    // Trova la posizione dello spazio dopo "HELLO"
+    size_t pos = command.find(" ");
+    
+    // Se non c'è spazio, il comando è malformato
+    if (pos == std::string::npos) {
+        return "";
+    }
+    
+    // Estrai lo username che segue lo spazio
+    std::string username = command.substr(pos + 1);
+    
+    // Rimuovi eventuali spazi bianchi iniziali o finali dallo username (se necessario)
+    username.erase(0, username.find_first_not_of(" \n\r\t"));
+    username.erase(username.find_last_not_of(" \n\r\t") + 1);
+
+    return username;
 }
