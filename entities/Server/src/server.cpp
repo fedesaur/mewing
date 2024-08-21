@@ -23,7 +23,7 @@ Server::Server(const char* RedisIP, int RedisPort, int serverPort, const char* s
     listen(SERVER_SOCKET, 5);
 
     while (true) {
-        int clientSocket = accept(server.SERVER_SOCKET, nullptr, nullptr);
+        int clientSocket = accept(SERVER_SOCKET, nullptr, nullptr);
         if (clientSocket < 0) {
             std::cerr << "Errore nell'accettare la connessione dal client." << std::endl;
             continue;
@@ -31,7 +31,7 @@ Server::Server(const char* RedisIP, int RedisPort, int serverPort, const char* s
         std::cout << "Connessione client accettata!" << std::endl;
 
         // Gestisci il client in una funzione dedicata
-        server.handleClient(clientSocket);
+        handleClient(clientSocket);
 
         // Chiudi la connessione con il client dopo averla gestita
         close(clientSocket);
