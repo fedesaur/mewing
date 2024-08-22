@@ -19,9 +19,10 @@ OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(SRC))
 # con2db_OBJ=$(wildcard ../../con2db/*.o)
 con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
-server_OBJ=$(wildcard ../../Server/obj/*.o)
+autentication_OBJ = $(wildcard ../methods/Autenticazione/*.o)
 
-all:	create_dirs con2db con2redis server customer $(BDIR)/main
+
+all:	create_dirs con2db con2redis autenticazione customer $(BDIR)/main
 
 create_dirs:
 	mkdir -p $(BDIR)
@@ -33,16 +34,16 @@ con2db:
 con2redis:
 	$(MAKE) -C ../../../lib/con2redis/src
 
-server:
-	$(MAKE) -C ../../Server/src
+autenticazione:
+	$(MAKE) -C ../methods/Autenticazione #Chiama il makefile di autenticazione
 
 customer: Customer.cpp Customer.h
 	$(CC) -c -o $(ODIR)/Customer.o $< $(CFLAGS)
 
 $(BDIR)/main: $(OBJ) $(DEPS)
-	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(server_OBJ) $(CFLAGS)
+	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(autentication_OBJ) $(CFLAGS)
 
 .PHONY: clean
 
 clean:
-	rm -r $(ODIR) $(BDIR) ../../Server/bin ../../Server/obj
+	rm -r $(ODIR) $(BDIR) ../methods/Autenticazione/autenticazione.o

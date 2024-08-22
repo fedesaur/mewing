@@ -3,8 +3,7 @@
 // Costruttore di Customer
 Customer::Customer()
 {
-	// Crea il socket
-    SERVER_SOCKET = socket(AF_INET, SOCK_STREAM, 0);
+    SERVER_SOCKET = socket(AF_INET, SOCK_STREAM, 0); // Crea il socket
     if (SERVER_SOCKET < 0) {
         std::cerr << "Errore nella creazione del socket." << std::endl;
         exit(EXIT_FAILURE);
@@ -24,30 +23,6 @@ Customer::Customer()
         close(SERVER_SOCKET);
         exit(EXIT_FAILURE);
     }
-}
-    /* Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
-    assert(nome.length() > 0 && nome.length() <= 20);
-    assert(cognome.length() > 0 && cognome.length() <= 20);
-    assert(mail.length() > 0 && mail.length() <= 50);
-
-    Nome = nome;
-    Cognome = cognome;
-    Mail = mail;
-    Abita = città;
-void Customer::AggiungiIndirizzo(std::string via, int civico, std::string cap,std::string city,std::string stato)
-{
-    // Effettuati controlli sui parametri per fare in modo che rispettino i limiti richiesti
-    assert(via.length() > 0 && via.length() <= 100);
-    assert(civico >= 0);
-    assert(cap.length() == 5);
-    assert(city.length() > 0 && city.length() <= 30);
-    assert(stato.length() > 0 && stato.length() <= 30);
-}
-
-void Customer::CreateSocket()
-{
-	redisContext *c2r; // c2r contiene le info sul contesto
-	redisReply *reply; // reply contiene le risposte da Redis
 
 	// Effettua la connessione a Redis
 	c2r = redisConnect(REDIS_IP, REDIS_PORT);
@@ -65,20 +40,8 @@ void Customer::CreateSocket()
 	initStreams(c2r, READ_STREAM);
 	initStreams(c2r, WRITE_STREAM);
 	std::cout << "Stream Customer creati!" << std::endl;
-
-
-
-	// Qui si tenta un processo di autenticazione tramite Redis
-	reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, "Mail", Mail.c_str());
-	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
-	freeReplyObject(reply);
-	std::cout << "Richiesta di autenticazione inviata!" << std::endl;
-
-	// Finita la sua funzione, il socket viene chiuso
-
-	return;
 }
-*/
+
 void Customer::gestisciConnessioni()
 {
 	int IDConnessione = 0; // Serve giusto per annotare le connessioni accettate
@@ -105,28 +68,52 @@ void Customer::gestisciConnessioni()
         std::string response = "Connessione numero: " + std::to_string(IDConnessione) + "\n";
         send(clientSocket, response.c_str(), response.length(), 0);
 
-        // Gestisci il client in una funzione dedicata
-        handleClient(clientSocket);
+        bool connessioneOK = handshake(clientSocket); // Gestisci il client in una funzione dedicata
+        if (connessioneOK && authenticate(clientSocket)) // Se la connessione è andata a buon fine, avvia le varie operazioni
+        {
+
+        	//autentica(); //Chiama l'autenticazione
+        }
         close(clientSocket); // Chiudi la connessione con il client dopo averla gestita
+    	std::cout << "Conclusa connessione numero: " + std::to_string(IDConnessione) << std::endl;
 
     }
     // Chiudi il socket del server (questa parte non verrà mai raggiunta a causa del while infinito)
     close(SERVER_SOCKET);
 }
 
-void Customer::handleClient(int clientSocket) {
+bool Customer::handshake(int clientSocket) {
     char buffer[1024] = {0};
     int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
 
     if (bytesRead > 0) {
         std::string response = "Ciao\n";
         send(clientSocket, response.c_str(), response.length(), 0);
-        return;
+        return true;
     }
     std::cerr << "Errore o nessun dato ricevuto dal client." << std::endl;
-    return;
+    return false;
 }
 
+bool Customer::authenticate(int clientSocket)
+{
+	char buffer[1024] = {0};
+	std::string request = "Inserisci la tua email\n";
+	send(clientSocket, request.c_str(), request.length(), 0);
+
+	int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+	if (bytesRead > 0) {
+		std::string response = "Email ricevuta! Procedo all'autenticazione\n";
+		send(clientSocket, response.c_str(), response.length(), 0);
+		//Scrive sullo streaml'email dell'user per l'autenticazione
+		reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, "usermail" , buffer);
+		assertReplyType(c2r, reply, REDIS_REPLY_STRING);
+		freeReplyObject(reply);
+		return autentica();
+	}
+	std::cerr << "Errore o nessun dato ricevuto dal client." << std::endl;
+	return false;
+}
 int main()
 {
 	/*

@@ -5,7 +5,11 @@
 #include <iostream>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../../Server/src/server.h"
+#include "../methods/Autenticazione/autenticazione.h"
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <cstring>
 #include <cassert>
 
 #define READ_STREAM "CustomerIN"
@@ -13,7 +17,7 @@
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
 #define SERVER_PORT 5000
-#define DB_PORT "160"
+#define DB_PORT "5432"
 #define USERNAME "customer"
 #define PASSWORD "customer"
 #define MAX_CONNECTIONS 100 //Numero di connessioni massime accettabili
@@ -29,25 +33,14 @@ struct Indirizzo{
 class Customer{
 	private:
 		// I parametri del Customer teniamoli privati per sicurezza
-		int ID; //ID viene generato dal database
-        std::string Nome;
-        std::string Cognome;
-        std::string Mail;
-        int Abita;
+		redisContext *c2r; // c2r contiene le info sul contesto
+		redisReply *reply; // reply contiene le risposte da Redis
 		int SERVER_SOCKET;
-		void handleClient(int clientSocket);
+		bool handshake(int clientSocket);
+		bool authenticate(int clientSocket);
     public:
-		// Costruttori di Customer
-        Customer();
+        Customer(); // Costruttore di Customer
 		// Metodi di Customer
 		void gestisciConnessioni();
-        void AggiungiIndirizzo(
-            std::string via,
-            int civico,
-            std::string cap,
-            std::string city,
-            std::string stato
-        );
-	    void CreateSocket();
 };
 #endif //CUSTOMER_H
