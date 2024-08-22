@@ -75,7 +75,9 @@ void Customer::gestisciConnessioni()
         bool connessioneOK = handshake(clientSocket); // Gestisci il client in una funzione dedicata
         if (connessioneOK && authenticate(clientSocket)) // Se la connessione è andata a buon fine, avvia le varie operazioni
         {
-            // autentica(); // Chiama l'autenticazione
+            //autentica(); // Chiama l'autenticazione
+            //metti codice che consente all'utente di continuare a mandare messaggi fino a che non scrive quit
+            
         }
         close(clientSocket); // Chiudi la connessione con il client dopo averla gestita
         std::cout << "Conclusa connessione numero: " + std::to_string(IDConnessione) << std::endl;
@@ -115,7 +117,7 @@ bool Customer::authenticate(int clientSocket)
         freeReplyObject(reply);
 
         // Legge lo stream per verificare l'autenticazione
-        reply = RedisCommand(c2r, "XREAD COUNT 1 STREAMS %s 0", READ_STREAM);
+        reply = RedisCommand(c2r, "XREAD COUNT 1 STREAMS %s 0", WRITE_STREAM);
         if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0) {
             std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
             return false;
@@ -127,6 +129,7 @@ bool Customer::authenticate(int clientSocket)
         std::string received_email = email_entry->str;
 
         std::cout << "Email letta dallo stream: " << received_email << std::endl;
+        RedisCommand(c2r, "XTRIM %s MAXLEN 1000", WRITE_STREAM);
         freeReplyObject(reply);
 
         return autentica();
