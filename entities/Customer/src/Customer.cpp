@@ -30,7 +30,10 @@ Customer::Customer()
         std::cerr << "Errore nella connessione a Redis: " << c2r->errstr << std::endl;
         exit(EXIT_FAILURE);
     }
+}
 
+void Customer::creaStreams()
+{
     // In caso già esistano, elimina i due stream di lettura e scrittura
     reply = RedisCommand(c2r, "DEL %s", READ_STREAM);
     assertReply(c2r, reply);
@@ -48,7 +51,7 @@ Customer::Customer()
 
 void Customer::gestisciConnessioni()
 {
-    int IDConnessione = 0; // Serve giusto per annotare le connessioni accettate
+    CONNESSIONI_RICEVUTE = 0; // Serve giusto per annotare le connessioni accettate
     // Attende che un socket si connetta (finché non succede, server rimane in ascolto)
     if (listen(SERVER_SOCKET, MAX_CONNECTIONS) < 0) {
         std::cerr << "Errore nell'ascolto sul socket." << std::endl;
@@ -66,10 +69,13 @@ void Customer::gestisciConnessioni()
             std::cerr << "Errore nell'accettare la connessione dal client." << std::endl;
             continue; // Continua ad accettare ulteriori connessioni
         }
-        // Identifica l'ID della connessione
-        IDConnessione++;
-        std::cout << "Accettata connessione numero: " + std::to_string(IDConnessione) << std::endl;
-        std::string response = "Connessione numero: " + std::to_string(IDConnessione) + "\n";
+
+		creaStreams(); // Vengono creati gli Streams Redis per il trasferimento di messaggi
+
+		// Identifica l'ID della connessione
+        CONNESSIONI_RICEVUTE++;
+        std::cout << "Accettata connessione numero: " + std::to_string(CONNESSIONI_RICEVUTE) << std::endl;
+        std::string response = "Connessione numero: " + std::to_string(CONNESSIONI_RICEVUTE) + "\n";
         send(clientSocket, response.c_str(), response.length(), 0);
 
         bool connessioneOK = handshake(clientSocket); // Gestisci il client in una funzione dedicata
@@ -80,7 +86,7 @@ void Customer::gestisciConnessioni()
             
         }
         close(clientSocket); // Chiudi la connessione con il client dopo averla gestita
-        std::cout << "Conclusa connessione numero: " + std::to_string(IDConnessione) << std::endl;
+        std::cout << "Conclusa connessione numero: " + std::to_string(CONNESSIONI_RICEVUTE) << std::endl;
     }
     // Chiudi il socket del server (questa parte non verrà mai raggiunta a causa del while infinito)
     close(SERVER_SOCKET);

@@ -35,6 +35,7 @@ class Customer{
 		// I parametri del Customer teniamoli privati per sicurezza
 		redisContext *c2r; // c2r contiene le info sul contesto
 		redisReply *reply; // reply contiene le risposte da Redis
+		int CONNESSIONI_RICEVUTE;
 		int SERVER_SOCKET;
 		bool handshake(int clientSocket);
 		bool authenticate(int clientSocket);
@@ -42,5 +43,6 @@ class Customer{
         Customer(); // Costruttore di Customer
 		// Metodi di Customer
 		void gestisciConnessioni();
+		void creaStreams();
 };
 #endif //CUSTOMER_H
