@@ -140,13 +140,23 @@ bool Customer::authenticate(int clientSocket)
         }
 
         // Extract the email from the reply
-        redisReply* stream = reply->element[0]->element[1]->element[0];
-        redisReply* email_entry = stream->element[1]->element[1];
-        std::string received_email = email_entry->str;
+        std::string received_email;
+	for (size_t i = 0; i < entryFields->elements; i += 2) {
+    		std::string fieldName = entryFields->element[i]->str;
+   		std::string fieldValue = entryFields->element[i + 1]->str;
 
-        std::cout << "Email letta dallo stream: " << received_email << std::endl;
+    		if (fieldName == chiave) {  // Verifica se il nome del campo corrisponde alla chiave
+        		received_email = fieldValue;
+        		break;
+    		}
+		}
 
-        // Trim the stream after reading
+	if (received_email.empty()) {
+    		std::cerr << "Errore: non è stata trovata nessuna email con la chiave specificata." << std::endl;
+	} else {
+    		std::cout << "Email letta dallo stream: " << received_email << std::endl;
+		}
+
         freeReplyObject(reply);
 
         return autentica();
