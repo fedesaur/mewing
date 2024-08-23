@@ -133,7 +133,7 @@ bool Customer::authenticate(int clientSocket)
          Now read the stream for authentication confirmation
          Start reading from the `entryID`
         */
-        reply = RedisCommand(c2r, "XREAD COUNT 1 STREAMS %s %s", WRITE_STREAM, entryID.c_str());
+        reply = RedisCommand(c2r, "XREVRANGE STREAMS %s + - COUNT 1", WRITE_STREAM);
         if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0) {
             std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
             return false;
