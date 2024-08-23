@@ -40,7 +40,6 @@ class Customer{
 		bool authenticate(int clientSocket);
     public:
         Customer(); // Costruttore di Customer
-		// Metodi di Customer
-		void gestisciConnessioni();
+		void gestisciConnessioni(); // Metodi di Customer
 };
 #endif //CUSTOMER_H

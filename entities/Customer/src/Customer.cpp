@@ -73,6 +73,7 @@ void Customer::gestisciConnessioni()
         }
         close(clientSocket); // Chiudi la connessione con il client dopo averla gestita
         std::cout << "Conclusa connessione con ID: " + std::to_string(ID_CONNESSIONE) << std::endl;
+		ID_CONNESSIONE++;
     }
     // Chiudi il socket del server (questa parte non verrà mai raggiunta a causa del while infinito)
     close(SERVER_SOCKET);
@@ -98,14 +99,13 @@ bool Customer::authenticate(int clientSocket)
 
     int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
     if (bytesRead > 0) {
+		//Chide all'utente una mail utile all'identificazione
         std::string email(buffer, bytesRead);
         std::string response = "Email ricevuta! Procedo all'autenticazione\n";
         send(clientSocket, response.c_str(), response.length(), 0);
 
         // Scrive la mail ricevuta nello Stream
-        std::cout << std::to_string(ID_CONNESSIONE) << std::endl;
         const char* chiave = std::to_string(ID_CONNESSIONE).c_str();
-        std::cout << chiave << std::endl;
         reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, chiave, email.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
         freeReplyObject(reply);
@@ -114,6 +114,7 @@ bool Customer::authenticate(int clientSocket)
             std::string entryID(reply->str);
             freeReplyObject(reply);
         */
+		std::cout << ID_CONNESSIONE << std::endl;
         return autentica(ID_CONNESSIONE);
     }
     std::cerr << "Errore o nessun dato ricevuto dal client." << std::endl;
