@@ -118,31 +118,35 @@ bool Customer::authenticate(int clientSocket)
         std::string response = "Email ricevuta! Procedo all'autenticazione\n";
         send(clientSocket, response.c_str(), response.length(), 0);
 
-        // Scrive sullo stream l'email dell'utente per l'autenticazione
+        // Write the user's email to the stream for authentication
         std::cout << std::to_string(CONNESSIONI_RICEVUTE) << std::endl;
         const char* chiave = std::to_string(CONNESSIONI_RICEVUTE).c_str();
         std::cout << chiave << std::endl;
         reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, chiave, email.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
+        
+        // Capture the entry ID for subsequent reads
+        std::string entryID(reply->str);
         freeReplyObject(reply);
 
         /*
-         Legge lo stream per verificare l'autenticazione
+         Now read the stream for authentication confirmation
+         Start reading from the `entryID`
         */
-        reply = RedisCommand(c2r, "XREAD COUNT 1 STREAMS %s %s", WRITE_STREAM, chiave);
+        reply = RedisCommand(c2r, "XREAD COUNT 1 STREAMS %s %s", WRITE_STREAM, entryID.c_str());
         if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0) {
             std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
             return false;
         }
 
-        // Estrarre l'email dal reply
-        // int risultato = ReadNumStreams(reply);
+        // Extract the email from the reply
         redisReply* stream = reply->element[0]->element[1]->element[0];
         redisReply* email_entry = stream->element[1]->element[1];
         std::string received_email = email_entry->str;
 
         std::cout << "Email letta dallo stream: " << received_email << std::endl;
-        RedisCommand(c2r, "XTRIM %s MAXLEN 1000", WRITE_STREAM);
+
+        // Trim the stream after reading
         freeReplyObject(reply);
 
         return autentica();
@@ -151,6 +155,7 @@ bool Customer::authenticate(int clientSocket)
     std::cerr << "Errore o nessun dato ricevuto dal client." << std::endl;
     return false;
 }
+
 
 int main()
 {
