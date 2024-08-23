@@ -30,6 +30,8 @@ Customer::Customer()
         std::cerr << "Errore nella connessione a Redis: " << c2r->errstr << std::endl;
         exit(EXIT_FAILURE);
     }
+
+    creaStreams(); // Vengono creati gli Streams Redis per il trasferimento di messaggi
 }
 
 void Customer::creaStreams()
@@ -70,7 +72,6 @@ void Customer::gestisciConnessioni()
             continue; // Continua ad accettare ulteriori connessioni
         }
 
-		creaStreams(); // Vengono creati gli Streams Redis per il trasferimento di messaggi
 
 		// Identifica l'ID della connessione
         CONNESSIONI_RICEVUTE++;
@@ -118,18 +119,23 @@ bool Customer::authenticate(int clientSocket)
         send(clientSocket, response.c_str(), response.length(), 0);
 
         // Scrive sullo stream l'email dell'utente per l'autenticazione
-        reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, "usermail", email.c_str());
+        std::cout << std::to_string(CONNESSIONI_RICEVUTE) << std::endl;
+        const char* chiave = std::to_string(CONNESSIONI_RICEVUTE).c_str();
+        reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, chiave, email.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
         freeReplyObject(reply);
 
-        // Legge lo stream per verificare l'autenticazione
-        reply = RedisCommand(c2r, "XREAD COUNT 1 STREAMS %s 0", WRITE_STREAM);
+        /*
+         Legge lo stream per verificare l'autenticazione
+        */
+        reply = RedisCommand(c2r, "XREAD COUNT 1000 STREAMS %s 0", WRITE_STREAM);
         if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0) {
             std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
             return false;
         }
 
         // Estrarre l'email dal reply
+        // int risultato = ReadNumStreams(reply);
         redisReply* stream = reply->element[0]->element[1]->element[0];
         redisReply* email_entry = stream->element[1]->element[1];
         std::string received_email = email_entry->str;
