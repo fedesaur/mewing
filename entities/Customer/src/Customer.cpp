@@ -133,11 +133,14 @@ bool Customer::authenticate(int clientSocket)
          Now read the stream for authentication confirmation
          Start reading from the `entryID`
         */
-        reply = RedisCommand(c2r, "XREVRANGE STREAMS %s + - COUNT 1", WRITE_STREAM);
+        reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", WRITE_STREAM);
         if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0) {
             std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
             return false;
         }
+        
+        redisReply* stream = reply -> element[0];
+        redisReply* entryFields = stream ->element[1];
 
         // Extract the email from the reply
         std::string received_email;
@@ -145,10 +148,7 @@ bool Customer::authenticate(int clientSocket)
     		std::string fieldName = entryFields->element[i]->str;
    		std::string fieldValue = entryFields->element[i + 1]->str;
 
-    		if (fieldName == chiave) {  // Verifica se il nome del campo corrisponde alla chiave
-        		received_email = fieldValue;
-        		break;
-    		}
+    		received_email = fieldValue;
 		}
 
 	if (received_email.empty()) {
