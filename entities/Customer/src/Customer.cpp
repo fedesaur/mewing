@@ -114,7 +114,7 @@ bool Customer::authenticate(int clientSocket)
             std::string entryID(reply->str);
             freeReplyObject(reply);
         */
-		std::cout << ID_CONNESSIONE << std::endl;
+                std::cout << ID_CONNESSIONE << std::endl;
         return autentica(ID_CONNESSIONE);
     }
     std::cerr << "Errore o nessun dato ricevuto dal client." << std::endl;

@@ -1,7 +1,6 @@
 #ifndef AUTENTICAZIONE_H
 #define AUTENTICAZIONE_H
 
-// Usato per contenere i vari import
 #include <string>
 #include <iostream>
 #include "../../../../lib/con2db/pgsql.h"

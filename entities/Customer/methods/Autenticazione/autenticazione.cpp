@@ -8,6 +8,7 @@ bool autentica(int IDConnessione)
          Now read the stream for authentication confirmation
          Start reading from the `entryID`
     */
+    std::cout << "Eccoti l'ID: " << IDConnessione << std::endl;
     reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", CUSTOMER_STREAM);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
 	{
