@@ -121,6 +121,7 @@ bool Customer::authenticate(int clientSocket)
         // Scrive sullo stream l'email dell'utente per l'autenticazione
         std::cout << std::to_string(CONNESSIONI_RICEVUTE) << std::endl;
         const char* chiave = std::to_string(CONNESSIONI_RICEVUTE).c_str();
+        std::cout << chiave << std::endl;
         reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, chiave, email.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
         freeReplyObject(reply);
@@ -128,7 +129,7 @@ bool Customer::authenticate(int clientSocket)
         /*
          Legge lo stream per verificare l'autenticazione
         */
-        reply = RedisCommand(c2r, "XREAD COUNT 1000 STREAMS %s 0", WRITE_STREAM);
+        reply = RedisCommand(c2r, "XREAD COUNT 1 STREAMS %s %s", WRITE_STREAM, chiave);
         if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0) {
             std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
             return false;
