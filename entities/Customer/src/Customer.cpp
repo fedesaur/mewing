@@ -31,29 +31,16 @@ Customer::Customer()
         exit(EXIT_FAILURE);
     }
 
-    creaStreams(); // Vengono creati gli Streams Redis per il trasferimento di messaggi
-}
-
-void Customer::creaStreams()
-{
-    // In caso già esistano, elimina i due stream di lettura e scrittura
-    reply = RedisCommand(c2r, "DEL %s", READ_STREAM);
+    // Viene creato lo Stream Redis per il trasferimento di messaggi
+    reply = RedisCommand(c2r, "DEL %s", CUSTOMER_STREAM);
     assertReply(c2r, reply);
     freeReplyObject(reply);
-
-    reply = RedisCommand(c2r, "DEL %s", WRITE_STREAM);
-    assertReply(c2r, reply);
-    freeReplyObject(reply);
-
-    // Crea gli stream per lettura e scrittura
-    initStreams(c2r, READ_STREAM);
-    initStreams(c2r, WRITE_STREAM);
-    std::cout << "Stream Customer creati!" << std::endl;
+    initStreams(c2r, CUSTOMER_STREAM);
+    std::cout << "Stream Customer creato!" << std::endl;
 }
 
 void Customer::gestisciConnessioni()
 {
-    CONNESSIONI_RICEVUTE = 0; // Serve giusto per annotare le connessioni accettate
     // Attende che un socket si connetta (finché non succede, server rimane in ascolto)
     if (listen(SERVER_SOCKET, MAX_CONNECTIONS) < 0) {
         std::cerr << "Errore nell'ascolto sul socket." << std::endl;
@@ -72,11 +59,9 @@ void Customer::gestisciConnessioni()
             continue; // Continua ad accettare ulteriori connessioni
         }
 
-
 		// Identifica l'ID della connessione
-        CONNESSIONI_RICEVUTE++;
-        std::cout << "Accettata connessione numero: " + std::to_string(CONNESSIONI_RICEVUTE) << std::endl;
-        std::string response = "Connessione numero: " + std::to_string(CONNESSIONI_RICEVUTE) + "\n";
+        std::cout << "ID della connessione: " + std::to_string(ID_CONNESSIONE) << std::endl;
+        std::string response = "ID della connessione: " + std::to_string(ID_CONNESSIONE) + "\n";
         send(clientSocket, response.c_str(), response.length(), 0);
 
         bool connessioneOK = handshake(clientSocket); // Gestisci il client in una funzione dedicata
@@ -87,7 +72,7 @@ void Customer::gestisciConnessioni()
             
         }
         close(clientSocket); // Chiudi la connessione con il client dopo averla gestita
-        std::cout << "Conclusa connessione numero: " + std::to_string(CONNESSIONI_RICEVUTE) << std::endl;
+        std::cout << "Conclusa connessione con ID: " + std::to_string(ID_CONNESSIONE) << std::endl;
     }
     // Chiudi il socket del server (questa parte non verrà mai raggiunta a causa del while infinito)
     close(SERVER_SOCKET);
@@ -95,13 +80,12 @@ void Customer::gestisciConnessioni()
 
 bool Customer::handshake(int clientSocket) {
     char buffer[1024] = {0};
-    int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+    std::string response = "Ciao\n";
+    send(clientSocket, response.c_str(), response.length(), 0);
 
-    if (bytesRead > 0) {
-        std::string response = "Ciao\n";
-        send(clientSocket, response.c_str(), response.length(), 0);
-        return true;
-    }
+    int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+    if (bytesRead > 0) return true;
+
     std::cerr << "Errore o nessun dato ricevuto dal client." << std::endl;
     return false;
 }
@@ -118,50 +102,20 @@ bool Customer::authenticate(int clientSocket)
         std::string response = "Email ricevuta! Procedo all'autenticazione\n";
         send(clientSocket, response.c_str(), response.length(), 0);
 
-        // Write the user's email to the stream for authentication
-        std::cout << std::to_string(CONNESSIONI_RICEVUTE) << std::endl;
-        const char* chiave = std::to_string(CONNESSIONI_RICEVUTE).c_str();
+        // Scrive la mail ricevuta nello Stream
+        std::cout << std::to_string(ID_CONNESSIONE) << std::endl;
+        const char* chiave = std::to_string(ID_CONNESSIONE).c_str();
         std::cout << chiave << std::endl;
-        reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, chiave, email.c_str());
+        reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, chiave, email.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
-        
-        // Capture the entry ID for subsequent reads
-        std::string entryID(reply->str);
         freeReplyObject(reply);
-
         /*
-         Now read the stream for authentication confirmation
-         Start reading from the `entryID`
+        Capture the entry ID for subsequent reads
+            std::string entryID(reply->str);
+            freeReplyObject(reply);
         */
-        reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", WRITE_STREAM);
-        if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0) {
-            std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
-            return false;
-        }
-        
-        redisReply* stream = reply -> element[0];
-        redisReply* entryFields = stream ->element[1];
-
-        // Extract the email from the reply
-        std::string received_email;
-	for (size_t i = 0; i < entryFields->elements; i += 2) {
-    		std::string fieldName = entryFields->element[i]->str;
-   		std::string fieldValue = entryFields->element[i + 1]->str;
-
-    		received_email = fieldValue;
-		}
-
-	if (received_email.empty()) {
-    		std::cerr << "Errore: non è stata trovata nessuna email con la chiave specificata." << std::endl;
-	} else {
-    		std::cout << "Email letta dallo stream: " << received_email << std::endl;
-		}
-
-        freeReplyObject(reply);
-
-        return autentica();
+        return autentica(ID_CONNESSIONE);
     }
-
     std::cerr << "Errore o nessun dato ricevuto dal client." << std::endl;
     return false;
 }

@@ -12,8 +12,7 @@
 #include <cstring>
 #include <cassert>
 
-#define READ_STREAM "CustomerIN"
-#define WRITE_STREAM "CustomerOUT"
+#define CUSTOMER_STREAM "Customer"
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
 #define SERVER_PORT 5000
@@ -35,7 +34,7 @@ class Customer{
 		// I parametri del Customer teniamoli privati per sicurezza
 		redisContext *c2r; // c2r contiene le info sul contesto
 		redisReply *reply; // reply contiene le risposte da Redis
-		int CONNESSIONI_RICEVUTE;
+		int ID_CONNESSIONE = 0;
 		int SERVER_SOCKET;
 		bool handshake(int clientSocket);
 		bool authenticate(int clientSocket);
@@ -43,6 +42,5 @@ class Customer{
         Customer(); // Costruttore di Customer
 		// Metodi di Customer
 		void gestisciConnessioni();
-		void creaStreams();
 };
 #endif //CUSTOMER_H
