@@ -16,11 +16,10 @@
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
 #define SERVER_PORT 5000
-#define DB_PORT "5432"
-#define USERNAME "customer"
-#define PASSWORD "customer"
 #define MAX_CONNECTIONS 100 //Numero di connessioni massime accettabili
 
+/*
+Questo converrà spostarlo poi
 struct Indirizzo{
     std::string via;
     int civico;
@@ -28,6 +27,7 @@ struct Indirizzo{
     std::string city;
     std::string stato;
 };
+*/
 
 class Customer{
 	private:

@@ -26,7 +26,8 @@ Customer::Customer()
 
     // Effettua la connessione a Redis
     c2r = redisConnect(REDIS_IP, REDIS_PORT);
-    if (c2r == nullptr || c2r->err) {
+    if (c2r == nullptr || c2r->err)
+    {
         std::cerr << "Errore nella connessione a Redis: " << c2r->errstr << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -67,7 +68,6 @@ void Customer::gestisciConnessioni()
         bool connessioneOK = handshake(clientSocket); // Gestisci il client in una funzione dedicata
         if (connessioneOK && authenticate(clientSocket)) // Se la connessione è andata a buon fine, avvia le varie operazioni
         {
-            //autentica(); // Chiama l'autenticazione
             //metti codice che consente all'utente di continuare a mandare messaggi fino a che non scrive quit
             
         }
@@ -105,17 +105,11 @@ bool Customer::authenticate(int clientSocket)
         send(clientSocket, response.c_str(), response.length(), 0);
 
         // Scrive la mail ricevuta nello Stream
-        const char* chiave = std::to_string(ID_CONNESSIONE).c_str();
-        reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, chiave, email.c_str());
+        reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, std::to_string(ID_CONNESSIONE).c_str(), email.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
         freeReplyObject(reply);
-        /*
-        Capture the entry ID for subsequent reads
-            std::string entryID(reply->str);
-            freeReplyObject(reply);
-        */
-                std::cout << ID_CONNESSIONE << std::endl;
-        return autentica(ID_CONNESSIONE);
+
+        return autentica(ID_CONNESSIONE); // Passa al processo di autenticazione
     }
     std::cerr << "Errore o nessun dato ricevuto dal client." << std::endl;
     return false;

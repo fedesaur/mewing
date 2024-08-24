@@ -1,7 +1,7 @@
 DROP DATABASE IF EXISTS :dbname;
-CREATE DATABASE meowingDB;
+CREATE DATABASE mewingDB;
 
-\c meowingDB postgres
+\c mewingDB postgres
 
 REASSIGN OWNED BY :admin TO postgres;
 
