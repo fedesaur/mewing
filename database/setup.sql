@@ -1,5 +1,4 @@
-DROP DATABASE IF EXISTS :dbname;
-CREATE DATABASE :dbname;
+create database if not exists :dbname;
 
 \c :dbname postgres
 
