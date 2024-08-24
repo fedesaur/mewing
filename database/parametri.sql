@@ -1,5 +1,5 @@
 \set dbname mewingDB
-\set username mewer
+\set log_dbname mewingLogDB
 \set admin admin
 \set customer customer
 \set supplier supplier
