@@ -1,4 +1,4 @@
-create database if not exists :dbname;
+CREATE DATABASE IF NOT EXISTS :dbname;
 
 \c :dbname postgres
 
