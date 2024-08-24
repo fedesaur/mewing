@@ -1,9 +1,9 @@
-\c meowingDB postgres
+\c mewingDB postgres
 
-GRANT ALL PRIVILEGES ON DATABASE meowingDB to :admin;
-GRANT CONNECT ON DATABASE meowingDB TO :courier;
-GRANT CONNECT ON DATABASE meowingDB TO :producer;
-GRANT CONNECT ON DATABASE meowingDB TO :customer;
+GRANT ALL PRIVILEGES ON DATABASE mewingDB to :admin;
+GRANT CONNECT ON DATABASE mewingDB TO :courier;
+GRANT CONNECT ON DATABASE mewingDB TO :producer;
+GRANT CONNECT ON DATABASE mewingDB TO :customer;
 
 ALTER TABLE carrello OWNER TO :admin;
 ALTER TABLE custadd OWNER TO :admin;
