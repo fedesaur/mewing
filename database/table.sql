@@ -292,6 +292,15 @@ CREATE TABLE IF NOT EXISTS consegna
         ON DELETE NO ACTION
 );
 
+DROP TRIGGER IF EXISTS same_trans ON consegna;
+
+CREATE OR REPLACE TRIGGER same_trans
+    BEFORE INSERT
+    ON consegna
+    FOR EACH ROW
+    EXECUTE FUNCTION check_del();
+
+
 CREATE TABLE IF NOT EXISTS inwish
 (
     list integer NOT NULL,
