@@ -1,4 +1,6 @@
-CREATE DOMAIN dim AS integer CHECK (value>0);
+CREATE DOMAIN pos AS integer CHECK(value>0);
+
+CREATE TYPE dim AS 
 (
     lunghezza pos,
     larghezza pos,
@@ -300,6 +302,3 @@ CREATE TABLE IF NOT EXISTS inwish
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 );
-
-
-
