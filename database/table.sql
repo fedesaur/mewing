@@ -1,4 +1,3 @@
-CREATE TYPE pos as integer
 CREATE DOMAIN dim AS integer CHECK (value>0);
 (
     lunghezza pos,
