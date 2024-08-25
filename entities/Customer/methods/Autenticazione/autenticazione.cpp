@@ -49,7 +49,7 @@ bool controllaEsistenza(Con2DB db, const char* mail)
 
 	// sprintf si occupa di creare una stringa con una data formattazione
 	sprintf(comando,
-	"SELECT EXISTS (SELECT * FROM CUSTOMERS WHERE mail = %s)", mail);
+	"SELECT * FROM CUSTOMERS WHERE mail = %s", mail);
 
 	res = db.ExecSQLtuples(comando); //Esegue la query sopra citata
 	int rows;

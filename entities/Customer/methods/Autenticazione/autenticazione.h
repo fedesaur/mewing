@@ -18,7 +18,7 @@
 #define DB_PORT "5432"
 #define USERNAME "customer"
 #define PASSWORD "customer"
-#define DB_NAME "mewingDB"
+#define DB_NAME "mewingdb"
 
 
 bool autentica(int IDConnessione);
