@@ -1,4 +1,19 @@
+\c :dbname 
 
+-- drop all functions and triggers
+DO $$
+DECLARE
+    function_name TEXT;
+BEGIN
+    FOR function_name IN
+        SELECT p.proname
+        FROM pg_proc p
+        INNER JOIN pg_namespace n ON p.pronamespace = n.oid
+        WHERE n.nspname = 'public'
+    LOOP
+        EXECUTE 'DROP FUNCTION IF EXISTS ' || function_name || ' CASCADE';
+    END LOOP;
+END $$;
 
 -------------------------------------------------------------------------
 create or replace function take_pkg() returns trigger as $presa_ordine$
@@ -11,7 +26,7 @@ create or replace function take_pkg() returns trigger as $presa_ordine$
     $presa_ordine$
         language plpgsql;
 
-create TRIGGER presa_ordine before insert on transord
+create or replace TRIGGER presa_ordine before insert on transord
 execute PROCEDURE take_pkg();
 
 
@@ -32,7 +47,7 @@ create or replace function tot_cart() returns trigger as $buy_price$
     language plpgsql;
 
 
-create TRIGGER buy_price before insert on prodincart
+create or replace TRIGGER buy_price before insert on prodincart
 for each row execute procedure tot_cart();
 
 ------------------------------------------------------------------------
@@ -51,7 +66,7 @@ create or replace function check_addr() returns trigger as $same_addr$
     $same_addr$
     LANGUAGE plpgsql;
 
-create TRIGGER same_addr before insert on ordine
+create or replace TRIGGER same_addr before insert on ordine
 for each row execute procedure check_addr();
 
 
@@ -71,7 +86,7 @@ create or replace function check_del() returns trigger as $same_trans$
     END
         $same_trans$
         LANGUAGE plpgsql;
-create TRIGGER same_trans before insert on consegna
+create or replace TRIGGER same_trans before insert on consegna
 for each row execute procedure check_del();
 
 
@@ -94,5 +109,5 @@ CREATE or REPLACE FUNCTION check_meth() RETURNS trigger as $same_meth$
     LANGUAGE plpgsql;
 
 
-create TRIGGER same_meth before insert on prodinord
+create or replace TRIGGER same_meth before insert on prodinord
 for each row execute Procedure check_meth();
