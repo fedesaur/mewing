@@ -36,22 +36,23 @@ bool autentica(int IDConnessione)
 		return false;
 	}
 	std::cout << "Email letta dallo stream: " << received_email << std::endl;
-	bool esiste = controllaEsistenza(db, received_email); // Controlla se esiste un Customer con quella mail
+	const char* mail = received_email.c_str();
+	bool esiste = controllaEsistenza(db, mail); // Controlla se esiste un Customer con quella mail
 	std::cout << "Risultato query: " << esiste << std::endl;
 	return true;
 }
 
-bool controllaEsistenza(Con2DB db, std::string mail)
+bool controllaEsistenza(Con2DB db, const char* mail)
 {
 	PGresult *res;
 	char comando[1000];
 
 	// sprintf si occupa di creare una stringa con una data formattazione
 	sprintf(comando,
-	"SELECT EXISTS (SELECT * FROM CUSTOMERS WHERE mail = \'%s\')",
-	mail);
+	"SELECT EXISTS (SELECT * FROM CUSTOMERS WHERE mail = %s)", mail);
 
 	res = db.ExecSQLtuples(comando); //Esegue la query sopra citata
+	int rows;
 	rows = PQntuples(res);
 	PQclear(res);
 	std::cout << rows << std::endl;

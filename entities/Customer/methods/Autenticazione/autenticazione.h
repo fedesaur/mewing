@@ -22,6 +22,6 @@
 
 
 bool autentica(int IDConnessione);
-bool controllaEsistenza(Con2DB db, std::string mail);
+bool controllaEsistenza(Con2DB db, const char* mail);
 
 #endif //AUTENTICAZIONE_H
