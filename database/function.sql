@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION public.check_addr()
+CREATE OR REPLACE FUNCTION check_addr()
     RETURNS trigger
     LANGUAGE 'plpgsql'
     COST 100
@@ -18,7 +18,7 @@ AS $BODY$
     
 $BODY$;
 
-CREATE OR REPLACE FUNCTION public.check_del()
+CREATE OR REPLACE FUNCTION check_del()
     RETURNS trigger
     LANGUAGE 'plpgsql'
     COST 100
@@ -40,7 +40,7 @@ AS $BODY$
 $BODY$;
 
 
-CREATE OR REPLACE FUNCTION public.check_meth()
+CREATE OR REPLACE FUNCTION check_meth()
     RETURNS trigger
     LANGUAGE 'plpgsql'
     COST 100
@@ -63,7 +63,7 @@ $BODY$;
 
 
 
-CREATE OR REPLACE FUNCTION public.tot_cart()
+CREATE OR REPLACE FUNCTION tot_cart()
     RETURNS trigger
     LANGUAGE 'plpgsql'
     COST 100
