@@ -196,11 +196,7 @@ CREATE TABLE IF NOT EXISTS ordine
         ON DELETE NO ACTION
 );
 
-CREATE OR REPLACE TRIGGER same_addr
-    BEFORE INSERT
-    ON ordine
-    FOR EACH ROW
-    EXECUTE FUNCTION check_addr();
+
 
 CREATE TABLE IF NOT EXISTS ordineconse
 (
@@ -229,11 +225,7 @@ CREATE TABLE IF NOT EXISTS prodinord
         ON DELETE NO ACTION
 );
 
-CREATE OR REPLACE TRIGGER same_meth
-    BEFORE INSERT
-    ON prodinord
-    FOR EACH ROW
-    EXECUTE FUNCTION check_meth();
+
 
 
 CREATE TABLE IF NOT EXISTS transord
@@ -292,13 +284,6 @@ CREATE TABLE IF NOT EXISTS consegna
         ON DELETE NO ACTION
 );
 
-DROP TRIGGER IF EXISTS same_trans ON consegna;
-
-CREATE OR REPLACE TRIGGER same_trans
-    BEFORE INSERT
-    ON consegna
-    FOR EACH ROW
-    EXECUTE FUNCTION check_del();
 
 
 CREATE TABLE IF NOT EXISTS inwish
