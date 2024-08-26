@@ -1,13 +1,13 @@
 \c :dbname
 CREATE sequence addr_id_sequence;
-CREATE sequence fornitore_id_sequence;
-CREATE sequence customer_id_sequence;
-CREATE sequence trasportatore_id_sequence;
-CREATE sequence wishlist_id_sequence;
-CREATE sequence metpag_id_sequence;
-CREATE sequence corriere_id_sequence;
-CREATE sequence prodotto_id_sequence;
-CREATE sequence ordine_id_sequence;
+CREATE sequence fornitore_id_seq;
+CREATE sequence customer_id_seq;
+CREATE sequence trasportatore_id_seq;
+CREATE sequence wishlist_id_seq;
+CREATE sequence metpag_id_seq;
+CREATE sequence corriere_id_seq;
+CREATE sequence prodotto_id_seq;
+CREATE sequence ordine_id_seq;
 
 CREATE DOMAIN pos AS integer CHECK(value>0);
 
