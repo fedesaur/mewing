@@ -25,9 +25,8 @@ bool autentica(int IDConnessione)
 
     redisReply* stream = reply -> element[0];
     redisReply* entryFields = stream -> element[1];
-    int index = IDConnessione*2;
-    std::string fieldName = entryFields->element[index]->str; // Chiave
-   	std::string received_email = entryFields->element[index+1]->str; // Valore
+    std::string fieldName = entryFields->element[0]->str; // Chiave
+   	std::string received_email = entryFields->element[1]->str; // Valore
 	freeReplyObject(reply);
 
 	if (received_email.empty())
@@ -51,10 +50,10 @@ bool controllaEsistenza(Con2DB db, const char* mail)
 	sprintf(comando,
 	"SELECT * FROM CUSTOMERS WHERE mail = %s", mail);
 
-	res = db.ExecSQLtuples(comando); //Esegue la query sopra citata
+	//res = db.ExecSQLtuples(comando); //Esegue la query sopra citata
 	int rows;
-	rows = PQntuples(res);
-	PQclear(res);
-	std::cout << rows << std::endl;
+	//rows = PQntuples(res);
+	//PQclear(res);
+	//std::cout << rows << std::endl;
 	return rows == 0;
 }
