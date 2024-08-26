@@ -1,3 +1,4 @@
+\c :log_dbname
 CREATE DOMAIN Pos as integer check (value>0);
 CREATE TYPE TipoStatisticheSessione AS ENUM ('Sessione', 'Risposta');
 
