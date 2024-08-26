@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS fornitore
     nome character varying(100) COLLATE pg_catalog."default" NOT NULL,
     piva character varying(11) COLLATE pg_catalog."default" NOT NULL,
     mail character varying(50) COLLATE pg_catalog."default" NOT NULL,
-    telefono integer,
+    telefono character varying(15),
     sede integer,
     CONSTRAINT fornitore_pkey PRIMARY KEY (id),
     CONSTRAINT unique_piva UNIQUE (piva),
@@ -152,7 +152,6 @@ CREATE TABLE IF NOT EXISTS prodotto
     id integer NOT NULL DEFAULT nextval('prodotto_id_seq'::regclass),
     descrizione text COLLATE pg_catalog."default" NOT NULL,
     prezzo double precision NOT NULL,
-    dimensione dim NOT NULL,
     fornitore integer NOT NULL,
     nome character varying(100) COLLATE pg_catalog."default" NOT NULL,
     CONSTRAINT prodotto_pkey PRIMARY KEY (id),
@@ -163,11 +162,11 @@ CREATE TABLE IF NOT EXISTS prodotto
 );
 CREATE TABLE IF NOT EXISTS prodmet
 (
-    prodotto integer NOT NULL,
+    prod integer NOT NULL,
     metodo tipometpag NOT NULL,
-    CONSTRAINT prodmet_pkey PRIMARY KEY (prodotto, metodo),
+    CONSTRAINT prodmet_pkey PRIMARY KEY (prod, metodo),
     
-    CONSTRAINT prodmet_prodotto_fkey FOREIGN KEY (prodotto)
+    CONSTRAINT prodmet_prodotto_fkey FOREIGN KEY (prod)
         REFERENCES prodotto (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
