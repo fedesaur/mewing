@@ -1,4 +1,4 @@
-CREATE DOMAIN Pos AS real CHECK (VALUE>=0
+CREATE DOMAIN Pos as integer check (value>0);
 CREATE TYPE TipoStatisticheSessione AS ENUM ('Sessione', 'Risposta');
 
 CREATE TABLE cliente(
