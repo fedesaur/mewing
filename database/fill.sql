@@ -1,3 +1,4 @@
+\c :dbname
 insert into indirizzo (via, civico, cap, citta, stato) values('ortana',940,05035,'narni', 'italia');
 insert into indirizzo (via, civico, cap, citta, stato) values('del corso',1,00157,'roma', 'italia');
 insert into indirizzo (via, civico, cap, citta, stato) values('roma',53,00100,'viterbo', 'italia');
@@ -36,18 +37,18 @@ insert into metpag(nome, tipo, customer) values ('Paga Posta','carta prepagata',
 insert into metpag(nome, tipo, customer) values ('colle dei boschi di pisa','carta di credito', 3);
 
 
-insert into prodmet (prod, metodo) values(1,'bancomat');
-insert into prodmet (prod, metodo) values(1,'carta di credito');
-insert into prodmet (prod, metodo) values(2, 'bancomat');
-insert into prodmet (prod, metodo) values(3, 'carta di credito');
-insert into prodmet (prod, metodo) values(4,'bancomat');
-insert into prodmet (prod, metodo) values(4, 'carta prepagata');
-insert into prodmet (prod, metodo) values(5, 'carta prepagata');
-insert into prodmet (prod, metodo) values(5, 'carta di credito');
-insert into prodmet (prod, metodo) values(6, 'carta di credito');
-insert into prodmet (prod, metodo) values(6, 'bancomat');
-insert into prodmet (prod, metodo) values(7, 'bancomat');
-insert into prodmet (prod, metodo) values(7, 'carta di credito');
+insert into prodmet(prod, metodo) values (1,'bancomat');
+insert into prodmet(prod, metodo) values (1,'carta di credito');
+insert into prodmet(prod, metodo) values (2, 'bancomat');
+insert into prodmet(prod, metodo) values (3, 'carta di credito');
+insert into prodmet(prod, metodo) values (4,'bancomat');
+insert into prodmet(prod, metodo) values (4, 'carta prepagata');
+insert into prodmet(prod, metodo) values (5, 'carta prepagata');
+insert into prodmet(prod, metodo) values (5, 'carta di credito');
+insert into prodmet(prod, metodo) values (6, 'carta di credito');
+insert into prodmet(prod, metodo) values (6, 'bancomat');
+insert into prodmet(prod, metodo) values (7, 'bancomat');
+insert into prodmet(prod, metodo) values (7, 'carta di credito');
 
 
 
