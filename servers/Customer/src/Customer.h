@@ -5,7 +5,7 @@
 #include <iostream>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../methods/Autenticazione/autenticazione.h"
+#include "../metodi/Autenticazione/autenticazione.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>

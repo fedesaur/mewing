@@ -1,6 +1,6 @@
 IDIR=.
-ODIR= ../obj
-BDIR= ../bin
+ODIR=../obj
+BDIR=../bin
 
 CC=g++
 # use this when connecting to Postgresql (library lpq)
@@ -11,14 +11,15 @@ CFLAGS=-std=c++20 -I. -I$(IDIR) -I/usr/include/postgresql -lpq -lm -lhiredis
 #CFLAGS=-std=c++11 -I. -I$(IDIR) -lm 
 
 DEPS = $(wildcard $(IDIR)/*.h)
-#OBJ = $(wildcard $(ODIR)/*.o)
 SRC = $(wildcard *.cpp)
 OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(SRC))
 
 con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
+autentication_OBJ = $(wildcard ../metodi/Autenticazione/*.o)
 
-all:	create_dirs con2db con2redis server
+
+all:	create_dirs con2db con2redis autenticazione customer $(BDIR)/main
 
 create_dirs:
 	mkdir -p $(BDIR)
@@ -30,14 +31,16 @@ con2db:
 con2redis:
 	$(MAKE) -C ../../../lib/con2redis/src
 
-server: server.cpp server.h
-	$(CC) -c -o $(ODIR)/server.o $< $(CFLAGS)
+autenticazione:
+	$(MAKE) -C ../metodi/Autenticazione #Chiama il makefile di autenticazione
+
+customer: Customer.cpp Customer.h
+	$(CC) -c -o $(ODIR)/Customer.o $< $(CFLAGS)
+
+$(BDIR)/main: $(OBJ) $(DEPS)
+	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(autentication_OBJ) $(CFLAGS)
 
 .PHONY: clean
 
 clean:
-	rm -r $(ODIR) $(BDIR) 
-
-
-
-
+	rm -r $(ODIR) $(BDIR) ../metodi/Autenticazione/autenticazione.o
