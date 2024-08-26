@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS metpag
     Customer integer,
 	foreign key (customer) REFERENCES customers(id),
 
-    CONSTRAINT metpag_pkey PRIMARY KEY (id),
+    CONSTRAINT metpag_pkey PRIMARY KEY (id)
     
 );
 CREATE TABLE IF NOT EXISTS custadd
@@ -198,11 +198,6 @@ CREATE TABLE IF NOT EXISTS ordine
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
         NOT VALID,
-    CONSTRAINT "metPag" FOREIGN KEY (pagamento)
-        REFERENCES metpag (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
-        NOT VALID,
     CONSTRAINT ordine_customer_fkey FOREIGN KEY (customer)
         REFERENCES customers (id) MATCH SIMPLE
         ON UPDATE NO ACTION
@@ -255,11 +250,7 @@ CREATE TABLE IF NOT EXISTS transord
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 );
-CREATE OR REPLACE TRIGGER presa_ordine
-    BEFORE INSERT
-    ON transord
-    FOR EACH STATEMENT
-    EXECUTE FUNCTION take_pkg();
+
 
 CREATE TABLE IF NOT EXISTS prodincart
 (
@@ -276,11 +267,7 @@ CREATE TABLE IF NOT EXISTS prodincart
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 );
-CREATE OR REPLACE TRIGGER buy_price
-    BEFORE INSERT
-    ON prodincart
-    FOR EACH ROW
-    EXECUTE FUNCTION tot_cart();
+
 
 CREATE TABLE IF NOT EXISTS consegna
 (
