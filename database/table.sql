@@ -1,3 +1,14 @@
+\c :dbname
+CREATE sequence addr_id_seq;
+CREATE sequence fornitore_id_seq;
+CREATE sequence customer_id_seq;
+CREATE sequence trasportatore_id_seq;
+CREATE sequence wishlist_id_seq;
+CREATE sequence metpag_id_seq;
+CREATE sequence corriere_id_seq;
+CREATE sequence prodotto_id_seq;
+CREATE sequence ordine_id_seq;
+
 CREATE DOMAIN pos AS integer CHECK(value>0);
 
 CREATE TYPE dim AS 
