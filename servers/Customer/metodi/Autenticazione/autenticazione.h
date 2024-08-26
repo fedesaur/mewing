@@ -21,7 +21,8 @@
 #define DB_NAME "mewingdb"
 
 
-bool autentica(int IDConnessione);
+bool autentica(int clientSocket);
 bool controllaEsistenza(Con2DB db, const char* mail);
+bool aggiungiCustomer(Con2DB db, const char* mail);
 
 #endif //AUTENTICAZIONE_H

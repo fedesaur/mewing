@@ -1,12 +1,12 @@
 #include "autenticazione.h"
 
-bool autentica(int IDConnessione)
+bool autentica(int clientSocket)
 {
 	redisContext *c2r; // c2r contiene le info sul contesto
 	redisReply *reply; // reply contiene le risposte da Redis
 
 	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
-	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME);
+	//Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
 	/*
   	 Con2DB(const char *hostname,
 	 const char *port,
@@ -47,8 +47,7 @@ bool controllaEsistenza(Con2DB db, const char* mail)
 	char comando[1000];
 
 	// sprintf si occupa di creare una stringa con una data formattazione
-	sprintf(comando,
-	"SELECT * FROM CUSTOMERS WHERE mail = %s", mail);
+	sprintf(comando,"SELECT * FROM CUSTOMERS WHERE mail = %s", mail);
 
 	//res = db.ExecSQLtuples(comando); //Esegue la query sopra citata
 	int rows;

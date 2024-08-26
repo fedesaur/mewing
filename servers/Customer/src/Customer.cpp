@@ -109,7 +109,7 @@ bool Customer::authenticate(int clientSocket)
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
         freeReplyObject(reply);
 
-        return autentica(ID_CONNESSIONE); // Passa al processo di autenticazione
+        return autentica(clientSocket); // Passa al processo di autenticazione
     }
     std::cerr << "Errore o nessun dato ricevuto dal client." << std::endl;
     return false;
