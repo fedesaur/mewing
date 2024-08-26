@@ -95,17 +95,7 @@ CREATE TABLE IF NOT EXISTS wishlist
         ON DELETE NO ACTION
 );
 
-CREATE TABLE IF NOT EXISTS prodmet
-(
-    prodotto integer NOT NULL,
-    metodo tipometpag NOT NULL,
-    CONSTRAINT prodmet_pkey PRIMARY KEY (prodotto, metodo),
-    
-    CONSTRAINT prodmet_prodotto_fkey FOREIGN KEY (prodotto)
-        REFERENCES prodotto (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
-);
+
 	
 CREATE TABLE IF NOT EXISTS metpag
 (
@@ -113,7 +103,7 @@ CREATE TABLE IF NOT EXISTS metpag
     nome character varying(50) COLLATE pg_catalog."default" NOT NULL,
     tipo tipometpag NOT NULL,
     Customer integer,
-	foreign key (customer) reference customers(id),
+	foreign key (customer) REFERENCES customers(id),
 
     CONSTRAINT metpag_pkey PRIMARY KEY (id),
     
@@ -171,7 +161,17 @@ CREATE TABLE IF NOT EXISTS prodotto
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 );
-
+CREATE TABLE IF NOT EXISTS prodmet
+(
+    prodotto integer NOT NULL,
+    metodo tipometpag NOT NULL,
+    CONSTRAINT prodmet_pkey PRIMARY KEY (prodotto, metodo),
+    
+    CONSTRAINT prodmet_prodotto_fkey FOREIGN KEY (prodotto)
+        REFERENCES prodotto (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
 CREATE TABLE IF NOT EXISTS buono
 (
     id integer NOT NULL,
