@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <cassert>
+#include <tuple>
 
 #define CUSTOMER_STREAM "Customer"
 
@@ -26,7 +27,7 @@
 #define DB_NAME "mewingdb"
 
 bool autentica(int clientSocket);
-Customer recuperaCustomer(Con2DB db, int clientSocket, const char* mail);
-bool creaCustomer(Con2DB db, int clientSocket, const char* mail);
+tuple <int, const char*, const char*, const char*, int> recuperaCustomer(Con2DB db, int clientSocket, const char* mail);
+tuple <int, const char*, const char*, const char*, int> creaCustomer(Con2DB db, int clientSocket, const char* mail);
 
 #endif //AUTENTICAZIONE_H

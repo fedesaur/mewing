@@ -68,7 +68,7 @@ void Customer_Server::gestisciConnessioni()
         bool connessioneOK = handshake(clientSocket); // Gestisci il client in una funzione dedicata
         if (connessioneOK && authenticate(clientSocket)) // Se la connessione è andata a buon fine, avvia le varie operazioni
         {
-            //metti codice che consente all'utente di continuare a mandare messaggi fino a che non scrive quit
+            autentica(clientSocket); // Passa al processo di autenticazione
 
         }
         close(clientSocket); // Chiudi la connessione con il client dopo averla gestita
@@ -108,8 +108,7 @@ bool Customer_Server::authenticate(int clientSocket)
         reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, std::to_string(ID_CONNESSIONE).c_str(), email.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
         freeReplyObject(reply);
-
-        return autentica(clientSocket); // Passa al processo di autenticazione
+        return true
     }
     std::cerr << "Errore o nessun dato ricevuto dal client." << std::endl;
     return false;
