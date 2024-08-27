@@ -39,8 +39,8 @@ bool autentica(int clientSocket)
 	const char* mail = received_email.c_str();
 
 	// Controlla se esiste un Customer con quella mail; se non esiste, lo crea
-	tuple <int, const char*, const char*, const char*, int> cust = recuperaCustomer(db, clientSocket, mail); 
-	//if (cust == NULL) return false; // Se c'è stato un errore, ritorna false, ma bisogna rivedere come mostrare errore
+	std::tuple <int, const char*, const char*, const char*, int> cust = recuperaCustomer(db, clientSocket, mail); 
+	if (get<0>(cust) == -1) return false; // Se c'è stato un errore, ritorna false, ma bisogna rivedere come mostrare errore
 
 	reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, "CustomerID", get<0>(cust));
 	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
@@ -64,7 +64,7 @@ bool autentica(int clientSocket)
     return true;
 }
 
-tuple <int, const char*, const char*, const char*, int> recuperaCustomer(Con2DB db, const char* mail)
+std::tuple <int, const char*, const char*, const char*, int> recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
 {
 	PGresult *res;
 	char comando[1000];
@@ -83,7 +83,7 @@ tuple <int, const char*, const char*, const char*, int> recuperaCustomer(Con2DB 
 		const char* nome = PQgetvalue(res, 0, PQfnumber(res, "nome"));
 		const char* cognome = PQgetvalue(res, 0, PQfnumber(res, "cognome"));
 		int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "abita")));
-		tuple <int, const char*, const char*, const char*, int> cust(ID, nome.c_str(), cognome.c_str(), mail, abita);
+		std::tuple <int, const char*, const char*, const char*, int> cust(ID, nome, cognome, mail, abita);
 		PQclear(res);
 		return cust;
 	}
@@ -92,7 +92,7 @@ tuple <int, const char*, const char*, const char*, int> recuperaCustomer(Con2DB 
 	return creaCustomer(db, clientSocket, mail);
 }
 
-tuple <int, const char*, const char*, const char*, int> creaCustomer(Con2DB db, int clientSocket, const char* mail)
+std::tuple <int, const char*, const char*, const char*, int> creaCustomer(Con2DB db, int clientSocket, const char* mail)
 {
 	/* 
 		Sono richiesti 7 dati all'utente:
@@ -130,32 +130,49 @@ tuple <int, const char*, const char*, const char*, int> creaCustomer(Con2DB db, 
 		int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
 		if (bytesRead > 0)
 		{
-			switch(datiRicevuti):
+			switch(datiRicevuti)
+			{
 				case 0:
 					nome = buffer.pop_back();
+					break;
 				case 1:
 					cognome = buffer.pop_back();
+					break;
 				case 2:
 					via = buffer.pop_back();
+					break;
 				case 3:
 					std::string civ = buffer.pop_back();
 					civico = atoi(civ);
+					break;
 				case 4:
 					std::string cap = buffer.pop_back();
 					CAP = atoi(cap);
+					break;
 				case 5:
 					city = buffer.pop_back();
+					break;
 				case 6:
 					stato = buffer.pop_back();
+					break;
+			}
 			datiRicevuti++; // Nel caso i dati non vadano bene, si potrebbe pensare a ripetere quel passaggio
 		}
-		else return NULL; // Se avviene un errore, l'operazione viene interrotta e non ritorna nulla
+		else
+		{
+			std::tuple <int, const char*, const char*, const char*, int> failed(-1, "", "", "", -1);
+			return failed; 
+		}; // Se avviene un errore, l'operazione viene interrotta e non ritorna nulla
 	}
 
 	sprintf(comando, "INSERT INTO Indirizzo(via, civico, cap, citta, stato) VALUES('%s', %d, %d, '%s', '%s') RETURNING id",
 	via.c_str(), civico, cap, city.c_str(), stato.c_str());
 	res = db.ExecSQLtuples(comando); // Inserisci l'indirizzo nel database e ne ritorna l'ID
-	if (PQresultStatus(res) != PGRES_TUPLES_OK) return NULL; // Controlla che la query sia andata a buon fine
+	if (PQresultStatus(res) != PGRES_TUPLES_OK)
+	{
+		std::tuple <int, const char*, const char*, const char*, int> failed(-1, "", "", "", -1);
+		return failed; // Controlla che la query sia andata a buon fine
+	}
 	int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
 	PQclear(res);
 
@@ -163,10 +180,14 @@ tuple <int, const char*, const char*, const char*, int> creaCustomer(Con2DB db, 
 	sprintf(comando, "INSERT INTO Customer(nome, cognome, mail, abita) VALUES('%s', '%s', '%s', %d) RETURNING id",
 	nome.c_str(), cognome.c_str(), mail, abita);
 	res = db.ExecSQLtuples(comando); // Inserisce il customer nel database e ne ritorna l'ID
-	if (PQresultStatus(res) != PGRES_TUPLES_OK) return NULL; // Controlla che la query sia andata a buon fine
+	if (PQresultStatus(res) != PGRES_TUPLES_OK)
+	{
+		std::tuple <int, const char*, const char*, const char*, int> failed(-1, "", "", "", -1);
+		return failed; 
+	}; // Controlla che la query sia andata a buon fine
 	int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
 	PQclear(res);
 
-	tuple <int, const char*, const char*, const char*, int> cust(ID, nome.c_str(), cognome.c_str(), mail, abita);
+	std::tuple <int, const char*, const char*, const char*, int> cust(ID, nome.c_str(), cognome.c_str(), mail, abita);
 	return cust; // Ritorna il customer appena creato
 }

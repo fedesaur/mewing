@@ -5,7 +5,6 @@
 #include <iostream>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../../../entities/Customer.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -27,7 +26,7 @@
 #define DB_NAME "mewingdb"
 
 bool autentica(int clientSocket);
-tuple <int, const char*, const char*, const char*, int> recuperaCustomer(Con2DB db, int clientSocket, const char* mail);
-tuple <int, const char*, const char*, const char*, int> creaCustomer(Con2DB db, int clientSocket, const char* mail);
+std::tuple <int, const char*, const char*, const char*, int> recuperaCustomer(Con2DB db, int clientSocket, const char* mail);
+std::tuple <int, const char*, const char*, const char*, int> creaCustomer(Con2DB db, int clientSocket, const char* mail);
 
 #endif //AUTENTICAZIONE_H
