@@ -16,8 +16,8 @@
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
-#define USERNAME "customer"
-#define PASSWORD "customer"
+#define USERNAME "admin"
+#define PASSWORD "admin"
 #define DB_NAME "mewingdb"
 
 

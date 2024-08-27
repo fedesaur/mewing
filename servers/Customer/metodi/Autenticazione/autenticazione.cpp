@@ -48,7 +48,7 @@ bool controllaEsistenza(Con2DB db, const char* mail)
 	int rows;
 
 	// sprintf si occupa di creare una stringa con una data formattazione
-	sprintf(comando,"SELECT * FROM customers");
+	sprintf(comando,"SELECT * FROM customers WHERE mail = \'%s\' ", (char*)mail);
 
 	res = db.ExecSQLtuples(comando); //Esegue la query sopra citata
 	std::cout << res << std::endl;
