@@ -6,7 +6,7 @@ bool autentica(int clientSocket)
 	redisReply *reply; // reply contiene le risposte da Redis
 
 	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
-	//Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
+	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
 	/*
   	 Con2DB(const char *hostname,
 	 const char *port,
@@ -45,14 +45,15 @@ bool controllaEsistenza(Con2DB db, const char* mail)
 {
 	PGresult *res;
 	char comando[1000];
+	int rows;
 
 	// sprintf si occupa di creare una stringa con una data formattazione
-	sprintf(comando,"SELECT * FROM CUSTOMERS WHERE mail = %s", mail);
+	sprintf(comando,"SELECT * FROM customers");
 
-	//res = db.ExecSQLtuples(comando); //Esegue la query sopra citata
-	int rows;
-	//rows = PQntuples(res);
-	//PQclear(res);
-	//std::cout << rows << std::endl;
-	return rows == 0;
+	res = db.ExecSQLtuples(comando); //Esegue la query sopra citata
+	std::cout << res << std::endl;
+	rows = PQntuples(res);
+	PQclear(res);
+	std::cout << rows << std::endl;
+	return rows == 1; // 0 = Non esiste 1 = Esiste
 }
