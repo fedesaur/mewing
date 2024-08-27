@@ -1,7 +1,7 @@
-#include "Customer.h"
+#include "Customer_Server.h"
 
 // Costruttore di Customer
-Customer::Customer()
+Customer_Server::Customer_Server()
 {
     SERVER_SOCKET = socket(AF_INET, SOCK_STREAM, 0); // Crea il socket
     if (SERVER_SOCKET < 0) {
@@ -40,7 +40,7 @@ Customer::Customer()
     std::cout << "Stream Customer creato!" << std::endl;
 }
 
-void Customer::gestisciConnessioni()
+void Customer_Server::gestisciConnessioni()
 {
     // Attende che un socket si connetta (finché non succede, server rimane in ascolto)
     if (listen(SERVER_SOCKET, MAX_CONNECTIONS) < 0) {
@@ -69,7 +69,7 @@ void Customer::gestisciConnessioni()
         if (connessioneOK && authenticate(clientSocket)) // Se la connessione è andata a buon fine, avvia le varie operazioni
         {
             //metti codice che consente all'utente di continuare a mandare messaggi fino a che non scrive quit
-            
+
         }
         close(clientSocket); // Chiudi la connessione con il client dopo averla gestita
         std::cout << "Conclusa connessione con ID: " + std::to_string(ID_CONNESSIONE) << std::endl;
@@ -79,7 +79,7 @@ void Customer::gestisciConnessioni()
     close(SERVER_SOCKET);
 }
 
-bool Customer::handshake(int clientSocket) {
+bool Customer_Server::handshake(int clientSocket) {
     char buffer[1024] = {0};
     std::string response = "Ciao\n";
     send(clientSocket, response.c_str(), response.length(), 0);
@@ -91,7 +91,7 @@ bool Customer::handshake(int clientSocket) {
     return false;
 }
 
-bool Customer::authenticate(int clientSocket)
+bool Customer_Server::authenticate(int clientSocket)
 {
     char buffer[1024] = {0};
     std::string request = "Inserisci la tua email\n";
@@ -122,7 +122,7 @@ int main()
         Crea un server che si prepara ad avviare una
         connessione con l'utente
     */
-    Customer cst;
+    Customer_Server cst;
     cst.gestisciConnessioni();
     return 0;
 }

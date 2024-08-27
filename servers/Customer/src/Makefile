@@ -19,7 +19,7 @@ con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
 autentication_OBJ = $(wildcard ../metodi/Autenticazione/*.o)
 
 
-all:	create_dirs con2db con2redis autenticazione customer $(BDIR)/main
+all:	create_dirs con2db con2redis autenticazione customer_server $(BDIR)/main
 
 create_dirs:
 	mkdir -p $(BDIR)
@@ -34,8 +34,8 @@ con2redis:
 autenticazione:
 	$(MAKE) -C ../metodi/Autenticazione #Chiama il makefile di autenticazione
 
-customer: Customer.cpp Customer.h
-	$(CC) -c -o $(ODIR)/Customer.o $< $(CFLAGS)
+customer_server: Customer_Server.cpp Customer_Server.h
+	$(CC) -c -o $(ODIR)/Customer_Server.o $< $(CFLAGS)
 
 $(BDIR)/main: $(OBJ) $(DEPS)
 	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(autentication_OBJ) $(CFLAGS)
