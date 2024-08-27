@@ -34,14 +34,20 @@ bool autentica(int clientSocket)
 		std::cerr << "Errore: non è stata trovata nessuna email con la chiave specificata." << std::endl;
 		return false;
 	}
+	received_email.pop_back();
 	std::cout << "Email letta dallo stream: " << received_email << std::endl;
 	const char* mail = received_email.c_str();
 	bool esiste = controllaEsistenza(db, mail); // Controlla se esiste un Customer con quella mail
 	std::cout << "Risultato query: " << esiste << std::endl; // 0 = Non esiste 1 = Esiste
-	//if (esiste)
-	return true;
+	if (esiste){
+	  std::cout << "esiste" << std::endl;
+	} else {
+	  std::cout << "non esiste" << std::endl;
+	}
+	  
 	//return recuperaCustomer(db, clientSocket, mail); // Il customer esiste e viene ritornato
 	//return creaCustomer(db, clientSocket, mail); // Il customer non esiste e viene creato
+        return true;
 }
 
 bool controllaEsistenza(Con2DB db, const char* mail)
@@ -51,7 +57,8 @@ bool controllaEsistenza(Con2DB db, const char* mail)
 	int rows;
 
 	// sprintf si occupa di creare una stringa con una data formattazione
-	sprintf(comando, "SELECT * FROM customers WHERE mail = \'%s\'", mail);
+	sprintf(comando, "SELECT * FROM customers WHERE mail = '%s' ", mail);
+	std::cout << comando <<std::endl;
 	res = db.ExecSQLtuples(comando); //Esegue la query sopra citata
 	rows = PQntuples(res);
 	if (rows == 0)  //L'utente non esiste
