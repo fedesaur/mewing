@@ -37,7 +37,7 @@ bool autentica(int clientSocket)
 	received_email.pop_back();
 	std::cout << "Email letta dallo stream: " << received_email << std::endl;
 	const char* mail = received_email.c_str();
-	bool esiste = controllaEsistenza(db, mail); // Controlla se esiste un Customer con quella mail
+	Customer esiste = recuperaCustomer(db, clientSocket, mail); // Controlla se esiste un Customer con quella mail
 	std::cout << "Risultato query: " << esiste << std::endl; // 0 = Non esiste 1 = Esiste
 	if (esiste){
 	  std::cout << "esiste" << std::endl;
@@ -50,7 +50,7 @@ bool autentica(int clientSocket)
         return true;
 }
 
-bool controllaEsistenza(Con2DB db, const char* mail)
+bool recuperaCustomer(Con2DB db, const char* mail)
 {
 	PGresult *res;
 	char comando[1000];

@@ -14,10 +14,12 @@
   <component name="ChangeListManager">
     <list default="true" id="5675aa8c-3773-47a0-bfee-758c2c4efca2" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/servers/Customer/bin/main" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/servers/Customer/obj/Customer.o" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/servers/Customer/src/Customer.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/servers/Customer/src/Customer.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/entities/struct_customer.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/entities/struct_customer.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/servers/Customer/metodi/Autenticazione/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/servers/Customer/metodi/Autenticazione/autenticazione.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/servers/Customer/metodi/Autenticazione/autenticazione.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/servers/Customer/src/Customer_Server.h" beforeDir="false" afterPath="$PROJECT_DIR$/servers/Customer/src/Customer_Server.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/servers/Customer/src/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/servers/Customer/src/Makefile" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -137,7 +139,7 @@
       <workItem from="1724431400684" duration="184000" />
       <workItem from="1724481348034" duration="2080000" />
       <workItem from="1724743783882" duration="2434000" />
-      <workItem from="1724767638907" duration="308000" />
+      <workItem from="1724767638907" duration="3197000" />
     </task>
     <servers />
   </component>

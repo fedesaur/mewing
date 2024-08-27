@@ -15,10 +15,10 @@ con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
 all:	con2db con2redis autenticazione
 
 con2db:
-	$(MAKE) -C ../../../../lib/con2db
+	$(MAKE) -C ../../../lib/con2db
 
 con2redis:
-	$(MAKE) -C ../../../../lib/con2redis/src
+	$(MAKE) -C ../../../lib/con2redis/src
 
 autenticazione: autenticazione.cpp autenticazione.h 
 	$(CC) -c -o autenticazione.o $< $(CFLAGS) # Crea il file autenticazione.o
