@@ -14,14 +14,11 @@
   <component name="ChangeListManager">
     <list default="true" id="5675aa8c-3773-47a0-bfee-758c2c4efca2" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/create.sh" beforeDir="false" afterPath="$PROJECT_DIR$/database/create.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entities/Customer/bin/main" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/bin/main" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entities/Customer/methods/Autenticazione/autenticazione.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/methods/Autenticazione/autenticazione.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entities/Customer/methods/Autenticazione/autenticazione.h" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/methods/Autenticazione/autenticazione.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entities/Customer/methods/Autenticazione/autenticazione.o" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/methods/Autenticazione/autenticazione.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entities/Customer/obj/Customer.o" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/obj/Customer.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entities/Customer/src/Customer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/src/Customer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entities/Customer/src/Customer.h" beforeDir="false" afterPath="$PROJECT_DIR$/entities/Customer/src/Customer.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/table.sql" beforeDir="false" afterPath="$PROJECT_DIR$/database/table.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/servers/Customer/bin/main" beforeDir="false" afterPath="$PROJECT_DIR$/servers/Customer/bin/main" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/servers/Customer/metodi/Autenticazione/autenticazione.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/servers/Customer/metodi/Autenticazione/autenticazione.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/servers/Customer/metodi/Autenticazione/autenticazione.h" beforeDir="false" afterPath="$PROJECT_DIR$/servers/Customer/metodi/Autenticazione/autenticazione.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/servers/Customer/metodi/Autenticazione/autenticazione.o" beforeDir="false" afterPath="$PROJECT_DIR$/servers/Customer/metodi/Autenticazione/autenticazione.o" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -139,6 +136,7 @@
       <workItem from="1724431032892" duration="107000" />
       <workItem from="1724431400684" duration="184000" />
       <workItem from="1724481348034" duration="2080000" />
+      <workItem from="1724743783882" duration="2434000" />
     </task>
     <servers />
   </component>

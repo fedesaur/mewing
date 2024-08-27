@@ -148,6 +148,7 @@ CREATE TABLE IF NOT EXISTS carrello
 );
 
 CREATE TABLE IF NOT EXISTS prodotto
+
 (
     id integer NOT NULL DEFAULT nextval('prodotto_id_seq'::regclass),
     descrizione text COLLATE pg_catalog."default" NOT NULL,

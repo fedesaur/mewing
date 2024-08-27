@@ -5,6 +5,10 @@
 #include <iostream>
 #include "../../../../lib/con2db/pgsql.h"
 #include "../../../../lib/con2redis/src/con2redis.h"
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <cstring>
 #include <cassert>
 
 #define CUSTOMER_STREAM "Customer"
@@ -20,9 +24,10 @@
 #define PASSWORD "admin"
 #define DB_NAME "mewingdb"
 
-
 bool autentica(int clientSocket);
 bool controllaEsistenza(Con2DB db, const char* mail);
 bool aggiungiCustomer(Con2DB db, const char* mail);
+bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail);
+bool creaCustomer(Con2DB db, int clientSocket, const char* mail);
 
 #endif //AUTENTICAZIONE_H
