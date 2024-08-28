@@ -8,7 +8,6 @@ sto recuperando il customer
 ID: 1, Nome: edoardo, Cognome: bughi, Mail: abc@abc.it, Abita: 1
 Invio dati a Redis: 
 ID: 1, Nome: edoardo, Cognome: bughi, Mail: abc@abc.it, Abita: 1
-Dati inviati a Redis con successo.
 Dati inviati con successo.
-sonoqui
+
 

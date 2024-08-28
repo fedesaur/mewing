@@ -9,6 +9,7 @@ Customer_Server::Customer_Server()
         exit(EXIT_FAILURE);
     }
     std::cout << "Socket del Server creato con successo: " << SERVER_SOCKET << std::endl;
+    std::cout.flush();
 
     // Specifica indirizzo del server
     sockaddr_in serverAddress;
@@ -38,12 +39,14 @@ Customer_Server::Customer_Server()
     freeReplyObject(reply);
     initStreams(c2r, WRITE_STREAM);
     std::cout << "Stream Write creato!" << std::endl;
+    std::cout.flush();
     
     reply = RedisCommand(c2r, "DEL %s", READ_STREAM);
     assertReply(c2r, reply);
     freeReplyObject(reply);
     initStreams(c2r, READ_STREAM);
     std::cout << "Stream Read creato!" << std::endl;
+    std::cout.flush();
 }
 
 void Customer_Server::gestisciConnessioni()
@@ -56,6 +59,7 @@ void Customer_Server::gestisciConnessioni()
     }
 
     std::cout << "Server in ascolto sulla porta " << SERVER_PORT << "..." << std::endl;
+    std::cout.flush();
 
     // Gestione delle connessioni dei client
     while (true)
@@ -68,6 +72,7 @@ void Customer_Server::gestisciConnessioni()
 
         // Identifica l'ID della connessione
         std::cout << "ID della connessione: " + std::to_string(ID_CONNESSIONE) << std::endl;
+        std::cout.flush();
         std::string response = "ID della connessione: " + std::to_string(ID_CONNESSIONE) + "\n";
         send(clientSocket, response.c_str(), response.length(), 0);
 
@@ -76,7 +81,9 @@ void Customer_Server::gestisciConnessioni()
         {
             bool ok = autentica(clientSocket); // Passa al processo di autenticazione
             std::cout << ok << std::endl;
+            std::cout.flush();
             std::cout << "aooooooooo" << std::endl;
+            std::cout.flush();
             
             // Lettura dello stream Redis
             reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
@@ -108,11 +115,14 @@ void Customer_Server::gestisciConnessioni()
             }
 
             std::cout << "Nome: " << nome << std::endl;
+            std::cout.flush();
             std::cout << "Cognome: " << cognome << std::endl;
+            std::cout.flush();
         }
 
         close(clientSocket); // Chiudi la connessione con il client dopo averla gestita
         std::cout << "Conclusa connessione con ID: " + std::to_string(ID_CONNESSIONE) << std::endl;
+        std::cout.flush();
         ID_CONNESSIONE++;
     }
     // Chiudi il socket del server (questa parte non verrà mai raggiunta a causa del while infinito)

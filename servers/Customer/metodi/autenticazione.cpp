@@ -36,6 +36,7 @@ bool autentica(int clientSocket)
       }
     received_email.pop_back();
     std::cout << "Email letta dallo stream: " << received_email << std::endl;
+    std::cout.flush();
     const char* mail = received_email.c_str();
 
 	/*
@@ -45,6 +46,7 @@ bool autentica(int clientSocket)
 	bool esito = recuperaCustomer(db, clientSocket, mail);
 	db.finish(); // Chiude la connessione con il database
 	std::cout << "sonoqui" << std::endl;
+	std::cout.flush();
         return esito;
 }
 
@@ -54,7 +56,8 @@ bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
     char comando[1000];
     int rows;
     std::cout << "sto recuperando il customer " << std::endl;
-
+    std::cout.flush();
+    
     sprintf(comando, "SELECT * FROM customers WHERE mail = '%s' ", mail);
     res = db.ExecSQLtuples(comando);
 
@@ -66,8 +69,10 @@ bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
         const char* cognome = PQgetvalue(res, 0, PQfnumber(res, "cognome"));
         int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "abita")));
         std::cout << "ID: " << ID << ", Nome: " << nome << ", Cognome: " << cognome << ", Mail: " << mail << ", Abita: " << abita << std::endl;
+        std::cout.flush();
         inviaDati(ID, nome, cognome, mail, abita);
         std::cout << "Dati inviati con successo." << std::endl;
+        std::cout.flush();
         PQclear(res);
         return true;
     } else return false;
@@ -165,8 +170,9 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, int abita)
 {
     std::cout << "Invio dati a Redis: " << std::endl;
+    std::cout.flush();
     std::cout << "ID: " << ID << ", Nome: " << nome << ", Cognome: " << cognome << ", Mail: " << mail << ", Abita: " << abita << std::endl;
-
+    std::cout.flush();
     redisContext *c2r;
     redisReply *reply;
     c2r = redisConnect(REDIS_IP, REDIS_PORT);
