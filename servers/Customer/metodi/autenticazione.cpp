@@ -171,6 +171,17 @@ void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, 
 	reply = RedisCommand(c2r, "XADD %s * CustomerID:%d CustomerName:%s CustomerSurname:%s CustomerMail:%s CustomerAddress:%d",
 	READ_STREAM, ID, nome, cognome, mail, abita);
 	assertReplyType(c2r, reply, REDIS_REPLY_ARRAY);
-    freeReplyObject(reply);
+	if (reply == nullptr) {
+   		std::cerr << "Errore nell'invio del comando XADD: " << c2r->errstr << std::endl;
+    		freeReplyObject(reply);
+    		return false;
+	}
+
+	if (reply->type != REDIS_REPLY_ARRAY) {
+    		std::cerr << "Risposta inattesa da XADD: " << reply->str << std::endl;
+    		freeReplyObject(reply);
+    		return false;
+	}
+    	freeReplyObject(reply);
 	return;
 }
