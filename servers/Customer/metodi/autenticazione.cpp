@@ -168,8 +168,11 @@ void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, 
 	redisReply *reply; // reply contiene le risposte da Redis
 	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
 	
-	reply = RedisCommand(c2r, "XADD %s * CustomerID:%d CustomerName:%s CustomerSurname:%s CustomerMail:%s CustomerAddress:%d",
-	READ_STREAM, ID, nome, cognome, mail, abita);
+	std::stringstream commandStream;
+	commandStream << "XADD " << READ_STREAM << " * CustomerID:" << ID << " CustomerName:" << nome << " ...";
+	std::string command = commandStream.str();
+	std::cout << command << std::endl;
+	reply = RedisCommand(c2r, command.c_str());
 	assertReplyType(c2r, reply, REDIS_REPLY_ARRAY);
 	if (reply == nullptr) {
    		std::cerr << "Errore nell'invio del comando XADD: " << c2r->errstr << std::endl;
