@@ -92,7 +92,9 @@ void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, 
         return;
     }
 
-    reply = RedisCommand(c2r, "XADD %s * nome %s cognome %s", READ_STREAM, nome, cognome);
+    // Invia tutti i campi richiesti al Redis stream
+    reply = RedisCommand(c2r, "XADD %s * ID %d nome %s cognome %s mail %s abita %d", 
+                         READ_STREAM, ID, nome, cognome, mail, abita);
 
     if (reply == nullptr) {
         std::cerr << "Errore nell'invio del comando XADD: " << c2r->errstr << std::endl;
@@ -112,6 +114,7 @@ void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, 
 
     std::cout << "Dati inviati a Redis con successo." << std::endl;
 }
+
 
 
 bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
