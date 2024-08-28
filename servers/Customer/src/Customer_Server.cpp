@@ -108,7 +108,7 @@ bool Customer_Server::authenticate(int clientSocket)
         reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, std::to_string(ID_CONNESSIONE).c_str(), email.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
         freeReplyObject(reply);
-        return true
+        return true;
     }
     std::cerr << "Errore o nessun dato ricevuto dal client." << std::endl;
     return false;

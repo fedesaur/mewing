@@ -43,7 +43,7 @@ bool autentica(int clientSocket)
 		Se vi sono problemi od errori, ritorna false
 	*/
 	bool esito = recuperaCustomer(db, clientSocket, mail);
-	db.finish() // Chiude la connessione con il database
+	db.finish(); // Chiude la connessione con il database
 	return esito;
 }
 
@@ -81,6 +81,7 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 		Sono richiesti 7 dati all'utente:
 		Nome, Cognome, Via, Civico, CAP, Città, Stato
 	*/
+	PGresult *res;
 	int datiRichiesti = 7;
 	int datiRicevuti = 0;
 	char comando[1000];
@@ -92,7 +93,15 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 	int CAP;
 	std::string city;
 	std::string stato;
-	
+	// Di seguito, le frasi mostrate all'utente ad ogni fase della creazione del Customer
+	std::string FRASI[] = {"Inserisci il tuo Nome\n",
+	"Inserisci il tuo Cognome\n",
+	"Inserisci la Via del tuo indirizzo\n",
+	"Inserisci il Civico del tuo indirizzo\n",
+	"Inserisci il CAP del tuo indirizzo\n",
+	"Inserisci la Città del tuo indirizzo\n",
+	"Inserisci lo Stato del tuo indirizzo\n"};
+
 	// Chiede i dati neccessari per creare il customer e l'indirizzo
 	while (datiRicevuti < datiRichiesti)
 	{
@@ -102,7 +111,7 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 		int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0); // Riceve la risposta dall'utente e la memorizza nello stream
 		if (bytesRead > 0)
 		{
-			buffer.pop_back(); // Rimuove \n alla fine dell'input
+			std::cout << buffer; // Rimuove \n alla fine dell'input
 			switch(datiRicevuti)
 			{
 				case 0:
@@ -133,7 +142,7 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 	}
 
 	sprintf(comando, "INSERT INTO Indirizzo(via, civico, cap, citta, stato) VALUES('%s', %d, %d, '%s', '%s') RETURNING id",
-	via.c_str(), civico, cap, city.c_str(), stato.c_str());
+	via.c_str(), civico, CAP, city.c_str(), stato.c_str());
 	res = db.ExecSQLtuples(comando); // Inserisci l'indirizzo nel database e ne ritorna l'ID
 	if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
 	
@@ -158,24 +167,9 @@ void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, 
 	redisReply *reply; // reply contiene le risposte da Redis
 	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
 	
-	reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, "CustomerID", int);
-	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
-    freeReplyObject(reply);
-
-	reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, "CustomerName", nome);
-	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
-    freeReplyObject(reply);
-
-	reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, "CustomerSurname", cognome);
-	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
-    freeReplyObject(reply);
-
-	reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, "CustomerMail", mail);
-	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
-    freeReplyObject(reply);
-
-	reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, "CustomerAddress", int);
-	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
+	reply = RedisCommand(c2r, "XADD %s * CustomerID:%d CustomerName:%s CustomerSurname:%s CustomerMail:%s CustomerAddress:%d",
+	CUSTOMER_STREAM, ID, nome, cognome, mail, abita);
+	assertReplyType(c2r, reply, REDIS_REPLY_ARRAY);
     freeReplyObject(reply);
 	return;
 }

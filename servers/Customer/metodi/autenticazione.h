@@ -23,14 +23,6 @@
 #define USERNAME "admin"
 #define PASSWORD "admin"
 #define DB_NAME "mewingdb"
-// Di seguito, le frasi mostrate all'utente ad ogni fase della creazione del Customer
-#define FRASI {"Inserisci il tuo Nome\n",
-	"Inserisci il tuo Cognome\n",
-	"Inserisci la Via del tuo indirizzo\n",
-	"Inserisci il Civico del tuo indirizzo\n",
-	"Inserisci il CAP del tuo indirizzo\n",
-	"Inserisci la Città del tuo indirizzo\n",
-	"Inserisci lo Stato del tuo indirizzo\n"};
 
 bool autentica(int clientSocket);
 
