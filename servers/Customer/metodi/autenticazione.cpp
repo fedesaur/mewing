@@ -50,33 +50,69 @@ bool autentica(int clientSocket)
 
 bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
 {
-	PGresult *res;
-	char comando[1000];
-	int rows;
-	std::cout << "sto recuperando il customer " << std::endl;
+    PGresult *res;
+    char comando[1000];
+    int rows;
+    std::cout << "sto recuperando il customer " << std::endl;
 
-	// sprintf si occupa di creare una stringa con una data formattazione
-	sprintf(comando, "SELECT * FROM customers WHERE mail = '%s' ", mail);
+    sprintf(comando, "SELECT * FROM customers WHERE mail = '%s' ", mail);
+    res = db.ExecSQLtuples(comando);
 
-	res = db.ExecSQLtuples(comando); //Esegue la query sopra citata
-
-	rows = PQntuples(res); // Numero delle righe della query
-	if (rows > 0) // Se è stato trovato un utente con quella mail...
-	{
-		//...recupera i dati dalla query e procede all'invio tramite Stream
-		int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
-		const char* nome = PQgetvalue(res, 0, PQfnumber(res, "nome"));
-		const char* cognome = PQgetvalue(res, 0, PQfnumber(res, "cognome"));
-		int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "abita")));
-		inviaDati(ID,nome,cognome,mail,abita);
-		std::cout << "sonoqui" << std::endl;
-		PQclear(res);
-		return true;
-	}
-	// Altrimenti crea un nuovo customer tramite funzione ausiliaria
-	PQclear(res);
-	return creaCustomer(db, clientSocket, mail);
+    rows = PQntuples(res);
+    if (rows > 0)
+    {
+        int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
+        const char* nome = PQgetvalue(res, 0, PQfnumber(res, "nome"));
+        const char* cognome = PQgetvalue(res, 0, PQfnumber(res, "cognome"));
+        int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "abita")));
+        std::cout << "ID: " << ID << ", Nome: " << nome << ", Cognome: " << cognome << ", Mail: " << mail << ", Abita: " << abita << std::endl;
+        inviaDati(ID, nome, cognome, mail, abita);
+        std::cout << "Dati inviati con successo." << std::endl;
+        std::cout << "sonoqui" << std::endl;
+        PQclear(res);
+        return true;
+    }
+    // Altrimenti crea un nuovo customer tramite funzione ausiliaria
+    PQclear(res);
+    return creaCustomer(db, clientSocket, mail);
 }
+
+void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, int abita)
+{
+    std::cout << "Invio dati a Redis: " << std::endl;
+    std::cout << "ID: " << ID << ", Nome: " << nome << ", Cognome: " << cognome << ", Mail: " << mail << ", Abita: " << abita << std::endl;
+
+    redisContext *c2r;
+    redisReply *reply;
+    c2r = redisConnect(REDIS_IP, REDIS_PORT);
+
+    if (c2r == nullptr || c2r->err)
+    {
+        std::cerr << "Errore nella connessione a Redis: " << (c2r ? c2r->errstr : "Impossibile connettersi a Redis") << std::endl;
+        return;
+    }
+
+    reply = RedisCommand(c2r, "XADD %s * nome %s cognome %s", READ_STREAM, nome, cognome);
+
+    if (reply == nullptr) {
+        std::cerr << "Errore nell'invio del comando XADD: " << c2r->errstr << std::endl;
+        redisFree(c2r);
+        return;
+    }
+
+    if (reply->type != REDIS_REPLY_STRING) {
+        std::cerr << "Risposta inattesa da XADD: " << reply->str << std::endl;
+        freeReplyObject(reply);
+        redisFree(c2r);
+        return;
+    }
+
+    freeReplyObject(reply);
+    redisFree(c2r);
+
+    std::cout << "Dati inviati a Redis con successo." << std::endl;
+}
+
 
 bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 {
@@ -162,35 +198,4 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
         std::cout << ID << nome << cognome << mail << abita << std::endl;
 	inviaDati(ID,nome.c_str(),cognome.c_str(),mail,abita);
 	return true; 
-}
-
-void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, int abita)
-{
-    redisContext *c2r; // c2r contiene le info sul contesto
-    redisReply *reply; // reply contiene le risposte da Redis
-    c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
-
-    if (c2r == nullptr || c2r->err)
-    {
-        std::cerr << "Errore nella connessione a Redis: " << (c2r ? c2r->errstr : "Impossibile connettersi a Redis") << std::endl;
-        return;
-    }
-    
-    reply = RedisCommand(c2r, "XADD %s * %s %s", READ_STREAM, nome, cognome);
-    
-    if (reply == nullptr) {
-        std::cerr << "Errore nell'invio del comando XADD: " << c2r->errstr << std::endl;
-        redisFree(c2r);
-        return;
-    }
-
-    if (reply->type != REDIS_REPLY_STRING) {
-        std::cerr << "Risposta inattesa da XADD: " << reply->str << std::endl;
-        freeReplyObject(reply);
-        redisFree(c2r);
-        return;
-    }
-
-    freeReplyObject(reply);
-    redisFree(c2r);
 }
