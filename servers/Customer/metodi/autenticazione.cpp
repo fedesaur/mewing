@@ -44,9 +44,7 @@ bool autentica(int clientSocket)
 		Se vi sono problemi od errori, ritorna false
 	*/
 	bool esito = recuperaCustomer(db, clientSocket, mail);
-	//db.finish(); // Chiude la connessione con il database
-	std::cout << "sonoqui" << std::endl;
-	std::cout.flush();
+	//db.finish(); // Chiude la connessione con il database e anche la mia vita a quanto pare
         return esito;
 }
 
@@ -75,10 +73,11 @@ bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
         std::cout.flush();
         PQclear(res);
         return true;
-    } else return false;
+    } else {
     // Altrimenti crea un nuovo customer tramite funzione ausiliaria
-    //PQclear(res);
-    //return creaCustomer(db, clientSocket, mail);
+    PQclear(res);
+    return creaCustomer(db, clientSocket, mail);
+    }
 }
 
 bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
@@ -122,12 +121,15 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 			{
 				case 0:
 					nome = buffer;
+					nome.pop_back();
 					break;
 				case 1:
 					cognome = buffer;
+					cognome.pop_back();
 					break;
 				case 2:
 					via = buffer;
+					via.pop_back();
 					break;
 				case 3:
 					civico = atoi(buffer);
@@ -137,9 +139,11 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 					break;
 				case 5:
 					city = buffer;
+					city.pop_back();
 					break;
 				case 6:
 					stato = buffer;
+					stato.pop_back();
 					break;
 			}
 			datiRicevuti++; // Nel caso i dati non vadano bene, si potrebbe pensare a ripetere quel passaggio
