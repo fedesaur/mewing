@@ -166,22 +166,31 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 
 void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, int abita)
 {
-	redisContext *c2r; // c2r contiene le info sul contesto
-	redisReply *reply; // reply contiene le risposte da Redis
-	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
-	
-	reply = RedisCommand(c2r, "XADD %s * %s %s", READ_STREAM, nome, cognome);
-	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
-	if (reply == nullptr) {
-   		std::cerr << "Errore nell'invio del comando XADD: " << c2r->errstr << std::endl;
-    		freeReplyObject(reply);
-    		
-	}
+    redisContext *c2r; // c2r contiene le info sul contesto
+    redisReply *reply; // reply contiene le risposte da Redis
+    c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
 
-	if (reply->type != REDIS_REPLY_STRING) {
-    		std::cerr << "Risposta inattesa da XADD: " << reply->str << std::endl;
-    		freeReplyObject(reply);
-    		
-	}
-    	freeReplyObject(reply);
+    if (c2r == nullptr || c2r->err)
+    {
+        std::cerr << "Errore nella connessione a Redis: " << (c2r ? c2r->errstr : "Impossibile connettersi a Redis") << std::endl;
+        return;
+    }
+    
+    reply = RedisCommand(c2r, "XADD %s * %s %s", READ_STREAM, nome, cognome);
+    
+    if (reply == nullptr) {
+        std::cerr << "Errore nell'invio del comando XADD: " << c2r->errstr << std::endl;
+        redisFree(c2r);
+        return;
+    }
+
+    if (reply->type != REDIS_REPLY_STRING) {
+        std::cerr << "Risposta inattesa da XADD: " << reply->str << std::endl;
+        freeReplyObject(reply);
+        redisFree(c2r);
+        return;
+    }
+
+    freeReplyObject(reply);
+    redisFree(c2r);
 }
