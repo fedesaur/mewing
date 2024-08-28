@@ -12,7 +12,8 @@
 #include <cstring>
 #include <cassert>
 
-#define CUSTOMER_STREAM "Customer"
+#define WRITE_STREAM "CustomerW"
+#define READ_STREAM "CustomerR"
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
 #define SERVER_PORT 5000

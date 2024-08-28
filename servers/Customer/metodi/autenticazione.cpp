@@ -26,17 +26,17 @@ bool autentica(int clientSocket)
     redisReply* stream = reply -> element[0];
     redisReply* entryFields = stream -> element[1];
     std::string fieldName = entryFields->element[0]->str; // Chiave
-   	std::string received_email = entryFields->element[1]->str; // Valore
-	freeReplyObject(reply);
+    std::string received_email = entryFields->element[1]->str; // Valore
+    freeReplyObject(reply);
 
-	if (received_email.empty())
-	{
-		std::cerr << "Errore: non è stata trovata nessuna email con la chiave specificata." << std::endl;
-		return false;
-	}
-	received_email.pop_back();
-	std::cout << "Email letta dallo stream: " << received_email << std::endl;
-	const char* mail = received_email.c_str();
+    if (received_email.empty())
+      {
+	  std::cerr << "Errore: non è stata trovata nessuna email con la chiave specificata." << std::endl;
+	  return false;
+      }
+    received_email.pop_back();
+    std::cout << "Email letta dallo stream: " << received_email << std::endl;
+    const char* mail = received_email.c_str();
 
 	/*
 	 	Controlla se esiste un Customer con quella mail; se non esiste, lo crea.
@@ -52,6 +52,7 @@ bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
 	PGresult *res;
 	char comando[1000];
 	int rows;
+	std::cout << "sto recuperando il customer " << std::endl;
 
 	// sprintf si occupa di creare una stringa con una data formattazione
 	sprintf(comando, "SELECT * FROM customers WHERE mail = '%s' ", mail);
