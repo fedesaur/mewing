@@ -150,7 +150,7 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 	int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'indirizzo appena aggiunto
 	PQclear(res);
 
-	sprintf(comando, "INSERT INTO Customer(nome, cognome, mail, abita) VALUES('%s', '%s', '%s', %d) RETURNING id",
+	sprintf(comando, "INSERT INTO customers(nome, cognome, mail, abita) VALUES('%s', '%s', '%s', %d) RETURNING id",
 	nome.c_str(), cognome.c_str(), mail, abita);
 	res = db.ExecSQLtuples(comando); // Inserisce il customer nel database e ne ritorna l'ID
 	if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
