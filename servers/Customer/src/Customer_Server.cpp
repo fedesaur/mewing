@@ -79,12 +79,6 @@ void Customer_Server::gestisciConnessioni()
         bool connessioneOK = handshake(clientSocket); // Gestisci il client in una funzione dedicata
         if (connessioneOK && authenticate(clientSocket)) // Se la connessione è andata a buon fine, avvia le varie operazioni
         {
-            bool ok = autentica(clientSocket); // Passa al processo di autenticazione
-            std::cout << ok << std::endl;
-            std::cout.flush();
-            std::cout << "aooooooooo" << std::endl;
-            std::cout.flush();
-            
             // Lettura dello stream Redis
             reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
             if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
@@ -99,7 +93,7 @@ void Customer_Server::gestisciConnessioni()
             if (entryFields->elements < 6) { // Assicurarsi che ci siano abbastanza campi
                 std::cerr << "Errore: numero di campi insufficiente nello stream Redis." << std::endl;
                 freeReplyObject(reply);
-                close(clientSocket);
+                //close(clientSocket); Se viene fatto continue, si passa direttamente al close fuori dall'if
                 continue;
             }
 
@@ -110,14 +104,12 @@ void Customer_Server::gestisciConnessioni()
             if (nome.empty() || cognome.empty())
             {
                 std::cerr << "Errore: non sono stati trovati nome o cognome con la chiave specificata." << std::endl;
-                close(clientSocket);
+                //close(clientSocket); Se viene fatto continue, si passa direttamente al close fuori dall'if
                 continue;
             }
-
-            std::cout << "Nome: " << nome << std::endl;
-            std::cout.flush();
-            std::cout << "Cognome: " << cognome << std::endl;
-            std::cout.flush();
+            // Saluta il customer appena autenticato
+            std::string response = "Benvenuto " + nome + " " + cognome;
+            send(clientSocket, response.c_str(), response.length(), 0);
         }
 
         close(clientSocket); // Chiudi la connessione con il client dopo averla gestita
@@ -125,8 +117,7 @@ void Customer_Server::gestisciConnessioni()
         std::cout.flush();
         ID_CONNESSIONE++;
     }
-    // Chiudi il socket del server (questa parte non verrà mai raggiunta a causa del while infinito)
-    close(SERVER_SOCKET);
+    close(SERVER_SOCKET); // Chiudi il socket del server (questa parte non verrà mai raggiunta a causa del while infinito)
 }
 
 bool Customer_Server::handshake(int clientSocket) {
@@ -158,12 +149,11 @@ bool Customer_Server::authenticate(int clientSocket)
         reply = RedisCommand(c2r, "XADD %s * email %s", WRITE_STREAM, email.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
         freeReplyObject(reply);
-        return true;
+        return autentica(clientSocket); // Passa al processo di autenticazione
     }
     std::cerr << "Errore o nessun dato ricevuto dal client." << std::endl;
     return false;
 }
-
 
 int main()
 {

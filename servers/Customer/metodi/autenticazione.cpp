@@ -116,7 +116,7 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 		int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0); // Riceve la risposta dall'utente e la memorizza nello stream
 		if (bytesRead > 0)
 		{
-			std::cout << buffer; // Rimuove \n alla fine dell'input
+			std::cout << buffer;
 			switch(datiRicevuti)
 			{
 				case 0:
