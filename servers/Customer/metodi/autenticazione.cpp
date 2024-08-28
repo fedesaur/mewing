@@ -20,7 +20,7 @@ bool autentica(int clientSocket)
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
 	{
        std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
-       return;
+       return false;
     }
 
     redisReply* stream = reply -> element[0];
@@ -32,7 +32,7 @@ bool autentica(int clientSocket)
     if (received_email.empty())
       {
 	  std::cerr << "Errore: non è stata trovata nessuna email con la chiave specificata." << std::endl;
-	  return;
+	  return false; 
       }
     received_email.pop_back();
     std::cout << "Email letta dallo stream: " << received_email << std::endl;
@@ -44,6 +44,7 @@ bool autentica(int clientSocket)
 	*/
 	bool esito = recuperaCustomer(db, clientSocket, mail);
 	db.finish(); // Chiude la connessione con il database
+	std::cout << "sito" << std::endl;
 	return esito;
 }
 
@@ -68,6 +69,7 @@ bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
 		const char* cognome = PQgetvalue(res, 0, PQfnumber(res, "cognome"));
 		int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "abita")));
 		inviaDati(ID,nome,cognome,mail,abita);
+		std::cout << "sonoqui" << std::endl;
 		PQclear(res);
 		return true;
 	}
@@ -168,23 +170,18 @@ void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, 
 	redisReply *reply; // reply contiene le risposte da Redis
 	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
 	
-	std::stringstream commandStream;
-	commandStream << "XADD " << READ_STREAM << " * CustomerID:" << ID << " CustomerName:" << nome << " ...";
-	std::string command = commandStream.str();
-	std::cout << command << std::endl;
-	reply = RedisCommand(c2r, command.c_str());
-	assertReplyType(c2r, reply, REDIS_REPLY_ARRAY);
+	reply = RedisCommand(c2r, "XADD %s * %s %s", READ_STREAM, nome, cognome);
+	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
 	if (reply == nullptr) {
    		std::cerr << "Errore nell'invio del comando XADD: " << c2r->errstr << std::endl;
     		freeReplyObject(reply);
-    		return false;
+    		
 	}
 
-	if (reply->type != REDIS_REPLY_ARRAY) {
+	if (reply->type != REDIS_REPLY_STRING) {
     		std::cerr << "Risposta inattesa da XADD: " << reply->str << std::endl;
     		freeReplyObject(reply);
-    		return false;
+    		
 	}
     	freeReplyObject(reply);
-	return;
 }

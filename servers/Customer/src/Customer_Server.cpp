@@ -75,6 +75,27 @@ void Customer_Server::gestisciConnessioni()
         if (connessioneOK && authenticate(clientSocket)) // Se la connessione è andata a buon fine, avvia le varie operazioni
         {
             autentica(clientSocket); // Passa al processo di autenticazione
+             reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
+    if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
+	{
+       std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
+       return;
+    }
+
+    redisReply* stream = reply -> element[0];
+    redisReply* entryFields = stream -> element[1];
+    std::string fieldName = entryFields->element[0]->str; // Chiave
+    std::string received_email = entryFields->element[1]->str; // Valore
+    freeReplyObject(reply);
+
+    if (received_email.empty())
+      {
+	  std::cerr << "Errore: non è stata trovata nessuna email con la chiave specificata." << std::endl;
+	  return; 
+      }
+    received_email.pop_back();
+    std::cout << "Email letta dallo stream: " << received_email << std::endl;
+    const char* mail = received_email.c_str();
 
         }
         close(clientSocket); // Chiudi la connessione con il client dopo averla gestita
