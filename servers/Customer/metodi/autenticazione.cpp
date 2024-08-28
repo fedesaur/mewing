@@ -44,7 +44,7 @@ bool autentica(int clientSocket)
 		Se vi sono problemi od errori, ritorna false
 	*/
 	bool esito = recuperaCustomer(db, clientSocket, mail);
-	db.finish(); // Chiude la connessione con il database
+	//db.finish(); // Chiude la connessione con il database
 	std::cout << "sonoqui" << std::endl;
 	std::cout.flush();
         return esito;
