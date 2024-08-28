@@ -33,11 +33,17 @@ Customer_Server::Customer_Server()
     }
 
     // Viene creato lo Stream Redis per il trasferimento di messaggi
-    reply = RedisCommand(c2r, "DEL %s", CUSTOMER_STREAM);
+    reply = RedisCommand(c2r, "DEL %s", WRITE_STREAM);
     assertReply(c2r, reply);
     freeReplyObject(reply);
-    initStreams(c2r, CUSTOMER_STREAM);
-    std::cout << "Stream Customer creato!" << std::endl;
+    initStreams(c2r, WRITE_STREAM);
+    std::cout << "Stream Write creato!" << std::endl;
+    
+    reply = RedisCommand(c2r, "DEL %s", READ_STREAM);
+    assertReply(c2r, reply);
+    freeReplyObject(reply);
+    initStreams(c2r, READ_STREAM);
+    std::cout << "Stream Read creato!" << std::endl;
 }
 
 void Customer_Server::gestisciConnessioni()
@@ -105,7 +111,7 @@ bool Customer_Server::authenticate(int clientSocket)
         send(clientSocket, response.c_str(), response.length(), 0);
 
         // Scrive la mail ricevuta nello Stream
-        reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, std::to_string(ID_CONNESSIONE).c_str(), email.c_str());
+        reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, std::to_string(ID_CONNESSIONE).c_str(), email.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
         freeReplyObject(reply);
         return true;

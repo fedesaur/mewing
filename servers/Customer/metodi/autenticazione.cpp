@@ -16,7 +16,7 @@ bool autentica(int clientSocket)
 	*/
 
 	// Legge l'ultima mail nello stream
-    reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", CUSTOMER_STREAM);
+    reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", WRITE_STREAM);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
 	{
        std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
@@ -156,7 +156,7 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 	
 	int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'utente appena creato
 	PQclear(res);
-
+        std::cout << ID << nome << cognome << mail << abita << std::endl;
 	inviaDati(ID,nome.c_str(),cognome.c_str(),mail,abita);
 	return true; 
 }
@@ -168,7 +168,7 @@ void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, 
 	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
 	
 	reply = RedisCommand(c2r, "XADD %s * CustomerID:%d CustomerName:%s CustomerSurname:%s CustomerMail:%s CustomerAddress:%d",
-	CUSTOMER_STREAM, ID, nome, cognome, mail, abita);
+	READ_STREAM, ID, nome, cognome, mail, abita);
 	assertReplyType(c2r, reply, REDIS_REPLY_ARRAY);
     freeReplyObject(reply);
 	return;
