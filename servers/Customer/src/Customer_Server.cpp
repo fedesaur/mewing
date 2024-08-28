@@ -66,7 +66,7 @@ void Customer_Server::gestisciConnessioni()
             continue; // Continua ad accettare ulteriori connessioni
         }
 
-		// Identifica l'ID della connessione
+        // Identifica l'ID della connessione
         std::cout << "ID della connessione: " + std::to_string(ID_CONNESSIONE) << std::endl;
         std::string response = "ID della connessione: " + std::to_string(ID_CONNESSIONE) + "\n";
         send(clientSocket, response.c_str(), response.length(), 0);
@@ -75,32 +75,43 @@ void Customer_Server::gestisciConnessioni()
         if (connessioneOK && authenticate(clientSocket)) // Se la connessione è andata a buon fine, avvia le varie operazioni
         {
             autentica(clientSocket); // Passa al processo di autenticazione
-             reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
-    if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
-	{
-       std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
-       return;
-    }
+            
+            // Lettura dello stream Redis
+            reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
+            if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
+            {
+                std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
+                return;
+            }
 
-    redisReply* stream = reply -> element[0];
-    redisReply* entryFields = stream -> element[1];
-    std::string fieldName = entryFields->element[0]->str; // Chiave
-    std::string received_email = entryFields->element[1]->str; // Valore
-    freeReplyObject(reply);
+            redisReply* stream = reply->element[0];
+            redisReply* entryFields = stream->element[1];
+            
+            if (entryFields->elements < 6) { // Assicurarsi che ci siano abbastanza campi
+                std::cerr << "Errore: numero di campi insufficiente nello stream Redis." << std::endl;
+                freeReplyObject(reply);
+                close(clientSocket);
+                continue;
+            }
 
-    if (received_email.empty())
-      {
-	  std::cerr << "Errore: non è stata trovata nessuna email con la chiave specificata." << std::endl;
-	  return; 
-      }
-    received_email.pop_back();
-    std::cout << "Email letta dallo stream: " << received_email << std::endl;
-    const char* mail = received_email.c_str();
+            std::string nome = entryFields->element[3]->str; // Nome ricevuto
+            std::string cognome = entryFields->element[5]->str; // Cognome ricevuto
+            freeReplyObject(reply);
 
+            if (nome.empty() || cognome.empty())
+            {
+                std::cerr << "Errore: non sono stati trovati nome o cognome con la chiave specificata." << std::endl;
+                close(clientSocket);
+                continue;
+            }
+
+            std::cout << "Nome: " << nome << std::endl;
+            std::cout << "Cognome: " << cognome << std::endl;
         }
+
         close(clientSocket); // Chiudi la connessione con il client dopo averla gestita
         std::cout << "Conclusa connessione con ID: " + std::to_string(ID_CONNESSIONE) << std::endl;
-		ID_CONNESSIONE++;
+        ID_CONNESSIONE++;
     }
     // Chiudi il socket del server (questa parte non verrà mai raggiunta a causa del while infinito)
     close(SERVER_SOCKET);
@@ -121,18 +132,18 @@ bool Customer_Server::handshake(int clientSocket) {
 bool Customer_Server::authenticate(int clientSocket)
 {
     char buffer[1024] = {0};
-    std::string request = "Inserisci la tua email\n";
+    std::string request = "Inserisci il tuo nome\n";
     send(clientSocket, request.c_str(), request.length(), 0);
 
     int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
     if (bytesRead > 0) {
-		//Chide all'utente una mail utile all'identificazione
-        std::string email(buffer, bytesRead);
-        std::string response = "Email ricevuta! Procedo all'autenticazione\n";
+        // Chiede all'utente un nome utile all'identificazione
+        std::string nome(buffer, bytesRead);
+        std::string response = "Nome ricevuto! Procedo all'autenticazione\n";
         send(clientSocket, response.c_str(), response.length(), 0);
 
-        // Scrive la mail ricevuta nello Stream
-        reply = RedisCommand(c2r, "XADD %s * %s %s", WRITE_STREAM, std::to_string(ID_CONNESSIONE).c_str(), email.c_str());
+        // Scrive il nome ricevuto nello Stream
+        reply = RedisCommand(c2r, "XADD %s * nome %s", WRITE_STREAM, nome.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
         freeReplyObject(reply);
         return true;
