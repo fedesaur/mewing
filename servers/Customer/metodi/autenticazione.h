@@ -10,7 +10,6 @@
 #include <unistd.h>
 #include <cstring>
 #include <cassert>
-#include <tuple>
 
 #define CUSTOMER_STREAM "Customer"
 
@@ -24,9 +23,22 @@
 #define USERNAME "admin"
 #define PASSWORD "admin"
 #define DB_NAME "mewingdb"
+// Di seguito, le frasi mostrate all'utente ad ogni fase della creazione del Customer
+#define FRASI {"Inserisci il tuo Nome\n",
+	"Inserisci il tuo Cognome\n",
+	"Inserisci la Via del tuo indirizzo\n",
+	"Inserisci il Civico del tuo indirizzo\n",
+	"Inserisci il CAP del tuo indirizzo\n",
+	"Inserisci la Città del tuo indirizzo\n",
+	"Inserisci lo Stato del tuo indirizzo\n"};
 
 bool autentica(int clientSocket);
-std::tuple <int, const char*, const char*, const char*, int> recuperaCustomer(Con2DB db, int clientSocket, const char* mail);
-std::tuple <int, const char*, const char*, const char*, int> creaCustomer(Con2DB db, int clientSocket, const char* mail);
+
+bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail);
+
+bool creaCustomer(Con2DB db, int clientSocket, const char* mail);
+
+void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, int abita); // Per leggibilità, l'invio dati viene gestito da un'unica funzione
+
 
 #endif //AUTENTICAZIONE_H

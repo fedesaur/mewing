@@ -38,38 +38,20 @@ bool autentica(int clientSocket)
 	std::cout << "Email letta dallo stream: " << received_email << std::endl;
 	const char* mail = received_email.c_str();
 
-	// Controlla se esiste un Customer con quella mail; se non esiste, lo crea
-	std::tuple <int, const char*, const char*, const char*, int> cust = recuperaCustomer(db, clientSocket, mail); 
-	if (get<0>(cust) == -1) return false; // Se c'è stato un errore, ritorna false, ma bisogna rivedere come mostrare errore
-
-	reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, "CustomerID", get<0>(cust));
-	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
-    freeReplyObject(reply);
-
-	reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, "CustomerName", get<1>(cust));
-	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
-    freeReplyObject(reply);
-
-	reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, "CustomerSurname", get<2>(cust));
-	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
-    freeReplyObject(reply);
-
-	reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, "CustomerMail", mail);
-	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
-    freeReplyObject(reply);
-
-	reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, "CustomerAddress", get<4>(cust));
-	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
-    freeReplyObject(reply);
-    return true;
+	/*
+	 	Controlla se esiste un Customer con quella mail; se non esiste, lo crea.
+		Se vi sono problemi od errori, ritorna false
+	*/
+	bool esito = recuperaCustomer(db, clientSocket, mail);
+	db.finish() // Chiude la connessione con il database
+	return esito;
 }
 
-std::tuple <int, const char*, const char*, const char*, int> recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
+bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
 {
 	PGresult *res;
 	char comando[1000];
 	int rows;
-
 
 	// sprintf si occupa di creare una stringa con una data formattazione
 	sprintf(comando, "SELECT * FROM customers WHERE mail = '%s' ", mail);
@@ -79,20 +61,21 @@ std::tuple <int, const char*, const char*, const char*, int> recuperaCustomer(Co
 	rows = PQntuples(res); // Numero delle righe della query
 	if (rows > 0) // Se è stato trovato un utente con quella mail...
 	{
+		//...recupera i dati dalla query e procede all'invio tramite Stream
 		int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
 		const char* nome = PQgetvalue(res, 0, PQfnumber(res, "nome"));
 		const char* cognome = PQgetvalue(res, 0, PQfnumber(res, "cognome"));
 		int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "abita")));
-		std::tuple <int, const char*, const char*, const char*, int> cust(ID, nome, cognome, mail, abita);
+		inviaDati(ID,nome,cognome,mail,abita);
 		PQclear(res);
-		return cust;
+		return true;
 	}
-	// ...altrimenti crealo tramite funzione ausiliaria
+	// Altrimenti crea un nuovo customer tramite funzione ausiliaria
 	PQclear(res);
 	return creaCustomer(db, clientSocket, mail);
 }
 
-std::tuple <int, const char*, const char*, const char*, int> creaCustomer(Con2DB db, int clientSocket, const char* mail)
+bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 {
 	/* 
 		Sono richiesti 7 dati all'utente:
@@ -109,85 +92,90 @@ std::tuple <int, const char*, const char*, const char*, int> creaCustomer(Con2DB
 	int CAP;
 	std::string city;
 	std::string stato;
-
-	// Di seguito, le frasi mostrate all'utente ad ogni fase della creazione del Customer
-	std::string frasi[7] = {"Inserisci il tuo Nome\n",
-	"Inserisci il tuo Cognome\n",
-	"Inserisci la Via del tuo indirizzo\n",
-	"Inserisci il Civico del tuo indirizzo\n",
-	"Inserisci il CAP del tuo indirizzo\n",
-	"Inserisci la Città del tuo indirizzo\n",
-	"Inserisci lo Stato del tuo indirizzo\n"};
 	
 	// Chiede i dati neccessari per creare il customer e l'indirizzo
 	while (datiRicevuti < datiRichiesti)
 	{
 		char buffer[1024] = {0};
-		std::string request = frasi[datiRicevuti];
-		send(clientSocket, request.c_str(), request.length(), 0);
-		// Invia il messaggio pre-impostato all'utente
-
-		int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+		std::string request = FRASI[datiRicevuti];
+		send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+		int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0); // Riceve la risposta dall'utente e la memorizza nello stream
 		if (bytesRead > 0)
 		{
+			buffer.pop_back(); // Rimuove \n alla fine dell'input
 			switch(datiRicevuti)
 			{
 				case 0:
-					nome = buffer.pop_back();
+					nome = buffer;
 					break;
 				case 1:
-					cognome = buffer.pop_back();
+					cognome = buffer;
 					break;
 				case 2:
-					via = buffer.pop_back();
+					via = buffer;
 					break;
 				case 3:
-					std::string civ = buffer.pop_back();
-					civico = atoi(civ);
+					civico = atoi(buffer);
 					break;
 				case 4:
-					std::string cap = buffer.pop_back();
-					CAP = atoi(cap);
+					CAP = atoi(buffer);
 					break;
 				case 5:
-					city = buffer.pop_back();
+					city = buffer;
 					break;
 				case 6:
-					stato = buffer.pop_back();
+					stato = buffer;
 					break;
 			}
 			datiRicevuti++; // Nel caso i dati non vadano bene, si potrebbe pensare a ripetere quel passaggio
 		}
-		else
-		{
-			std::tuple <int, const char*, const char*, const char*, int> failed(-1, "", "", "", -1);
-			return failed; 
-		}; // Se avviene un errore, l'operazione viene interrotta e non ritorna nulla
+		else return false;  // Se avviene un errore, l'operazione viene interrotta e non ritorna nulla
 	}
 
 	sprintf(comando, "INSERT INTO Indirizzo(via, civico, cap, citta, stato) VALUES('%s', %d, %d, '%s', '%s') RETURNING id",
 	via.c_str(), civico, cap, city.c_str(), stato.c_str());
 	res = db.ExecSQLtuples(comando); // Inserisci l'indirizzo nel database e ne ritorna l'ID
-	if (PQresultStatus(res) != PGRES_TUPLES_OK)
-	{
-		std::tuple <int, const char*, const char*, const char*, int> failed(-1, "", "", "", -1);
-		return failed; // Controlla che la query sia andata a buon fine
-	}
-	int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
+	if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
+	
+	int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'indirizzo appena aggiunto
 	PQclear(res);
-
 
 	sprintf(comando, "INSERT INTO Customer(nome, cognome, mail, abita) VALUES('%s', '%s', '%s', %d) RETURNING id",
 	nome.c_str(), cognome.c_str(), mail, abita);
 	res = db.ExecSQLtuples(comando); // Inserisce il customer nel database e ne ritorna l'ID
-	if (PQresultStatus(res) != PGRES_TUPLES_OK)
-	{
-		std::tuple <int, const char*, const char*, const char*, int> failed(-1, "", "", "", -1);
-		return failed; 
-	}; // Controlla che la query sia andata a buon fine
-	int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
+	if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
+	
+	int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'utente appena creato
 	PQclear(res);
 
-	std::tuple <int, const char*, const char*, const char*, int> cust(ID, nome.c_str(), cognome.c_str(), mail, abita);
-	return cust; // Ritorna il customer appena creato
+	inviaDati(ID,nome.c_str(),cognome.c_str(),mail,abita);
+	return true; 
+}
+
+void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, int abita)
+{
+	redisContext *c2r; // c2r contiene le info sul contesto
+	redisReply *reply; // reply contiene le risposte da Redis
+	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
+	
+	reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, "CustomerID", int);
+	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
+    freeReplyObject(reply);
+
+	reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, "CustomerName", nome);
+	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
+    freeReplyObject(reply);
+
+	reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, "CustomerSurname", cognome);
+	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
+    freeReplyObject(reply);
+
+	reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, "CustomerMail", mail);
+	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
+    freeReplyObject(reply);
+
+	reply = RedisCommand(c2r, "XADD %s * %s %s", CUSTOMER_STREAM, "CustomerAddress", int);
+	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
+    freeReplyObject(reply);
+	return;
 }
