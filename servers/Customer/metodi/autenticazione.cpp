@@ -20,7 +20,7 @@ bool autentica(int clientSocket)
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
 	{
        std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
-       return false;
+       return;
     }
 
     redisReply* stream = reply -> element[0];
@@ -32,7 +32,7 @@ bool autentica(int clientSocket)
     if (received_email.empty())
       {
 	  std::cerr << "Errore: non è stata trovata nessuna email con la chiave specificata." << std::endl;
-	  return false;
+	  return;
       }
     received_email.pop_back();
     std::cout << "Email letta dallo stream: " << received_email << std::endl;
