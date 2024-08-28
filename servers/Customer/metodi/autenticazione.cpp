@@ -45,34 +45,7 @@ bool autentica(int clientSocket)
 	bool esito = recuperaCustomer(db, clientSocket, mail);
 	db.finish(); // Chiude la connessione con il database
 	std::cout << "sonoqui" << std::endl;
-
-    // Aggiungi log supplementari per verificare che la funzione inviaDati sia eseguita correttamente
-    if (esito) {
-        std::cout << "Dati recuperati e inviati con successo." << std::endl;
-
-        // Leggi i dati dallo stream Redis
-        reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
-        if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
-        {
-            std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
-            redisFree(c2r);
-            return false;
-        }
-
-        redisReply* stream = reply->element[0];
-        redisReply* entryFields = stream->element[1];
-
-        std::string nome = entryFields->element[1]->str;
-        std::string cognome = entryFields->element[3]->str;
-        freeReplyObject(reply);
-        redisFree(c2r);
-
-        std::cout << "Nome: " << nome << ", Cognome: " << cognome << std::endl;
-    } else {
-        std::cerr << "Errore nel recupero o invio dei dati." << std::endl;
-    }
-
-    return esito;
+        return esito;
 }
 
 bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
@@ -95,13 +68,12 @@ bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
         std::cout << "ID: " << ID << ", Nome: " << nome << ", Cognome: " << cognome << ", Mail: " << mail << ", Abita: " << abita << std::endl;
         inviaDati(ID, nome, cognome, mail, abita);
         std::cout << "Dati inviati con successo." << std::endl;
-        std::cout << "sonoqui" << std::endl;
         PQclear(res);
         return true;
-    }
+    } else return false;
     // Altrimenti crea un nuovo customer tramite funzione ausiliaria
-    PQclear(res);
-    return creaCustomer(db, clientSocket, mail);
+    //PQclear(res);
+    //return creaCustomer(db, clientSocket, mail);
 }
 
 void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, int abita)

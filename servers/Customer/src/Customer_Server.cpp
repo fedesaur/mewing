@@ -74,7 +74,9 @@ void Customer_Server::gestisciConnessioni()
         bool connessioneOK = handshake(clientSocket); // Gestisci il client in una funzione dedicata
         if (connessioneOK && authenticate(clientSocket)) // Se la connessione è andata a buon fine, avvia le varie operazioni
         {
-            autentica(clientSocket); // Passa al processo di autenticazione
+            bool ok = autentica(clientSocket); // Passa al processo di autenticazione
+            std::cout << ok << std::endl;
+            std::cout << "aooooooooo" << std::endl;
             
             // Lettura dello stream Redis
             reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
@@ -132,18 +134,18 @@ bool Customer_Server::handshake(int clientSocket) {
 bool Customer_Server::authenticate(int clientSocket)
 {
     char buffer[1024] = {0};
-    std::string request = "Inserisci il tuo nome\n";
+    std::string request = "Inserisci la tua email\n";
     send(clientSocket, request.c_str(), request.length(), 0);
 
     int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
     if (bytesRead > 0) {
         // Chiede all'utente un nome utile all'identificazione
-        std::string nome(buffer, bytesRead);
-        std::string response = "Nome ricevuto! Procedo all'autenticazione\n";
+        std::string email(buffer, bytesRead);
+        std::string response = "Email ricevuta! Procedo all'autenticazione\n";
         send(clientSocket, response.c_str(), response.length(), 0);
 
         // Scrive il nome ricevuto nello Stream
-        reply = RedisCommand(c2r, "XADD %s * nome %s", WRITE_STREAM, nome.c_str());
+        reply = RedisCommand(c2r, "XADD %s * email %s", WRITE_STREAM, email.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
         freeReplyObject(reply);
         return true;
