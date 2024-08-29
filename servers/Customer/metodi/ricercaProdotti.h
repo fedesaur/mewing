@@ -1,0 +1,4 @@
+#ifndef RICERCAPRODOTTI_H
+#define RICERCAPRODOTTI_H
+
+#endif
