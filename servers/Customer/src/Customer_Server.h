@@ -6,6 +6,7 @@
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../metodi/autenticazione.h"
+#include "../../../entities/Customer.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -26,10 +27,13 @@ class Customer_Server
         // I parametri del Customer teniamoli privati per sicurezza
         redisContext *c2r; // c2r contiene le info sul contesto
         redisReply *reply; // reply contiene le risposte da Redis
+        Customer CUSTOMER; // Struct che conserva le informazioni dell'utente attuale
         int ID_CONNESSIONE = 0;
         int SERVER_SOCKET;
+        std::string OPZIONI[4]; // Opzioni dell'utente
         bool handshake(int clientSocket);
-        bool authenticate(int clientSocket);
+        bool gestisciAutenticazione(int clientSocket);
+        bool gestisciOperazioni(int clientSocket);
     public:
         Customer_Server(); // Costruttore di Customer
         void gestisciConnessioni(); // Metodi di Customer

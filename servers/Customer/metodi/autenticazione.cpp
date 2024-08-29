@@ -60,24 +60,19 @@ bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
     res = db.ExecSQLtuples(comando);
 
     rows = PQntuples(res);
-    if (rows > 0)
+    if (rows > 0) // Se viene trovato un utente con quella mail...
     {
+		//...vengono recuperati i suoi dati ed inviati al server tramite Redis
         int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
         const char* nome = PQgetvalue(res, 0, PQfnumber(res, "nome"));
         const char* cognome = PQgetvalue(res, 0, PQfnumber(res, "cognome"));
         int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "abita")));
-        std::cout << "ID: " << ID << ", Nome: " << nome << ", Cognome: " << cognome << ", Mail: " << mail << ", Abita: " << abita << std::endl;
-        std::cout.flush();
-        inviaDati(ID, nome, cognome, mail, abita);
-        std::cout << "Dati inviati con successo." << std::endl;
-        std::cout.flush();
         PQclear(res);
-        return true;
-    } else {
+        return inviaDati(ID, nome, cognome, mail, abita);
+    }
     // Altrimenti crea un nuovo customer tramite funzione ausiliaria
     PQclear(res);
     return creaCustomer(db, clientSocket, mail);
-    }
 }
 
 bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
@@ -98,6 +93,7 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 	int CAP;
 	std::string city;
 	std::string stato;
+	
 	// Di seguito, le frasi mostrate all'utente ad ogni fase della creazione del Customer
 	std::string FRASI[] = {"Inserisci il tuo Nome\n",
 	"Inserisci il tuo Cognome\n",
@@ -111,11 +107,12 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 	while (datiRicevuti < datiRichiesti)
 	{
 		char buffer[1024] = {0};
-		std::string request = FRASI[datiRicevuti];
+		std::string request = FRASI[datiRicevuti]; // Seleziona la frase del turno
 		send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
 		int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0); // Riceve la risposta dall'utente e la memorizza nello stream
 		if (bytesRead > 0)
 		{
+			// bool correctInput = true; Nel caso i dati non vadano bene, si potrebbe pensare a ripetere quel passaggio
 			std::cout << buffer;
 			switch(datiRicevuti)
 			{
@@ -146,38 +143,37 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 					stato.pop_back();
 					break;
 			}
-			datiRicevuti++; // Nel caso i dati non vadano bene, si potrebbe pensare a ripetere quel passaggio
+			datiRicevuti++;
 		}
 		else return false;  // Se avviene un errore, l'operazione viene interrotta e non ritorna nulla
 	}
-
+	// Viene inserito il nuovo indirizzo nel database
 	sprintf(comando, "INSERT INTO Indirizzo(via, civico, cap, citta, stato) VALUES('%s', %d, %d, '%s', '%s') RETURNING id",
 	via.c_str(), civico, CAP, city.c_str(), stato.c_str());
-	res = db.ExecSQLtuples(comando); // Inserisci l'indirizzo nel database e ne ritorna l'ID
+	res = db.ExecSQLtuples(comando); 
 	if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
-	
 	int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'indirizzo appena aggiunto
 	PQclear(res);
 
+	// Viene inserito il nuovo customer nel database
 	sprintf(comando, "INSERT INTO customers(nome, cognome, mail, abita) VALUES('%s', '%s', '%s', %d) RETURNING id",
 	nome.c_str(), cognome.c_str(), mail, abita);
-	res = db.ExecSQLtuples(comando); // Inserisce il customer nel database e ne ritorna l'ID
+	res = db.ExecSQLtuples(comando);
 	if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
-	
 	int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'utente appena creato
 	PQclear(res);
-        std::cout << ID << nome << cognome << mail << abita << std::endl;
-	inviaDati(ID,nome.c_str(),cognome.c_str(),mail,abita);
-	return true; 
+	
+	return inviaDati(ID,nome.c_str(),cognome.c_str(),mail,abita); // Invia i dati tramite Redis
 }
 
-void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, int abita)
+bool inviaDati(int ID, const char* nome, const char* cognome, const char* mail, int abita)
 {
     std::cout << "Invio dati a Redis: " << std::endl;
     std::cout.flush();
     std::cout << "ID: " << ID << ", Nome: " << nome << ", Cognome: " << cognome << ", Mail: " << mail << ", Abita: " << abita << std::endl;
     std::cout.flush();
-    redisContext *c2r;
+    
+	redisContext *c2r;
     redisReply *reply;
     c2r = redisConnect(REDIS_IP, REDIS_PORT);
 
@@ -188,24 +184,23 @@ void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, 
     }
 
     // Invia tutti i campi richiesti al Redis stream
-    reply = RedisCommand(c2r, "XADD %s * ID %d nome %s cognome %s mail %s abita %d", 
-                         READ_STREAM, ID, nome, cognome, mail, abita);
+    reply = RedisCommand(c2r, "XADD %s * ID %d nome %s cognome %s mail %s abita %d", READ_STREAM, ID, nome, cognome, mail, abita);
 
     if (reply == nullptr) {
         std::cerr << "Errore nell'invio del comando XADD: " << c2r->errstr << std::endl;
         redisFree(c2r);
-        return;
-    }
-
-    if (reply->type != REDIS_REPLY_STRING) {
+        return false;
+    } else if (reply->type != REDIS_REPLY_STRING) {
         std::cerr << "Risposta inattesa da XADD: " << reply->str << std::endl;
         freeReplyObject(reply);
         redisFree(c2r);
-        return;
+        return false;
     }
-
+	
+    std::cout << "Dati inviati con successo." << std::endl;
+    std::cout.flush();
     freeReplyObject(reply);
     redisFree(c2r);
-	return;
+	return true;
 }
 

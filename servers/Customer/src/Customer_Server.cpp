@@ -3,6 +3,13 @@
 // Costruttore di Customer
 Customer_Server::Customer_Server()
 {
+    // Definisce le opzioni del Customer nel database
+    OPZIONI[0] = "Modifica profilo";
+    OPZIONI[1] = "Ricerca prodotti";
+    OPZIONI[2] = "Ordina prodotti";
+    OPZIONI[3] = "Aggiungi/Rimuovi prodotti da ordine";
+
+    // Crea il socket del server
     SERVER_SOCKET = socket(AF_INET, SOCK_STREAM, 0); // Crea il socket
     if (SERVER_SOCKET < 0) {
         std::cerr << "Errore nella creazione del socket." << std::endl;
@@ -77,14 +84,14 @@ void Customer_Server::gestisciConnessioni()
         send(clientSocket, response.c_str(), response.length(), 0);
 
         bool connessioneOK = handshake(clientSocket); // Gestisci il client in una funzione dedicata
-        if (connessioneOK && authenticate(clientSocket)) // Se la connessione è andata a buon fine, avvia le varie operazioni
+        if (connessioneOK && gestisciAutenticazione(clientSocket)) // Se la connessione è andata a buon fine, avvia le varie operazioni
         {
             // Lettura dello stream Redis
             reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
             if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
             {
                 std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
-                return;
+                continue;
             }
 
             redisReply* stream = reply->element[0];
@@ -93,28 +100,41 @@ void Customer_Server::gestisciConnessioni()
             if (entryFields->elements < 6) { // Assicurarsi che ci siano abbastanza campi
                 std::cerr << "Errore: numero di campi insufficiente nello stream Redis." << std::endl;
                 freeReplyObject(reply);
-                //close(clientSocket); Se viene fatto continue, si passa direttamente al close fuori dall'if
                 continue;
             }
-
+            
+            std::string ID = entryFields->element[1]->str;
             std::string nome = entryFields->element[3]->str; // Nome ricevuto
             std::string cognome = entryFields->element[5]->str; // Cognome ricevuto
+            std::string mail = entryFields->element[7]->str;
+            std::string abita = entryFields -> element[9]->str;
             freeReplyObject(reply);
 
-            if (nome.empty() || cognome.empty())
+            if (ID.empty() || nome.empty() || cognome.empty() || mail.empty() || abita.empty())
             {
                 std::cerr << "Errore: non sono stati trovati nome o cognome con la chiave specificata." << std::endl;
-                //close(clientSocket); Se viene fatto continue, si passa direttamente al close fuori dall'if
                 continue;
             }
-            // Saluta il customer appena autenticato
-            std::string response = "Benvenuto " + nome + " " + cognome;
+
+            std::string response = "Benvenuto " + nome + " " + cognome;// Saluta il customer appena autenticato
             send(clientSocket, response.c_str(), response.length(), 0);
+            
+            CUSTOMER.ID = atoi(ID.c_str());
+            CUSTOMER.nome = nome.c_str();
+            CUSTOMER.cognome = cognome.c_str();
+            CUSTOMER.mail = mail.c_str();
+            CUSTOMER.abita = atoi(abita.c_str());
+
+            // Andata a buon fine l'autenticazione, si rendono disponibile all'utente le varie funzionalità tramite una funzione ausiliaria
+            do
+            {
+                bool continuaConnessione = gestisciOperazioni(clientSocket);
+            } while (continuaConnessione);
+            
         }
 
         close(clientSocket); // Chiudi la connessione con il client dopo averla gestita
         std::cout << "Conclusa connessione con ID: " + std::to_string(ID_CONNESSIONE) << std::endl;
-        std::cout.flush();
         ID_CONNESSIONE++;
     }
     close(SERVER_SOCKET); // Chiudi il socket del server (questa parte non verrà mai raggiunta a causa del while infinito)
@@ -132,7 +152,7 @@ bool Customer_Server::handshake(int clientSocket) {
     return false;
 }
 
-bool Customer_Server::authenticate(int clientSocket)
+bool Customer_Server::gestisciAutenticazione(int clientSocket)
 {
     char buffer[1024] = {0};
     std::string request = "Inserisci la tua email\n";
@@ -145,7 +165,7 @@ bool Customer_Server::authenticate(int clientSocket)
         std::string response = "Email ricevuta! Procedo all'autenticazione\n";
         send(clientSocket, response.c_str(), response.length(), 0);
 
-        // Scrive il nome ricevuto nello Stream
+        // Scrive l'email ricevuta nello Stream
         reply = RedisCommand(c2r, "XADD %s * email %s", WRITE_STREAM, email.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
         freeReplyObject(reply);
@@ -153,6 +173,58 @@ bool Customer_Server::authenticate(int clientSocket)
     }
     std::cerr << "Errore o nessun dato ricevuto dal client." << std::endl;
     return false;
+}
+
+bool Customer_Server::gestisciOperazioni(int clientSocket)
+{
+    char buffer[1024] = {0};
+    std::string request = "Ecco le operazioni disponibili:\n";
+    send(clientSocket, request.c_str(), request.length(), 0);
+    // Legge le opzioni all'utente
+    for (int i = 0; i < OPZIONI->length; i++)
+    {
+        std::string messaggio = std::to_string(i+1) + ") " + OPZIONI[i] + "\n";
+        send(clientSocket, messaggio.c_str(), messaggio.length(), 0);
+    }
+    std::string termina = "Oppure digita Q per terminare la connessione\n";
+    send(clientSocket, termina.c_str(), termina.length(), 0);
+    
+    bool attendiInput = true;
+    do
+    {
+        int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+        if (bytesRead > 0) {
+            // Chiede all'utente un nome utile all'identificazione
+            std::string messaggio(buffer, bytesRead);
+            if (isdigit(messaggio) && (atoi(messaggio) < OPZIONI->length))
+            {
+                int opzione = atoi(messaggio)-1;
+                switch(opzione)
+                {
+                    case 0:
+                        // Funzione per la modifica del profilo
+                        break;
+                    case 1:
+                        // Funzione per la ricerca dei prodotti
+                        break;
+                    case 2:
+                        // Funzione per l'ordinamento dei prodotti
+                        break;
+                    case 3:
+                        // Funzione per l'aggiunta/rimozione dei prodotti all'ordine
+                        break;
+                }
+                attendiInput = false;
+            } else if (toupper(messaggio.pop_back()) == "Q") {
+                return false; //Termina la connessione
+            } else {
+                std::string errore = "Input non valido\n";
+                send(clientSocket, errore.c_str(), errore.length(), 0);
+            }
+        }
+    } while (attendiInput); //Continua finché non riceve un input valido
+    
+    return true;
 }
 
 int main()

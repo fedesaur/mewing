@@ -32,7 +32,7 @@ bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail);
 
 bool creaCustomer(Con2DB db, int clientSocket, const char* mail);
 
-void inviaDati(int ID, const char* nome, const char* cognome, const char* mail, int abita); // Per leggibilità, l'invio dati viene gestito da un'unica funzione
+bool inviaDati(int ID, const char* nome, const char* cognome, const char* mail, int abita); // Per leggibilità, l'invio dati viene gestito da un'unica funzione
 
 
 #endif //AUTENTICAZIONE_H
