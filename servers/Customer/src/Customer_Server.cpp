@@ -71,6 +71,7 @@ void Customer_Server::gestisciConnessioni()
     // Gestione delle connessioni dei client
     while (true)
     {
+        bool continuaConnessione=false;
         int clientSocket = accept(SERVER_SOCKET, nullptr, nullptr);
         if (clientSocket < 0) {
             std::cerr << "Errore nell'accettare la connessione dal client." << std::endl;
@@ -111,22 +112,22 @@ void Customer_Server::gestisciConnessioni()
             freeReplyObject(reply);
             std::cout << "ID: " << ID << ", Nome: " << nome << ", Cognome: " << cognome << ", Mail: " << mail << ", Abita: " << abita << std::endl;
 
-            if (ID.empty() || nome.empty() || cognome.empty() || mail.empty() || abita.empty())
+            if (ID.empty() || nome.empty() || cognome.empty() || mail.empty())
             {
                 std::cerr << "Errore: non sono stati trovati nome o cognome con la chiave specificata." << std::endl;
-                continue;
+            } else {
+              std::string response = "Benvenuto " + nome + " " + cognome;// Saluta il customer appena autenticato
+              send(clientSocket, response.c_str(), response.length(), 0);
+            
+              CUSTOMER.ID = atoi(ID.c_str());
+              CUSTOMER.nome = nome.c_str();
+              CUSTOMER.cognome = cognome.c_str();
+              CUSTOMER.mail = mail.c_str();
+              CUSTOMER.abita = atoi(abita.c_str());
+              continuaConnessione = true;
             }
 
-            std::string response = "Benvenuto " + nome + " " + cognome;// Saluta il customer appena autenticato
-            send(clientSocket, response.c_str(), response.length(), 0);
-            
-            CUSTOMER.ID = atoi(ID.c_str());
-            CUSTOMER.nome = nome.c_str();
-            CUSTOMER.cognome = cognome.c_str();
-            CUSTOMER.mail = mail.c_str();
-            CUSTOMER.abita = atoi(abita.c_str());
 
-            bool continuaConnessione = true;
             // Andata a buon fine l'autenticazione, si rendono disponibile all'utente le varie funzionalità tramite una funzione ausiliaria
             do{
                 continuaConnessione = gestisciOperazioni(clientSocket);

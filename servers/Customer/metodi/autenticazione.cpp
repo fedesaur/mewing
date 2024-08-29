@@ -68,7 +68,7 @@ bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
         const char* cognome = PQgetvalue(res, 0, PQfnumber(res, "cognome"));
         int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "abita")));
         PQclear(res);
-        return inviaDati(ID, nome, cognome, mail, abita);
+        return inviaDati(ID,nome,cognome,mail,abita);
     }
     // Altrimenti crea un nuovo customer tramite funzione ausiliaria
     PQclear(res);
@@ -171,9 +171,8 @@ bool inviaDati(int ID, const char* nome, const char* cognome, const char* mail, 
     std::cout << "Invio dati a Redis: " << std::endl;
     std::cout.flush();
     std::cout << "ID: " << ID << ", Nome: " << nome << ", Cognome: " << cognome << ", Mail: " << mail << ", Abita: " << abita << std::endl;
-    std::cout.flush();
     
-	redisContext *c2r;
+    redisContext *c2r;
     redisReply *reply;
     c2r = redisConnect(REDIS_IP, REDIS_PORT);
 
@@ -186,6 +185,7 @@ bool inviaDati(int ID, const char* nome, const char* cognome, const char* mail, 
     // Invia tutti i campi richiesti al Redis stream
     reply = RedisCommand(c2r, "XADD %s * ID %d nome %s cognome %s mail %s abita %d", 
 						READ_STREAM, ID, nome, cognome, mail, abita);
+
 
     if (reply == nullptr) {
         std::cerr << "Errore nell'invio del comando XADD: " << c2r->errstr << std::endl;
@@ -201,5 +201,5 @@ bool inviaDati(int ID, const char* nome, const char* cognome, const char* mail, 
     std::cout << "Dati inviati con successo." << std::endl;
     freeReplyObject(reply);
     redisFree(c2r);
-	return true;
+    return true;
 }
