@@ -34,7 +34,7 @@ bool autentica(int clientSocket)
 	  std::cerr << "Errore: non è stata trovata nessuna email con la chiave specificata." << std::endl;
 	  return false; 
       }
-    received_email.pop_back();
+
     std::cout << "Email letta dallo stream: " << received_email << std::endl;
     std::cout.flush();
     const char* mail = received_email.c_str();
@@ -180,11 +180,12 @@ bool inviaDati(int ID, const char* nome, const char* cognome, const char* mail, 
     if (c2r == nullptr || c2r->err)
     {
         std::cerr << "Errore nella connessione a Redis: " << (c2r ? c2r->errstr : "Impossibile connettersi a Redis") << std::endl;
-        return;
+        return true;
     }
 
     // Invia tutti i campi richiesti al Redis stream
-    reply = RedisCommand(c2r, "XADD %s * ID %d nome %s cognome %s mail %s abita %d", READ_STREAM, ID, nome, cognome, mail, abita);
+    reply = RedisCommand(c2r, "XADD %s * ID %d nome %s cognome %s mail %s abita %d", 
+						READ_STREAM, ID, nome, cognome, mail, abita);
 
     if (reply == nullptr) {
         std::cerr << "Errore nell'invio del comando XADD: " << c2r->errstr << std::endl;
@@ -198,9 +199,7 @@ bool inviaDati(int ID, const char* nome, const char* cognome, const char* mail, 
     }
 	
     std::cout << "Dati inviati con successo." << std::endl;
-    std::cout.flush();
     freeReplyObject(reply);
     redisFree(c2r);
 	return true;
 }
-

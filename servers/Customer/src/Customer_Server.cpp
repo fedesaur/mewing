@@ -109,6 +109,7 @@ void Customer_Server::gestisciConnessioni()
             std::string mail = entryFields->element[7]->str;
             std::string abita = entryFields -> element[9]->str;
             freeReplyObject(reply);
+            std::cout << "ID: " << ID << ", Nome: " << nome << ", Cognome: " << cognome << ", Mail: " << mail << ", Abita: " << abita << std::endl;
 
             if (ID.empty() || nome.empty() || cognome.empty() || mail.empty() || abita.empty())
             {
@@ -125,11 +126,12 @@ void Customer_Server::gestisciConnessioni()
             CUSTOMER.mail = mail.c_str();
             CUSTOMER.abita = atoi(abita.c_str());
 
+            bool continuaConnessione = true;
             // Andata a buon fine l'autenticazione, si rendono disponibile all'utente le varie funzionalità tramite una funzione ausiliaria
-            do
-            {
-                bool continuaConnessione = gestisciOperazioni(clientSocket);
-            } while (continuaConnessione);
+            do{
+                continuaConnessione = gestisciOperazioni(clientSocket);
+            }
+            while (continuaConnessione);
             
         }
 
@@ -165,6 +167,7 @@ bool Customer_Server::gestisciAutenticazione(int clientSocket)
         std::string response = "Email ricevuta! Procedo all'autenticazione\n";
         send(clientSocket, response.c_str(), response.length(), 0);
 
+        if (email[email.length()-1] == '\n') email.erase(email[email.length()-1]);
         // Scrive l'email ricevuta nello Stream
         reply = RedisCommand(c2r, "XADD %s * email %s", WRITE_STREAM, email.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
@@ -181,7 +184,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
     std::string request = "Ecco le operazioni disponibili:\n";
     send(clientSocket, request.c_str(), request.length(), 0);
     // Legge le opzioni all'utente
-    for (int i = 0; i < OPZIONI->length; i++)
+    for (int i = 0; i < NUMERO_OPZIONI; i++)
     {
         std::string messaggio = std::to_string(i+1) + ") " + OPZIONI[i] + "\n";
         send(clientSocket, messaggio.c_str(), messaggio.length(), 0);
@@ -189,19 +192,22 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
     std::string termina = "Oppure digita Q per terminare la connessione\n";
     send(clientSocket, termina.c_str(), termina.length(), 0);
     
-    bool attendiInput = true;
+    bool attendiInput = true; // Continua la richiesta finché non riceve un input adatto
     do
     {
         int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
         if (bytesRead > 0) {
             // Chiede all'utente un nome utile all'identificazione
             std::string messaggio(buffer, bytesRead);
-            if (isdigit(messaggio) && (atoi(messaggio) < OPZIONI->length))
+            const char* input = messaggio.c_str();
+            std::cout << input << std::endl;
+            if (std::isdigit(input[0]) && (atoi(input) <= NUMERO_OPZIONI))
             {
-                int opzione = atoi(messaggio)-1;
+                int opzione = atoi(input)-1;
                 switch(opzione)
                 {
                     case 0:
+                        return false; // Serve per testing
                         // Funzione per la modifica del profilo
                         break;
                     case 1:
@@ -215,7 +221,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                         break;
                 }
                 attendiInput = false;
-            } else if (toupper(messaggio.pop_back()) == "Q") {
+            } else if (input == "q" || input == "Q") {
                 return false; //Termina la connessione
             } else {
                 std::string errore = "Input non valido\n";
