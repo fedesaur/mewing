@@ -67,7 +67,7 @@ bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
         const char* cognome = PQgetvalue(res, 0, PQfnumber(res, "cognome"));
         int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "abita")));
 		bool esito = inviaDati(ID,nome,cognome,mail,abita);
-        PQclear(res);
+        PQclear(res); // <- Importante metterlo DOPO InviaDati altrimenti i dati vengono cancellati
         return esito;
     }
     // Altrimenti crea un nuovo customer tramite funzione ausiliaria
@@ -153,7 +153,6 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 	res = db.ExecSQLtuples(comando); 
 	if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
 	int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'indirizzo appena aggiunto
-	PQclear(res);
 
 	// Viene inserito il nuovo customer nel database
 	sprintf(comando, "INSERT INTO customers(nome, cognome, mail, abita) VALUES('%s', '%s', '%s', %d) RETURNING id",
@@ -161,14 +160,13 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 	res = db.ExecSQLtuples(comando);
 	if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
 	int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'utente appena creato
-	PQclear(res);
-	
-	return inviaDati(ID,nome.c_str(),cognome.c_str(),mail,abita); // Invia i dati tramite Redis
+	bool esito = inviaDati(ID,nome.c_str(),cognome.c_str(),mail,abita); // Invia i dati tramite Redis
+	PQclear(res);	
+	return esito;
 }
 
 bool inviaDati(int ID, const char* nome, const char* cognome, const char* mail, int abita)
 {
-	std::cout << "ID: " << ID << ", Nome: " << nome << ", Cognome: " << cognome << ", Mail: " << mail << ", Abita: " << abita << std::endl;
 	char messaggio[1000];
     redisContext *c2r;
     redisReply *reply;
@@ -179,10 +177,8 @@ bool inviaDati(int ID, const char* nome, const char* cognome, const char* mail, 
         std::cerr << "Errore nella connessione a Redis: " << (c2r ? c2r->errstr : "Impossibile connettersi a Redis") << std::endl;
         return true;
     }
-    std::cout << "ID: " << ID << ", Nome: " << nome << ", Cognome: " << cognome << ", Mail: " << mail << ", Abita: " << abita << std::endl;
 	// Prepara il comando Redis
 	sprintf(messaggio, "XADD %s * ID %d nome %s cognome %s mail %s abita %d", READ_STREAM, ID, nome, cognome, mail, abita);
-	std::cout << messaggio << std::endl;
 	reply = RedisCommand(c2r, messaggio); // Invia tutti i campi richiesti al Redis stream
     if (reply == nullptr) {
         std::cerr << "Errore nell'invio del comando XADD: " << c2r->errstr << std::endl;

@@ -104,19 +104,18 @@ void Customer_Server::gestisciConnessioni()
                 continue;
             }
             
-            std::string ID = entryFields->element[1]->str;
-            std::string nome = entryFields->element[3]->str; // Nome ricevuto
+            std::string ID = entryFields->element[1]->str; // ID Customer
+            std::string nome = entryFields->element[3]->str; // Nome Customer
             std::string cognome = entryFields->element[5]->str; // Cognome ricevuto
-            std::string mail = entryFields->element[7]->str;
-            std::string abita = entryFields -> element[9]->str;
+            std::string mail = entryFields->element[7]->str; // Mail customer
+            std::string abita = entryFields -> element[9]->str; // Indirizzo (ID) Customer
             freeReplyObject(reply);
-            std::cout << "ID: " << ID << ", Nome: " << nome << ", Cognome: " << cognome << ", Mail: " << mail << ", Abita: " << abita << std::endl;
 
             if (ID.empty() || nome.empty() || cognome.empty() || mail.empty())
             {
                 std::cerr << "Errore: non sono stati trovati nome o cognome con la chiave specificata." << std::endl;
             } else {
-              std::string response = "Benvenuto " + nome + " " + cognome;// Saluta il customer appena autenticato
+              std::string response = "Benvenuto " + nome + " " + cognome + "\n";// Saluta il customer appena autenticato
               send(clientSocket, response.c_str(), response.length(), 0);
             
               CUSTOMER.ID = atoi(ID.c_str());
@@ -126,7 +125,6 @@ void Customer_Server::gestisciConnessioni()
               CUSTOMER.abita = atoi(abita.c_str());
               continuaConnessione = true;
             }
-
 
             // Andata a buon fine l'autenticazione, si rendono disponibile all'utente le varie funzionalità tramite una funzione ausiliaria
             do{
@@ -202,6 +200,12 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
             std::string messaggio(buffer, bytesRead);
             const char* input = messaggio.c_str();
             std::cout << input << std::endl;
+            /*
+            OPZIONI[0] = "Modifica profilo";
+            OPZIONI[1] = "Ricerca prodotti";
+            OPZIONI[2] = "Ordina prodotti";
+            OPZIONI[3] = "Aggiungi/Rimuovi prodotti da ordine";
+            */        
             if (std::isdigit(input[0]) && (atoi(input) <= NUMERO_OPZIONI))
             {
                 int opzione = atoi(input)-1;
@@ -212,7 +216,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                         // Funzione per la modifica del profilo
                         break;
                     case 1:
-                        // Funzione per la ricerca dei prodotti
+                        cercaProdottiDisponibili(clientSocket);
                         break;
                     case 2:
                         // Funzione per l'ordinamento dei prodotti
