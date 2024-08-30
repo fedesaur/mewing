@@ -43,6 +43,7 @@ bool cercaProdottiDisponibili(int clientSocket)
         return false;
     }
     //...recuperati i prodotti, permette operazioni con quelli trovati e quelli anche nel carrello  
+    delete[] prodottiDisponibili;
     PQclear(res);
     return true;
 }
