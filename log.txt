@@ -1,7 +1,18 @@
-error: invalid operands of types ‘const char [14]’ and ‘int’ to binary ‘operator<<’
-   71 |             std::string prodotto = "ID Prodotto: " << ID << " Nome Prodotto: " << nome <<" Descrizione: " << descrizione << " Fornitore: " << fornitore <<" Prezzo Prodotto: " << prezzo << "\n";
-      |                                    ~~~~~~~~~~~~~~~ ^~ ~~
-      |                                    |                  |
-      |                                    const char [14]    int
+bool Customer_Server::gestisciOperazioni(int)’:
+Customer_Server.cpp:203:56: error: cannot convert ‘std::__cxx11::basic_string<char>::iterator’ to ‘const char*’
+  203 |             messaggio.erase(std::remove(messaggio.begin(), messaggio.end(), '\n'), messaggio.end()); // Rimuove eventuali newline
+      |                                         ~~~~~~~~~~~~~~~^~
+      |                                                        |
+      |                                                        std::__cxx11::basic_string<char>::iterator
+In file included from /usr/include/c++/13/cstdio:42,
+                 from /usr/include/c++/13/ext/string_conversions.h:45,
+                 from /usr/include/c++/13/bits/basic_string.h:4109,
+                 from /usr/include/c++/13/string:54,
+                 from Customer_Server.h:4,
+                 from Customer_Server.cpp:1:
+/usr/include/stdio.h:158:32: note:   initializing argument 1 of ‘int remove(const char*)’
+  158 | extern int remove (const char *__filename) __THROW;
+      |                    ~~~~~~~~~~~~^~~~~~~~~~
+make: *** [Makefile:38: customer_server] Errore 1
 
 
