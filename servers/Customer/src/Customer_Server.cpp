@@ -182,6 +182,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
     char buffer[1024] = {0};
     std::string request = "Ecco le operazioni disponibili:\n";
     send(clientSocket, request.c_str(), request.length(), 0);
+
     // Legge le opzioni all'utente
     for (int i = 0; i < NUMERO_OPZIONI; i++)
     {
@@ -192,51 +193,56 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
     send(clientSocket, termina.c_str(), termina.length(), 0);
     
     bool attendiInput = true; // Continua la richiesta finché non riceve un input adatto
+
     do
     {
         int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
         if (bytesRead > 0) {
             // Chiede all'utente un nome utile all'identificazione
             std::string messaggio(buffer, bytesRead);
-            const char* input = messaggio.c_str();
-            std::cout << input << std::endl;
-            /*
-            OPZIONI[0] = "Modifica profilo";
-            OPZIONI[1] = "Ricerca prodotti";
-            OPZIONI[2] = "Ordina prodotti";
-            OPZIONI[3] = "Aggiungi/Rimuovi prodotti da ordine";
-            */        
-            if (std::isdigit(input[0]) && (atoi(input) <= NUMERO_OPZIONI))
-            {
-                int opzione = atoi(input)-1;
-                switch(opzione)
-                {
-                    case 0:
-                        return false; // Serve per testing
-                        // Funzione per la modifica del profilo
-                        break;
-                    case 1:
-                        cercaProdottiDisponibili(clientSocket);
-                        break;
-                    case 2:
-                        // Funzione per l'ordinamento dei prodotti
-                        break;
-                    case 3:
-                        // Funzione per l'aggiunta/rimozione dei prodotti all'ordine
-                        break;
+            messaggio.erase(std::remove(messaggio.begin(), messaggio.end(), '\n'), messaggio.end()); // Rimuove eventuali newline
+
+            if (messaggio == "q" || messaggio == "Q") {
+                return false; // Termina la connessione
+            }
+            
+            if (std::isdigit(messaggio[0])) {
+                int opzione = std::stoi(messaggio) - 1;
+                
+                if (opzione >= 0 && opzione < NUMERO_OPZIONI) {
+                    switch(opzione)
+                    {
+                        case 0:
+                            std::cout << "Funzione Modifica profilo non implementata\n";
+                            send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                            break;
+                        case 1:
+                            cercaProdottiDisponibili(clientSocket);
+                            break;
+                        case 2:
+                            std::cout << "Funzione Ordina prodotti non implementata\n";
+                            send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                            break;
+                        case 3:
+                            std::cout << "Funzione Aggiungi/Rimuovi prodotti da ordine non implementata\n";
+                            send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                            break;
+                    }
+                    attendiInput = false; // Input valido ricevuto, esce dal loop
+                } else {
+                    std::string errore = "Opzione non valida, riprova.\n";
+                    send(clientSocket, errore.c_str(), errore.length(), 0);
                 }
-                attendiInput = false;
-            } else if (input == "q" || input == "Q") {
-                return false; //Termina la connessione
             } else {
-                std::string errore = "Input non valido\n";
+                std::string errore = "Input non valido, riprova.\n";
                 send(clientSocket, errore.c_str(), errore.length(), 0);
             }
         }
-    } while (attendiInput); //Continua finché non riceve un input valido
+    } while (attendiInput); // Continua finché non riceve un input valido
     
     return true;
 }
+
 
 int main()
 {
