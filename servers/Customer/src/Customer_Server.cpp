@@ -202,7 +202,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
             std::string messaggio(buffer, bytesRead);
             const char* input = messaggio.c_str();
             std::cout << input << std::endl;
-            if (std::isdigit(input[0]) && (atoi(input[0]) <= NUMERO_OPZIONI))
+            if (std::isdigit(input[0]) && (atoi(input) <= NUMERO_OPZIONI))
             {
                 int opzione = atoi(input)-1;
                 switch(opzione)
