@@ -1,0 +1,7 @@
+error: invalid operands of types ‘const char [14]’ and ‘int’ to binary ‘operator<<’
+   71 |             std::string prodotto = "ID Prodotto: " << ID << " Nome Prodotto: " << nome <<" Descrizione: " << descrizione << " Fornitore: " << fornitore <<" Prezzo Prodotto: " << prezzo << "\n";
+      |                                    ~~~~~~~~~~~~~~~ ^~ ~~
+      |                                    |                  |
+      |                                    const char [14]    int
+
+
