@@ -68,7 +68,8 @@ bool cercaProdottiDisponibili(int clientSocket)
             double prezzo = atof(PQgetvalue(res, i, PQfnumber(res, "pr.prezzo")));
             const char* nome = PQgetvalue(res, i, PQfnumber(res, "pr.nome"));
             const char* fornitore = PQgetvalue(res, i, PQfnumber(res, "fr.nome"));
-            std::string prodotto = "ID Prodotto: " << ID << " Nome Prodotto: " << nome <<" Descrizione: " << descrizione << " Fornitore: " << fornitore <<" Prezzo Prodotto: " << prezzo << "\n";
+            std::string prodotto = "ID Prodotto: " + std::to_string(ID) + " Nome Prodotto: " + nome + " Descrizione: " + descrizione + " Fornitore: " + fornitore + " Prezzo Prodotto: " + std::to_string(prezzo) + "\n";
+            std::cout << prodotto;
 	    send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
             // Mostra il prodotto all'utente
             prodottiDisponibili[i].ID = ID;
