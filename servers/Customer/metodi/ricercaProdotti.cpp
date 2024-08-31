@@ -55,6 +55,7 @@ bool cercaProdottiDisponibili(int clientSocket)
     sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome FROM prodotto pr, fornitore fr WHERE pr.fornitore = fr.id");
     res = db.ExecSQLtuples(comando);
     if (PQresultStatus(res) != PGRES_TUPLES_OK) return nullptr; // Controlla che la query sia andata a buon fine
+    std::cout << "Query andata a buon fine!\n";
     rows = PQntuples(res);
     if (rows > 0)
     {
@@ -63,6 +64,7 @@ bool cercaProdottiDisponibili(int clientSocket)
 
         for (int i = 0; i < rows; i++)
         {
+            std::cout << "Computa la riga: " << i << std::endl;
             int ID = atoi(PQgetvalue(res, i, PQfnumber(res, "pr.id")));
             const char* descrizione = PQgetvalue(res, i, PQfnumber(res, "pr.descrizione"));
             double prezzo = atof(PQgetvalue(res, i, PQfnumber(res, "pr.prezzo")));
@@ -70,13 +72,14 @@ bool cercaProdottiDisponibili(int clientSocket)
             const char* fornitore = PQgetvalue(res, i, PQfnumber(res, "fr.nome"));
             std::string prodotto = "ID Prodotto: " + std::to_string(ID) + " Nome Prodotto: " + nome + " Descrizione: " + descrizione + " Fornitore: " + fornitore + " Prezzo Prodotto: " + std::to_string(prezzo) + "\n";
             std::cout << prodotto;
-	    send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
+	        send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
             // Mostra il prodotto all'utente
             prodottiDisponibili[i].ID = ID;
             prodottiDisponibili[i].descrizione = descrizione;
             prodottiDisponibili[i].prezzo = prezzo;
             prodottiDisponibili[i].nome = nome;
             prodottiDisponibili[i].fornitore = fornitore;
+            std::cout << "Computata la riga: " << i << std::endl;
         }
         return prodottiDisponibili;
     }
