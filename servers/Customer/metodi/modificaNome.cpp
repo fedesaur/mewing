@@ -86,7 +86,7 @@ std::pair<std::string,bool> cambiaNome(Con2DB db, PGresult *res, int clientSocke
         // Chiede all'utente il nuovo nome
         std::string messaggio(buffer, bytesRead);
         messaggio.erase(std::remove(messaggio.begin(), messaggio.end(), '\n'), messaggio.end()); // Rimuove eventuali newline
-        if (messaggio.length() > 20 || messaggio.length() == 20)
+        if (messaggio.length() > 20 || messaggio.length() == 0)
         {                    
             std::string errore = "Il nome deve avere massimo 20 caratteri e minimo 0\n";
             send(clientSocket, errore.c_str(), errore.length(), 0);
@@ -120,7 +120,7 @@ std::pair<std::string,bool> cambiaCognome(Con2DB db, PGresult *res, int clientSo
         // Chiede all'utente il nuovo nome
         std::string messaggio(buffer, bytesRead);
         messaggio.erase(std::remove(messaggio.begin(), messaggio.end(), '\n'), messaggio.end()); // Rimuove eventuali newline
-        if (messaggio.length() > 20 || messaggio.length() == 20)
+        if (messaggio.length() > 20 || messaggio.length() == 0)
         {                    
             std::string errore = "Il cognome deve avere massimo 20 caratteri e minimo 0\n";
             send(clientSocket, errore.c_str(), errore.length(), 0);
