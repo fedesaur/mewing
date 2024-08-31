@@ -217,12 +217,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                             send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
                             break;
                         case 1:
-                            bool esito = cercaProdottiDisponibili(clientSocket);
-                            if (!esito)
-                            {
-                                std::string errore = "C'è stato un errore con l'operazione.\n";
-                                send(clientSocket, errore.c_str(), errore.length(), 0);
-                            }
+                            cercaProdottiDisponibili(clientSocket);
                             break;
                         case 2:
                             std::cout << "Funzione Ordina prodotti non implementata\n";

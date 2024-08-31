@@ -53,7 +53,7 @@ std::pair<int, Prodotto*>  recuperaProdottiDisponibili(Con2DB db, PGresult *res,
     if (rows > 0)
     {
         // Prima mostriamo all'utente i prodotti disponibili..
-        std::string request = "PRODOTTI NEL CARRELLO (TOTALE : " + totale + " ):\n"; //... e lo stampa
+        std::string request = "PRODOTTI DISPONIBILI:\n"; //... e lo stampa
 	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
         Prodotto* prodottiDisponibili = new Prodotto[rows];
 
@@ -98,9 +98,7 @@ std::pair<int, Prodotto*> recuperaProdottiCarrello(int ID, Con2DB db, PGresult *
     std::pair <int, Prodotto*> risultato;
     int rows;
     char comando[1000];
-    sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF, cr.totale, pc.quantita 
-    FROM prodotto pr, carrello cr, prodincart pc, fornitore fr
-    WHERE pc.prodotto = pr.id AND AND pc.carrello = cr.customer AND pr.fornitore = fr.id AND cr.customer = %d", ID);
+    sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF, cr.totale, pc.quantita FROM prodotto pr, carrello cr, prodincart pc, fornitore fr WHERE pc.prodotto = pr.id AND pc.carrello = cr.customer AND pr.fornitore = fr.id AND cr.customer = %d", ID);
     res = db.ExecSQLtuples(comando);
     if (PQresultStatus(res) != PGRES_TUPLES_OK) // Controlla che la query sia andata a buon fine
     {
@@ -113,8 +111,8 @@ std::pair<int, Prodotto*> recuperaProdottiCarrello(int ID, Con2DB db, PGresult *
     {
         // Mostriamo all'utente i prodotti nel suo carrello
         Prodotto* carrello = new Prodotto[rows];
-        const char* totale = PQgetvalue(res, 0, PQfnumber(res, "totale")); //Recupera il totale...
-        std::string request = "PRODOTTI NEL CARRELLO (TOTALE : " + totale + " ):\n"; //... e lo stampa
+        //const char* totale = PQgetvalue(res, 0, PQfnumber(res, "totale")); //Recupera il totale...
+        std::string request = "PRODOTTI NEL CARRELLO (TOTALE : 0):\n"; //... e lo stampa
 	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
         for (int i = 0; i < rows; i++)
         {
