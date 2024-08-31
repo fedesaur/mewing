@@ -1,7 +1,7 @@
-#include "Supplier_Server.h"
+#include "Courier_Server.h"
 
-// Costruttore di Supplier
-Supplier_Server::Supplier_Server()
+// Costruttore di Courier
+Courier_Server::Courier_Server()
 {
     // Definisce le opzioni del Supplier nel database
     OPZIONI[0] = "Modifica profilo";
@@ -56,7 +56,7 @@ Supplier_Server::Supplier_Server()
     std::cout.flush();
 }
 
-void Supplier_Server::gestisciConnessioni()
+void Courier_Server::gestisciConnessioni()
 {
     // Attende che un socket si connetta (finché non succede, server rimane in ascolto)
     if (listen(SERVER_SOCKET, MAX_CONNECTIONS) < 0) {
@@ -104,25 +104,26 @@ void Supplier_Server::gestisciConnessioni()
                 continue;
             }
             
-            std::string ID = entryFields->element[1]->str; // ID Customer
-            std::string nome = entryFields->element[3]->str; // Nome Customer
-            std::string piva = entryFields->element[5]->str; // Cognome ricevuto
-            std::string telefono = entryFields->element[7]->str; // Mail customer
-            std::string sede = entryFields -> element[9]->str; // Indirizzo (ID) Customer
+            std::string ID = entryFields->element[1]->str; // ID Courier
+            std::string piva = entryFields->element[3]->str; // piva
+            std::string nome = entryFields->element[5]->str; // nome
+            std::string indirizzo = entryFields -> element[7]->str; // Indirizzo (ID) Customer
             freeReplyObject(reply);
 
-            if (ID.empty() || nome.empty() || piva.empty() || telefono.empty())
+            if (ID.empty() || nome.empty() || piva.empty() || indirizzo.empty())
             {
                 std::cerr << "Errore: non sono stati trovati nome o cognome con la chiave specificata." << std::endl;
             } else {
               std::string response = "Benvenuto " + nome + "\n";// Saluta il customer appena autenticato
               send(clientSocket, response.c_str(), response.length(), 0);
-            /*
+              
+              /*
               CUSTOMER.ID = atoi(ID.c_str());
               CUSTOMER.nome = nome.c_str();
               CUSTOMER.cognome = cognome.c_str();
               CUSTOMER.mail = mail.c_str();
-              CUSTOMER.abita = atoi(abita.c_str()); */
+              CUSTOMER.abita = atoi(abita.c_str());
+              */
               
               continuaConnessione = true;
             }
@@ -142,7 +143,7 @@ void Supplier_Server::gestisciConnessioni()
     close(SERVER_SOCKET); // Chiudi il socket del server (questa parte non verrà mai raggiunta a causa del while infinito)
 }
 
-bool Supplier_Server::handshake(int clientSocket) {
+bool Courier_Server::handshake(int clientSocket) {
     char buffer[1024] = {0};
     std::string response = "Ciao\n";
     send(clientSocket, response.c_str(), response.length(), 0);
@@ -154,22 +155,22 @@ bool Supplier_Server::handshake(int clientSocket) {
     return false;
 }
 
-bool Supplier_Server::gestisciAutenticazione(int clientSocket)
+bool Courier_Server::gestisciAutenticazione(int clientSocket)
 {
     char buffer[1024] = {0};
-    std::string request = "Inserisci la tua email\n";
+    std::string request = "Inserisci la tua p.iva\n";
     send(clientSocket, request.c_str(), request.length(), 0);
 
     int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
     if (bytesRead > 0) {
         // Chiede all'utente un nome utile all'identificazione
-        std::string email(buffer, bytesRead);
-        std::string response = "Email ricevuta! Procedo all'autenticazione\n";
+        std::string piva(buffer, bytesRead);
+        std::string response = "P.iva ricevuta! Procedo all'autenticazione\n";
         send(clientSocket, response.c_str(), response.length(), 0);
 
-        if (email[email.length()-1] == '\n') email.erase(email[email.length()-1]); // Rimuove \n alla fine dell'input
+        if (piva[piva.length()-1] == '\n') piva.erase(std::remove(piva.begin(), piva.end(), '\n'), piva.end()); // Rimuove \n alla fine dell'input
         // Scrive l'email ricevuta nello Stream
-        reply = RedisCommand(c2r, "XADD %s * email %s", WRITE_STREAM, email.c_str());
+        reply = RedisCommand(c2r, "XADD %s * piva %s", WRITE_STREAM, piva.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
         freeReplyObject(reply);
         return autentica(clientSocket); // Passa al processo di autenticazione
@@ -178,7 +179,7 @@ bool Supplier_Server::gestisciAutenticazione(int clientSocket)
     return false;
 }
 
-bool Supplier_Server::gestisciOperazioni(int clientSocket)
+bool Courier_Server::gestisciOperazioni(int clientSocket)
 {
     char buffer[1024] = {0};
     std::string request = "Ecco le operazioni disponibili:\n";
@@ -251,7 +252,7 @@ int main()
         Crea un server che si prepara ad avviare una
         connessione con l'utente
     */
-    Supplier_Server suppli;
-    suppli.gestisciConnessioni();
+    Courier_Server curry;
+    curry.gestisciConnessioni();
     return 0;
 }
