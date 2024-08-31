@@ -8,6 +8,7 @@
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../metodi/autenticazione.h"
 #include "../metodi/ricercaProdotti.h"
+#include "../metodi/modificaNome.h"
 #include "../../../entities/Customer.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -32,8 +33,8 @@ class Customer_Server
         Customer CUSTOMER; // Struct che conserva le informazioni dell'utente attuale
         int ID_CONNESSIONE = 0;
         int SERVER_SOCKET;
-        std::string OPZIONI[4]; // Opzioni dell'utente
-        int NUMERO_OPZIONI = 4;
+        int NUMERO_OPZIONI = 5;
+        std::string OPZIONI[NUMERO_OPZIONI]; // Opzioni dell'utente
         bool handshake(int clientSocket);
         bool gestisciAutenticazione(int clientSocket);
         bool gestisciOperazioni(int clientSocket);

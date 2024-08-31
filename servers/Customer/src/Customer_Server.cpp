@@ -4,10 +4,11 @@
 Customer_Server::Customer_Server()
 {
     // Definisce le opzioni del Customer nel database
-    OPZIONI[0] = "Modifica profilo";
+    OPZIONI[0] = "Modifica nome e cognome";
     OPZIONI[1] = "Ricerca prodotti";
     OPZIONI[2] = "Ordina prodotti";
     OPZIONI[3] = "Aggiungi/Rimuovi prodotti da ordine";
+    OPZIONI[4] = "Aggiungi/Rimuovi metodo di pagamento";
 
     // Crea il socket del server
     SERVER_SOCKET = socket(AF_INET, SOCK_STREAM, 0); // Crea il socket
@@ -214,8 +215,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                     switch(opzione)
                     {
                         case 0:
-                            std::cout << "Funzione Modifica profilo non implementata\n";
-                            send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                            modificaNome(clientSocket);
                             break;
                         case 1:
                             cercaProdottiDisponibili(clientSocket);
@@ -226,6 +226,10 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                             break;
                         case 3:
                             std::cout << "Funzione Aggiungi/Rimuovi prodotti da ordine non implementata\n";
+                            send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                            break;
+                        case 4:
+                            std::cout << "Funzione Aggiungi/Rimuovi metodi di pagamento non implementata\n";
                             send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
                             break;
                     }
