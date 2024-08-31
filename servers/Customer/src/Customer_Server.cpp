@@ -166,8 +166,9 @@ bool Customer_Server::gestisciAutenticazione(int clientSocket)
         std::string response = "Email ricevuta! Procedo all'autenticazione\n";
         send(clientSocket, response.c_str(), response.length(), 0);
 
-        if (email[email.length()-1] == '\n') email.erase(email[email.length()-1]); // Rimuove \n alla fine dell'input
+        if (email[email.length()-1] == '\n') email.erase(std::remove(email.begin(), email.end(), '\n'), email.end()); // Rimuove \n alla fine dell'input
         // Scrive l'email ricevuta nello Stream
+        std::cout << email;
         reply = RedisCommand(c2r, "XADD %s * email %s", WRITE_STREAM, email.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);
         freeReplyObject(reply);
