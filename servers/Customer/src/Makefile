@@ -16,10 +16,10 @@ OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(SRC))
 
 con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
-autentication_OBJ = $(wildcard ../metodi/*.o)
+metodi_OBJ = $(wildcard ../metodi/*.o)
 
 
-all:	create_dirs con2db con2redis autenticazione customer_server $(BDIR)/main
+all:	create_dirs con2db con2redis metodi customer_server $(BDIR)/main
 
 create_dirs:
 	mkdir -p $(BDIR)
@@ -31,16 +31,16 @@ con2db:
 con2redis:
 	$(MAKE) -C ../../../lib/con2redis/src
 
-autenticazione:
-	$(MAKE) -C ../metodi #Chiama il makefile di autenticazione
+metodi:
+	$(MAKE) -C ../metodi #Chiama il makefile dei metodi
 
 customer_server: Customer_Server.cpp Customer_Server.h
 	$(CC) -c -o $(ODIR)/Customer_Server.o $< $(CFLAGS)
 
 $(BDIR)/main: $(OBJ) $(DEPS)
-	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(autentication_OBJ) $(CFLAGS)
+	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(metodi_OBJ) $(CFLAGS)
 
 .PHONY: clean
 
 clean:
-	rm -r $(ODIR) $(BDIR) ../metodi/autenticazione.o ../metodi/ricercaProdotti.o
+	rm -r $(ODIR) $(BDIR) ../metodi/autenticazione.o ../metodi/ricercaProdotti.o ../metodi/modificaNome.o

@@ -11,7 +11,7 @@ CFLAGS=-std=c++20 -I. -I$(IDIR) -I/usr/include/postgresql -lpq -lm -lhiredis
 con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
 
-all:	con2db con2redis autenticazione ricerca
+all:	con2db con2redis autenticazione ricerca modificaNome
 
 con2db:
 	$(MAKE) -C ../../../lib/con2db
@@ -25,7 +25,10 @@ autenticazione: autenticazione.cpp autenticazione.h
 ricerca:  ricercaProdotti.cpp ricercaProdotti.h 
 	$(CC) -c -o ricercaProdotti.o $< $(CFLAGS) # Crea il file ricercaProdotti.o
 
+modificaNome: modificaNome.cpp modificaNome.h
+	$(CC) -c -o modificaNome.o $< $(CFLAGS) # Crea il file modificaNome.o
+
 .PHONY: clean
 
 clean:
-	rm autenticazione.o
+	rm autenticazione.o ricercaProdotti.o modificaNome.o
