@@ -2,6 +2,7 @@
 #define RICERCAPRODOTTI_H
 
 #include <string>
+#include <utility> //Importa pair
 #include <iostream>
 #include <sstream>
 #include <algorithm>
@@ -28,7 +29,7 @@
 #define PASSWORD "admin"
 #define DB_NAME "mewingdb"
 
-Prodotto *recuperaProdottiDisponibili(Con2DB db, PGresult *res, int clientSocket);
+std::pair<int, Prodotto*> recuperaProdottiDisponibili(Con2DB db, PGresult *res, int clientSocket);
 bool cercaProdottiDisponibili(int clientSocket);
 
 #endif

@@ -35,56 +35,63 @@ bool cercaProdottiDisponibili(int clientSocket)
     std::cout << USER_ID << std::endl;
 
     // Recupera le informazioni su tutti i prodotti disponibili 
-    Prodotto *prodottiDisponibili = recuperaProdottiDisponibili(db, res, clientSocket);
-    if (prodottiDisponibili == nullptr) // Se vi sono errori o non vi sono prodotti
-    {
-        PQclear(res);
-        return false;
-    }
+    std::pair<int, Prodotto*> risultato = recuperaProdottiDisponibili(db, res, clientSocket);
+    if (risultato.first == -1) return false; // Se vi sono errori o non vi sono prodotti
     //...recuperati i prodotti, permette operazioni con quelli trovati e quelli anche nel carrello  
-    delete[] prodottiDisponibili;
-    PQclear(res);
+    int righe = risultato.first;
+    Prodotto* prodottiDisponibili = risultato.second;
+    //for (int i = 0; i < righe; i++) std::cout << prodottiDisponibili[i].ID << prodottiDisponibili[i].descrizione << prodottiDisponibili[i].prezzo << prodottiDisponibili[i].nome <<  prodottiDisponibili[i].fornitore << std::endl;
+    
+    delete[] risultato.second;
     return true;
 }
 
- Prodotto *recuperaProdottiDisponibili(Con2DB db, PGresult *res, int clientSocket)
+std::pair<int, Prodotto*>  recuperaProdottiDisponibili(Con2DB db, PGresult *res, int clientSocket)
 {
-    
+    std::pair <int, Prodotto*> risultato;
     int rows;
     char comando[1000];
-    sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome FROM prodotto pr, fornitore fr WHERE pr.fornitore = fr.id");
+    sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF FROM prodotto pr, fornitore fr WHERE pr.fornitore = fr.id");
     res = db.ExecSQLtuples(comando);
-    if (PQresultStatus(res) != PGRES_TUPLES_OK) return nullptr; // Controlla che la query sia andata a buon fine
-    std::cout << "Query andata a buon fine!\n";
+    if (PQresultStatus(res) != PGRES_TUPLES_OK)
+    {
+        risultato.first = -1;
+        risultato.second = nullptr;
+        return risultato; // Controlla che la query sia andata a buon fine
+    }
     rows = PQntuples(res);
     if (rows > 0)
     {
         // Prima mostriamo all'utente i prodotti disponibili..
-        Prodotto *prodottiDisponibili = new Prodotto[rows];
+        Prodotto* prodottiDisponibili = new Prodotto[rows];
 
         for (int i = 0; i < rows; i++)
         {
-            std::cout << "Computa la riga: " << i << std::endl;
-            int ID = atoi(PQgetvalue(res, i, PQfnumber(res, "pr.id")));
-            const char* descrizione = PQgetvalue(res, i, PQfnumber(res, "pr.descrizione"));
-            double prezzo = atof(PQgetvalue(res, i, PQfnumber(res, "pr.prezzo")));
-            const char* nome = PQgetvalue(res, i, PQfnumber(res, "pr.nome"));
-            const char* fornitore = PQgetvalue(res, i, PQfnumber(res, "fr.nome"));
+            int ID = atoi(PQgetvalue(res, i, PQfnumber(res, "id")));
+            const char* descrizione = PQgetvalue(res, i, PQfnumber(res, "descrizione"));
+            double prezzo = atof(PQgetvalue(res, i, PQfnumber(res, "prezzo")));
+            const char* nome = PQgetvalue(res, i, PQfnumber(res, "nome"));
+            const char* fornitore = PQgetvalue(res, i, PQfnumber(res, "nomeF"));
             std::string prodotto = "ID Prodotto: " + std::to_string(ID) + " Nome Prodotto: " + nome + " Descrizione: " + descrizione + " Fornitore: " + fornitore + " Prezzo Prodotto: " + std::to_string(prezzo) + "\n";
-            std::cout << prodotto;
 	        send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
-            // Mostra il prodotto all'utente
+            
             prodottiDisponibili[i].ID = ID;
             prodottiDisponibili[i].descrizione = descrizione;
             prodottiDisponibili[i].prezzo = prezzo;
             prodottiDisponibili[i].nome = nome;
             prodottiDisponibili[i].fornitore = fornitore;
-            std::cout << "Computata la riga: " << i << std::endl;
+
+            std::cout << prodottiDisponibili[i].ID << prodottiDisponibili[i].descrizione << prodottiDisponibili[i].prezzo << prodottiDisponibili[i].nome <<  prodottiDisponibili[i].fornitore << std::endl;
         }
-        return prodottiDisponibili;
+        risultato.first = rows;
+        risultato.second = prodottiDisponibili;
+        PQclear(res);
+        return risultato;
     }
     // Se non ci sono oggetti
 	std::string request = "Nessun prodotto disponibile!\n"; // Seleziona la frase del turno
 	send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-    return nullptr;
+    risultato.first = -1;
+    risultato.second = nullptr;
+    return risultato;
 }
