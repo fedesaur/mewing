@@ -71,19 +71,30 @@ void Supplier_Server::gestisciConnessioni()
     // Gestione delle connessioni dei client
     while (true)
     {
-        bool continuaConnessione=false;
         int clientSocket = accept(SERVER_SOCKET, nullptr, nullptr);
         if (clientSocket < 0) {
             std::cerr << "Errore nell'accettare la connessione dal client." << std::endl;
             continue; // Continua ad accettare ulteriori connessioni
         }
+        
+        id_mutex.lock();
+        int connectionID=ID_CONNESSIONE++;
+        id_mutex.unlock();
+        
+        std::thread clientThread(&Supplier_Server::gestisciConnessioneCliente, this, clientSocket, connectionID);
+        clientThread.detach();
+    }
+    close(SERVER_SOCKET); // Chiudi il socket del server (questa parte non verrà mai raggiunta a causa del while infinito)
+}
 
+
+void Supplier_Server::gestisciConnessioneCliente(int clientSocket, int connectionID){
         // Identifica l'ID della connessione
-        std::cout << "ID della connessione: " + std::to_string(ID_CONNESSIONE) << std::endl;
+        bool continuaConnessione=false;
+        std::cout << "ID della connessione: " + std::to_string(connectionID) << std::endl;
         std::cout.flush();
-        std::string response = "ID della connessione: " + std::to_string(ID_CONNESSIONE) + "\n";
+        std::string response = "ID della connessione: " + std::to_string(connectionID) + "\n";
         send(clientSocket, response.c_str(), response.length(), 0);
-
         bool connessioneOK = handshake(clientSocket); // Gestisci il client in una funzione dedicata
         if (connessioneOK && gestisciAutenticazione(clientSocket)) // Se la connessione è andata a buon fine, avvia le varie operazioni
         {
@@ -92,7 +103,6 @@ void Supplier_Server::gestisciConnessioni()
             if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
             {
                 std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
-                continue;
             }
 
             redisReply* stream = reply->element[0];
@@ -101,7 +111,6 @@ void Supplier_Server::gestisciConnessioni()
             if (entryFields->elements < 6) { // Assicurarsi che ci siano abbastanza campi
                 std::cerr << "Errore: numero di campi insufficiente nello stream Redis." << std::endl;
                 freeReplyObject(reply);
-                continue;
             }
             
             std::string ID = entryFields->element[1]->str; // ID Customer
@@ -135,10 +144,7 @@ void Supplier_Server::gestisciConnessioni()
         }
 
         close(clientSocket); // Chiudi la connessione con il client dopo averla gestita
-        std::cout << "Conclusa connessione con ID: " + std::to_string(ID_CONNESSIONE) << std::endl;
-        ID_CONNESSIONE++;
-    }
-    close(SERVER_SOCKET); // Chiudi il socket del server (questa parte non verrà mai raggiunta a causa del while infinito)
+        std::cout << "Conclusa connessione con ID: " + std::to_string(connectionID) << std::endl;
 }
 
 bool Supplier_Server::handshake(int clientSocket) {
@@ -166,7 +172,7 @@ bool Supplier_Server::gestisciAutenticazione(int clientSocket)
         std::string response = "Email ricevuta! Procedo all'autenticazione\n";
         send(clientSocket, response.c_str(), response.length(), 0);
 
-        if (email[email.length()-1] == '\n') email.erase(email[email.length()-1]); // Rimuove \n alla fine dell'input
+        if (email[email.length()-1] == '\n') email.erase(std::remove(email.begin(), email.end(), '\n'), email.end()); // Rimuove \n alla fine dell'input
         // Scrive l'email ricevuta nello Stream
         reply = RedisCommand(c2r, "XADD %s * email %s", WRITE_STREAM, email.c_str());
         assertReplyType(c2r, reply, REDIS_REPLY_STRING);

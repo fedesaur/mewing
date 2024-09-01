@@ -3,6 +3,7 @@ bool rimuoviProdotti(int clientSocket)
 {
     int USER_ID;
     int RIGHE;
+    char buffer[1024] = {0};
     char comando[1000];
     Prodotto* CARRELLO;
     PGresult *res;
@@ -31,7 +32,7 @@ bool rimuoviProdotti(int clientSocket)
         do
         {
             // Mostra all'utente gli elementi nel carrello tramite una funzione ausiliaria
-            mostraCarrello(clientSocket, CARRELLO, RIGHE);
+            mostraCarrello(clientSocket, CARRELLO, RIGHE, res);
             std::string request = "Quale prodotto vuoi rimuovere? (Digita il numero)\nOppure digita Q per terminare la connessione\n";
 	        send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
             bool attendiInput = true;

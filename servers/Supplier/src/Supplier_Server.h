@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <cstring>
 #include <cassert>
+#include <thread>
+#include <mutex>
 
 #define WRITE_STREAM "SupplierW"
 #define READ_STREAM "SupplierR"
@@ -32,8 +34,10 @@ class Supplier_Server
         int ID_CONNESSIONE = 0;
         int SERVER_SOCKET;
         std::string OPZIONI[4]; // Opzioni dell'utente
+        std::mutex id_mutex;
         int NUMERO_OPZIONI = 4;
         bool handshake(int clientSocket);
+        void gestisciConnessioneCliente(int clientSocket, int connectionID);
         bool gestisciAutenticazione(int clientSocket);
         bool gestisciOperazioni(int clientSocket);
     public:

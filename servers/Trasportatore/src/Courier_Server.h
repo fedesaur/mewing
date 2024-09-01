@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <cstring>
 #include <cassert>
+#include <thread>
+#include <mutex>
 
 #define WRITE_STREAM "CourierW"
 #define READ_STREAM "CourierR"
@@ -31,11 +33,13 @@ class Courier_Server
         Customer CUSTOMER; // Struct che conserva le informazioni dell'utente attuale (da cambiare)
         int ID_CONNESSIONE = 0;
         int SERVER_SOCKET;
+        std::mutex id_mutex;
         std::string OPZIONI[4]; // Opzioni dell'utente
         int NUMERO_OPZIONI = 4;
         bool handshake(int clientSocket);
         bool gestisciAutenticazione(int clientSocket);
         bool gestisciOperazioni(int clientSocket);
+        void gestisciConnessioneCliente(int clientSocket, int connectionID);
     public:
         Courier_Server(); // Costruttore di Courier
         void gestisciConnessioni(); // Metodi di Courier

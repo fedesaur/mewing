@@ -58,20 +58,21 @@ std::pair<int, Prodotto*> recuperaCarrello(int ID, Con2DB db, PGresult *res, int
     return risultato;
 }
 
-void mostraCarrello(int clientSocket, Prodotto* carrello, int righe)
+void mostraCarrello(int clientSocket, Prodotto* carrello, int righe, PGresult *res)
 {
+    
     double totale = atof(PQgetvalue(res, 0, PQfnumber(res, "totale"))); //Recupera il totale...
     std::string request = "\nPRODOTTI NEL CARRELLO (TOTALE :" + std::to_string(totale) + "):\n"; //... e lo stampa
 	send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-    for (int i = 0; i < RIGHE; i++)
+    for (int i = 0; i < righe; i++)
     {
             // Recupera gli attributi dei prodotti dal carrello...
-        int ID = CARRELLO[i].ID;
-        const char* descrizione = CARRELLO[i].descrizione;
-        double prezzo = CARRELLO[i].prezzo;
-        const char* nomeP = CARRELLO[i].nome;
-        const char* fornitore = CARRELLO[i].fornitore;
-        int quantita = CARRELLO[i].quantita;
+        int ID = carrello[i].ID;
+        const char* descrizione = carrello[i].descrizione;
+        double prezzo = carrello[i].prezzo;
+        const char* nomeP = carrello[i].nome;
+        const char* fornitore = carrello[i].fornitore;
+        int quantita = carrello[i].quantita;
         // ...e li invia all'utente così che possa visualizzarli ed effettuarci operazioni
         std::string prodotto = std::to_string(i+1) + ") ID Prodotto: " + std::to_string(ID) +
              " Nome Prodotto: " + nomeP + 
