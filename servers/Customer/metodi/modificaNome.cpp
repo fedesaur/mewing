@@ -8,6 +8,7 @@ bool modificaNome(int clientSocket)
 	redisReply *reply; // reply contiene le risposte da Redis
     char comando[1000];
     char buffer[1024] = {0};
+    int NUMERO_OPZIONI = 3;
     std::string OPZIONI[] = {"1) Cambia Nome\n", "2) Cambia Cognome\n", "Altrimenti digita Q per terminare\n"};
 
 	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
@@ -19,24 +20,24 @@ bool modificaNome(int clientSocket)
         std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
         return false;
     }
+    std::string id = reply->element[0]->element[1]->element[1]->str;
+    USER_ID = stoi(id);
     
-    ReadStreamMsgVal(reply, 0, 1, 1, id); 
-    USER_ID = atoi(id);
     sprintf(comando, "SELECT nome, cognome FROM customers WHERE id = %d", USER_ID);
-    db.ExecSQLtuples(comando);
+    res = db.ExecSQLtuples(comando);
     if (PQresultStatus(res) != PGRES_TUPLES_OK) return false;
     // Recupera nome e cognome dell'utente dal database
     std::string nome = PQgetvalue(res, 0, PQfnumber(res, "nome"));
     std::string cognome = PQgetvalue(res, 0, PQfnumber(res, "cognome"));
-    bool attendiInput = true;
+    
     bool concludiOperazione = false;
     do
     {
         // Mostra nome e cognome all'utente
-        std::string request = "Nome attuale: " + nome + " Cognome Attuale: " + cognome + "\n"; 
+        std::string request = "\nNome attuale: " + nome + " Cognome Attuale: " + cognome + "\n"; 
 	    send(clientSocket, request.c_str(), request.length(), 0);
         //Stampa all'utente le opzioni disponibili
-        for (int i = 0; i < OPZIONI.length(); i++) send(clientSocket, OPZIONI[i].c_str(), OPZIONI[i].length(), 0);
+        for (int i = 0; i < NUMERO_OPZIONI; i++) send(clientSocket, OPZIONI[i].c_str(), OPZIONI[i].length(), 0);
         int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
         if (bytesRead > 0)
         {
@@ -45,32 +46,41 @@ bool modificaNome(int clientSocket)
 
             if (messaggio == "q" || messaggio == "Q") {
                 concludiOperazione = true; // Termina la connessione
-            } else if (std::stoi(messaggio[0]) == 1) {
-                std::pair<std::string,bool> risultato = cambiaNome(db, res, clientSocket);
-                if (risultato.second) 
+            } else if (std::isdigit(messaggio[0])) {
+                int opzione = std::stoi(messaggio) - 1;
+                std::pair<std::string,bool> risultato;
+                switch (opzione)
                 {
-                    std::string conferma = "Nome cambiato!\n";
-                    send(clientSocket, conferma.c_str(), conferma.length(), 0);
-                    nome = risultato.first;
+                    case 0:
+                        risultato = cambiaNome(db, res, clientSocket, USER_ID);
+                        if (risultato.second)
+                        {
+                            std::string conferma = "Nome cambiato!\n";
+                            send(clientSocket, conferma.c_str(), conferma.length(), 0);
+                            nome = risultato.first;
+                        }
+                        break;
+                    case 1:
+                        risultato = cambiaCognome(db, res, clientSocket, USER_ID);
+                        if (risultato.second)
+                        {   
+                            std::string conferma = "Cognome cambiato!\n";
+                            send(clientSocket, conferma.c_str(), conferma.length(), 0);
+                            cognome = risultato.first;
+                        }        
+                        break;
+                    default: // Se gli altri casi non sono stati accettati...
+                        std::string errore = "Opzione non valida, riprova.\n";
+                        send(clientSocket, errore.c_str(), errore.length(), 0);
+                        break;
                 }
-            } else if (std::stoi(messaggio[0]) == 2) {
-                std::pair<std::string,bool> risultato = cambiaCognome(db, res, clientSocket);
-                if (risultato.second)
-                {
-                    std::string conferma = "Cognome cambiato!\n";
-                    send(clientSocket, conferma.c_str(), conferma.length(), 0);
-                    cognome = risultato.first;
-                }               
             } else {
-                std::string errore = "Opzione non valida, riprova.\n";
-                send(clientSocket, errore.c_str(), errore.length(), 0);
-            }
-        } else {
             std::string errore = "Input non valido, riprova.\n";
             send(clientSocket, errore.c_str(), errore.length(), 0);
+            }
         }
-    } while (attendiInput && !concludiOperazione);
-    
+    } while (!concludiOperazione);
+    PQclear(res);
     return true;   
 }
 
@@ -94,8 +104,8 @@ std::pair<std::string,bool> cambiaNome(Con2DB db, PGresult *res, int clientSocke
             risultato.second = false;
             return risultato;
         }
-        sprintf(comando, "UPDATE customers SET nome = '%s' WHERE id = %d", messaggio, USER_ID);
-        db.ExecSQLcmd(res);
+        sprintf(comando, "UPDATE customers SET nome = '%s' WHERE id = %d", messaggio.c_str(), USER_ID);
+        res = db.ExecSQLcmd(comando);
         risultato.first = messaggio;
         risultato.second = true;
         PQclear(res);
@@ -105,7 +115,7 @@ std::pair<std::string,bool> cambiaNome(Con2DB db, PGresult *res, int clientSocke
     send(clientSocket, errore.c_str(), errore.length(), 0);
     risultato.first = "";
     risultato.second = false;
-    return risultato
+    return risultato;
 }
 
 std::pair<std::string,bool> cambiaCognome(Con2DB db, PGresult *res, int clientSocket, int USER_ID)
@@ -128,8 +138,8 @@ std::pair<std::string,bool> cambiaCognome(Con2DB db, PGresult *res, int clientSo
             risultato.second = false;
             return risultato;
         }
-        sprintf(comando, "UPDATE customers SET cognome = '%s' WHERE id = %d", messaggio, USER_ID);
-        db.ExecSQLcmd(res);
+        sprintf(comando, "UPDATE customers SET cognome = '%s' WHERE id = %d", messaggio.c_str(), USER_ID);
+        res = db.ExecSQLcmd(comando);
         risultato.first = messaggio;
         risultato.second = true;
         PQclear(res);
@@ -139,5 +149,5 @@ std::pair<std::string,bool> cambiaCognome(Con2DB db, PGresult *res, int clientSo
     send(clientSocket, errore.c_str(), errore.length(), 0);
     risultato.first = "";
     risultato.second = false;
-    return risultato
+    return risultato;
 }

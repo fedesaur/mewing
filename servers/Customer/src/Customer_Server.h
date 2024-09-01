@@ -34,7 +34,7 @@ class Customer_Server
         int ID_CONNESSIONE = 0;
         int SERVER_SOCKET;
         int NUMERO_OPZIONI = 5;
-        std::string OPZIONI[NUMERO_OPZIONI]; // Opzioni dell'utente
+        std::string OPZIONI[5]; // Opzioni dell'utente
         bool handshake(int clientSocket);
         bool gestisciAutenticazione(int clientSocket);
         bool gestisciOperazioni(int clientSocket);
