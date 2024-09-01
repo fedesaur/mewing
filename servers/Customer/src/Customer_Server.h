@@ -9,6 +9,7 @@
 #include "../metodi/autenticazione.h"
 #include "../metodi/ricercaProdotti.h"
 #include "../metodi/modificaNome.h"
+#include "../metodi/rimuoviDaCarrello.h"
 #include "../../../entities/Customer.h"
 #include <netinet/in.h>
 #include <sys/socket.h>

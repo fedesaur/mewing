@@ -245,8 +245,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                         break;
                     case 3:
                         attendiInput = false; // Input valido ricevuto, esce dal loop
-                        std::cout << "Funzione Rimuovi prodotti dal carrello non implementata\n";
-                        send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                        rimuoviProdotti(clientSocket);
                         break;
                     case 4:
                         attendiInput = false; // Input valido ricevuto, esce dal loop
