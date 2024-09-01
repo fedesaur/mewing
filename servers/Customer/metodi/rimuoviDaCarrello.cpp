@@ -20,43 +20,109 @@ bool rimuoviProdotti(int clientSocket)
 
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     USER_ID = stoi(id); // ID Customer
-
     // Usa una funzione ausiliaria per recuperare il carrello dell'utente
     std::pair <int, Prodotto*> risultato = recuperaCarrello(USER_ID, db, res, clientSocket);
-    if (risultato.first == -1) return false; // C'è stato un errore nella query
-
+    if (risultato.first == -1) return false;  // C'è stato un errore nella query
     RIGHE = risultato.first;
     CARRELLO = risultato.second;
-    if (rows > 0)
+    bool terminaConnessione = false;
+    if (RIGHE > 0)
     {
-        // Mostriamo all'utente i prodotti nel suo carrello
-        double totale = atof(PQgetvalue(res, 0, PQfnumber(res, "totale"))); //Recupera il totale...
-        std::string request = "\nPRODOTTI NEL CARRELLO (TOTALE :" + std::to_string(totale) + "):\n"; //... e lo stampa
-	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-        for (int i = 0; i < RIGHE; i++)
+        do
         {
-            // Recupera gli attributi dei prodotti dal carrello...
-            int ID = CARRELLO[i].ID;
-            const char* descrizione = CARRELLO[i].descrizione;
-            double prezzo = CARRELLO[i].prezzo;
-            const char* nomeP = CARRELLO[i].nome;
-            const char* fornitore = CARRELLO[i].fornitore;
-            int quantita = CARRELLO[i].quantita;
-            // ...e li invia all'utente così che possa visualizzarli ed effettuarci operazioni
-            std::string prodotto = std::to_string(i+1) + ") ID Prodotto: " + std::to_string(ID) +
-             " Nome Prodotto: " + nomeP + 
-             " Descrizione: " + descrizione + 
-             " Fornitore: " + fornitore + 
-             " Prezzo Prodotto: " + std::to_string(prezzo) + 
-             " Quantità :" + std::to_string(quantita) + "\n";
-	        send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
-        }
-        // Per ora l'operazione finisce qui
+            // Mostra all'utente gli elementi nel carrello tramite una funzione ausiliaria
+            mostraCarrello(clientSocket, CARRELLO, RIGHE);
+            std::string request = "Quale prodotto vuoi rimuovere? (Digita il numero)\nOppure digita Q per terminare la connessione\n";
+	        send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+            bool attendiInput = true;
+            do
+            {
+                int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+                if (bytesRead > 0) 
+                {
+                    std::string messaggio(buffer, bytesRead);
+                    messaggio.erase(std::remove(messaggio.begin(), messaggio.end(), '\n'), messaggio.end()); // Rimuove eventuali newline
+
+                    if (messaggio == "q" || messaggio == "Q") 
+                    {
+                        delete[] risultato.second;
+                        attendiInput = false;
+                        terminaConnessione = true;
+                    } else if (isNumber(messaggio)){
+                        int indice = stoi(messaggio) - 1;
+                        if (indice >= 0 && indice < RIGHE)
+                        {
+                            attendiInput = false;
+                            int idP = CARRELLO[indice].ID;
+                            bool esito = rimuoviProdottoDB(idP, USER_ID, db, res);
+                            if (esito)
+                            {
+                                rimuoviProdotto(idP, CARRELLO, RIGHE);
+                                RIGHE--;
+                                std::string successo = "Prodotto rimosso con successo!\n";
+                                send(clientSocket, successo.c_str(), successo.length(), 0);
+                            } else{
+                                std::string errore = "C'è stato un errore nella query\n";
+                                send(clientSocket, errore.c_str(), errore.length(), 0);
+                            }
+                        } else {
+                            std::string errore = "Opzione non valida, riprova.\n";
+                            send(clientSocket, errore.c_str(), errore.length(), 0);
+                        }
+                    } else {
+                        std::string errore = "Input non valido, riprova.\n";
+                        send(clientSocket, errore.c_str(), errore.length(), 0);
+                    }
+                }
+            } while (attendiInput);
+                
+        }while (!terminaConnessione && RIGHE > 0);
+        delete[] risultato.second; // Libera la memoria occupata dal carrello
         return true;
     }
     // Se non ci sono oggetti
 	std::string request = "\nNessun prodotto nel carrello!\n"; // Seleziona la frase del turno
-	send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
     delete[] risultato.second; // Libera la memoria occupata dal carrello
+    return true;
+}
+
+bool isNumber(std::string stringa)
+{
+    for (int i = 0; stringa.length(); i++)
+    {
+        if (!std::isdigit(stringa[i])) return false;
+    }
+    return true;
+}
+
+void rimuoviProdotto(int idP, Prodotto* carrello, int righe)
+{
+    int index = 0;
+    while (index < righe)
+    {
+        if (carrello[index].ID == idP) break; //Rimuove dal carrello il prodotto con quell'ID
+        index++;
+    }
+    
+    while (index < righe) carrello[index] = carrello[index+1]; //Sposta tutti gli elementi di una posizione a sinistra
+    return;
+}
+
+bool rimuoviProdottoDB(int idProdotto, int userID, Con2DB db, PGresult *res)
+{
+    char comando[1000];
+    sprintf(comando, "DELETE FROM prodincart WHERE prodotto = %d AND carrello = %d", idProdotto, userID);
+    try
+    {
+        res = db.ExecSQLcmd(comando);
+        PQclear(res);
+        return true;
+    }
+    catch(...)
+    {
+        // Se ci sono errori nella query, vengono catturati da catch
+        return false;
+    }
     return true;
 }

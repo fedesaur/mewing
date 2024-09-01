@@ -1,5 +1,5 @@
-#ifndef RIMUOVI_DA_CARRELLO_H
-#define RIMUOVI_DA_CARRELLO_H
+#ifndef RECUPERA_CARRELLO_H
+#define RECUPERA_CARRELLO_H
 
 #include <string>
 #include <utility> //Importa pair
@@ -30,5 +30,6 @@
 #define DB_NAME "mewingdb"
 
 std::pair<int, Prodotto*> recuperaCarrello(int ID, Con2DB db, PGresult *res, int clientSocket)
+void mostraCarrello(int clientSocket, Prodotto* carrello, int righe);
 
 #endif

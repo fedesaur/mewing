@@ -31,5 +31,8 @@
 #define DB_NAME "mewingdb"
 
 bool rimuoviProdotti(int clientSocket);
+bool isNumber(std::string stringa); // Funzione ausiliaria per controllare se una stringa è un numero
+void rimuoviProdotto(int idP, Prodotto* carrello, int righe);
+bool rimuoviProdottoDB(int idProdotto, int userID, Con2DB db, PGresult *res);
 
 #endif
