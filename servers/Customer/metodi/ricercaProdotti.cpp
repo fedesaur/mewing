@@ -1,5 +1,5 @@
 #include "ricercaProdotti.h"
-bool cercaProdottiDisponibili(int clientSocket)
+bool ricercaProdotti(int clientSocket)
 {
     int USER_ID;
     PGresult *res;
@@ -18,13 +18,16 @@ bool cercaProdottiDisponibili(int clientSocket)
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     USER_ID = atoi(id.c_str()); // ID Customer
 
-    // Recupera le informazioni su tutti i prodotti disponibili
+    // Recupera i prodotti nel carrelo tramite una funzione ausiliaria
     std::pair<int, Prodotto*> risultato1 = recuperaCarrello(USER_ID, db, res, clientSocket);
     if (risultato1.first == -1) return false; // Se vi sono errori
     int righeCar = risultato1.first;
     Prodotto* carrello = risultato1.second;
+    
     std::pair<int, Prodotto*> risultato2 = recuperaProdottiDisponibili(db, res, clientSocket);
     if (risultato2.first == -1) return false; // Se vi sono errori
+    else if (risultato2.first == 0) return true;
+    
     //...recuperati i prodotti, permette operazioni con quelli trovati e quelli anche nel carrello  
     int righe = risultato2.first;
     Prodotto* prodottiDisponibili = risultato2.second;
@@ -36,7 +39,7 @@ bool cercaProdottiDisponibili(int clientSocket)
     return true;
 }
 
-std::pair<int, Prodotto*>  recuperaProdottiDisponibili(Con2DB db, PGresult *res, int clientSocket)
+std::pair<int, Prodotto*> recuperaProdottiDisponibili(Con2DB db, PGresult *res, int clientSocket)
 {
     std::pair <int, Prodotto*> risultato;
     int rows;
@@ -65,13 +68,6 @@ std::pair<int, Prodotto*>  recuperaProdottiDisponibili(Con2DB db, PGresult *res,
             double prezzo = atof(PQgetvalue(res, i, PQfnumber(res, "prezzo")));
             const char* nome = PQgetvalue(res, i, PQfnumber(res, "nome"));
             const char* fornitore = PQgetvalue(res, i, PQfnumber(res, "nomeF"));
-            // ...e li invia all'utente così che possa visualizzarli ed effettuarci operazioni
-            std::string prodotto = std::to_string(i+1) + ") ID Prodotto: " + std::to_string(ID) + 
-            " Nome Prodotto: " + nome + 
-            " Descrizione: " + descrizione + 
-            " Fornitore: " + fornitore + 
-            " Prezzo Prodotto: " + std::to_string(prezzo) + "\n";
-	        send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
 
             // Assegna gli attributi all'i-esimo Prodotto in prodottiDisponibili
             prodottiDisponibili[i].ID = ID;
@@ -91,4 +87,24 @@ std::pair<int, Prodotto*>  recuperaProdottiDisponibili(Con2DB db, PGresult *res,
     risultato.first = 0;
     risultato.second = nullptr;
     return risultato;
+}
+
+bool aggiungiAlCarrello(std::pair<int, Prodotto*> carrello, std::pair<int, Prodotto*> disponibili, int clientSocket)
+{
+    int RIGHE_CARRELLO = carrello.first;
+    Prodotto* CARRELLO = carrello.second;
+    int RIGHE_DISPONIBILI = disponibili.first;
+    Prodotto* PRODOTTI = disponibili.second;
+    for (int i = 0; i < RIGHE_DISPONIBILI; i++)
+    {
+        // Mostra all'utente i prodotti disponibili
+        std::string prodotto = std::to_string(i+1) + ") ID Prodotto: " + std::to_string(PRODOTTI[i].ID) + 
+            " Nome Prodotto: " + PRODOTTI[i].nome + 
+            " Descrizione: " + PRODOTTI[i].descrizione + 
+            " Fornitore: " + PRODOTTI[i].fornitore + 
+            " Prezzo Prodotto: " + std::to_string(PRODOTTI[i].fornitore) + "\n";
+	    send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
+    }
+
+    return true;
 }

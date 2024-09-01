@@ -205,7 +205,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
     send(clientSocket, termina.c_str(), termina.length(), 0);
     
     bool attendiInput = true; // Continua la richiesta finché non riceve un input adatto
-
+    bool esito = true;
     do
     {
         int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
@@ -232,11 +232,11 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                 {
                     case 0:
                         attendiInput = false; // Input valido ricevuto
-                        modificaNome(clientSocket); // Funziona!
+                        esito = modificaNome(clientSocket); // Funziona!
                         break;
                     case 1:
                         attendiInput = false; // Input valido ricevuto
-                        cercaProdottiDisponibili(clientSocket);
+                        esito = ricercaProdotti(clientSocket);
                         break;
                     case 2:
                         attendiInput = false; // Input valido ricevuto, esce dal loop
@@ -245,7 +245,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                         break;
                     case 3:
                         attendiInput = false; // Input valido ricevuto, esce dal loop
-                        rimuoviProdotti(clientSocket);
+                        esito = rimuoviProdotti(clientSocket);
                         break;
                     case 4:
                         attendiInput = false; // Input valido ricevuto, esce dal loop
@@ -269,7 +269,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
         }
     } while (attendiInput); // Continua finché non riceve un input valido
     
-    return true;
+    return esito;
 }
 
 

@@ -31,6 +31,6 @@
 #define DB_NAME "mewingdb"
 
 std::pair<int, Prodotto*> recuperaProdottiDisponibili(Con2DB db, PGresult *res, int clientSocket);
-bool cercaProdottiDisponibili(int clientSocket);
+bool ricercaProdotti(int clientSocket);
 
 #endif

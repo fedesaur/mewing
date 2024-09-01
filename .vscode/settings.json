@@ -65,7 +65,11 @@
         "string_view": "cpp",
         "numbers": "cpp",
         "sstream": "cpp",
-        "cassert": "cpp"
+        "cassert": "cpp",
+        "mutex": "cpp",
+        "ratio": "cpp",
+        "stop_token": "cpp",
+        "thread": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
