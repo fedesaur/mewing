@@ -1,5 +1,5 @@
-#ifndef RICERCAPRODOTTI_H
-#define RICERCAPRODOTTI_H
+#ifndef RIMUOVI_DA_CARRELLO_H
+#define RIMUOVI_DA_CARRELLO_H
 
 #include <string>
 #include <utility> //Importa pair
@@ -9,7 +9,6 @@
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../../../entities/Prodotto.h"
-#include "../../../servers/Customer/metodi/recuperaCarrello.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -30,7 +29,6 @@
 #define PASSWORD "admin"
 #define DB_NAME "mewingdb"
 
-std::pair<int, Prodotto*> recuperaProdottiDisponibili(Con2DB db, PGresult *res, int clientSocket);
-bool cercaProdottiDisponibili(int clientSocket);
+std::pair<int, Prodotto*> recuperaCarrello(int ID, Con2DB db, PGresult *res, int clientSocket)
 
 #endif

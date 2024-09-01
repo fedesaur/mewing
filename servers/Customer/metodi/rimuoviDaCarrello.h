@@ -1,5 +1,5 @@
-#ifndef RICERCAPRODOTTI_H
-#define RICERCAPRODOTTI_H
+#ifndef RIMUOVI_DA_CARRELLO_H
+#define RIMUOVI_DA_CARRELLO_H
 
 #include <string>
 #include <utility> //Importa pair
@@ -30,7 +30,6 @@
 #define PASSWORD "admin"
 #define DB_NAME "mewingdb"
 
-std::pair<int, Prodotto*> recuperaProdottiDisponibili(Con2DB db, PGresult *res, int clientSocket);
-bool cercaProdottiDisponibili(int clientSocket);
+bool rimuoviProdotti(int clientSocket);
 
 #endif

@@ -7,6 +7,7 @@ struct Prodotto{
     const char* descrizione;
     const char* fornitore;
     double prezzo;
+    int quantita;
 };
 
 #endif

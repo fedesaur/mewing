@@ -213,8 +213,8 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                 int opzione = std::stoi(messaggio) - 1;
                 /*
                     OPZIONI[0] = "Modifica nome e cognome";
-                    OPZIONI[1] = "Aggiungi prodotti al carrello o alla wishlist (tramite nome)";
-                    OPZIONI[2] = "Aggiungi prodotti al carrello o alla wishlist (normale)";
+                    OPZIONI[1] = "Aggiungi prodotti al carrello (normale)";
+                    OPZIONI[2] = "Aggiungi prodotti al carrello (tramite nome)";
                     OPZIONI[3] = "Rimuovi prodotti dal carrello"; 
                     OPZIONI[4] = "Aggiungi/Rimuovi prodotti da ordine";
                     OPZIONI[5] = "Aggiungi/Rimuovi metodo di pagamento";
@@ -231,17 +231,17 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                         break;
                     case 2:
                         attendiInput = false; // Input valido ricevuto, esce dal loop
-                        std::cout << "Funzione Ordina prodotti non implementata\n";
+                        std::cout << "Funzione Aggiungi prodotti al carrello (tramite nome) non implementata\n";
                         send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
                         break;
                     case 3:
                         attendiInput = false; // Input valido ricevuto, esce dal loop
-                        std::cout << "Funzione Aggiungi/Rimuovi prodotti da ordine non implementata\n";
+                        std::cout << "Funzione Rimuovi prodotti dal carrello non implementata\n";
                         send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
                         break;
                     case 4:
                         attendiInput = false; // Input valido ricevuto, esce dal loop
-                        std::cout << "Funzione Aggiungi/Rimuovi metodi di pagamento non implementata\n";
+                        std::cout << "Funzione Aggiungi/Rimuovi prodotti da un ordine non implementata\n";
                         send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
                         break;
                     case 5:
