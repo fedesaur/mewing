@@ -5,10 +5,11 @@ Customer_Server::Customer_Server()
 {
     // Definisce le opzioni del Customer nel database
     OPZIONI[0] = "Modifica nome e cognome";
-    OPZIONI[1] = "Ricerca prodotti";
-    OPZIONI[2] = "Ordina prodotti";
-    OPZIONI[3] = "Aggiungi/Rimuovi prodotti da ordine";
-    OPZIONI[4] = "Aggiungi/Rimuovi metodo di pagamento";
+    OPZIONI[1] = "Aggiungi prodotti al carrello (normale)";
+    OPZIONI[2] = "Aggiungi prodotti al carrello (tramite nome)";
+    OPZIONI[3] = "Rimuovi prodotti dal carrello"; 
+    OPZIONI[4] = "Aggiungi/Rimuovi prodotti da ordine";
+    OPZIONI[5] = "Aggiungi/Rimuovi metodo di pagamento";
 
     // Crea il socket del server
     SERVER_SOCKET = socket(AF_INET, SOCK_STREAM, 0); // Crea il socket
@@ -167,7 +168,7 @@ bool Customer_Server::gestisciAutenticazione(int clientSocket)
         std::string response = "Email ricevuta! Procedo all'autenticazione\n";
         send(clientSocket, response.c_str(), response.length(), 0);
 
-        if (email[email.length()-1] == '\n') email.erase(std::remove(email.begin(), email.end(), '\n'), email.end()); // Rimuove \n alla fine dell'input
+        email.erase(std::remove(email.begin(), email.end(), '\n'), email.end()); // Rimuove \n alla fine dell'input
         // Scrive l'email ricevuta nello Stream
         std::cout << email;
         reply = RedisCommand(c2r, "XADD %s * email %s", WRITE_STREAM, email.c_str());
@@ -182,7 +183,7 @@ bool Customer_Server::gestisciAutenticazione(int clientSocket)
 bool Customer_Server::gestisciOperazioni(int clientSocket)
 {
     char buffer[1024] = {0};
-    std::string request = "Ecco le operazioni disponibili:\n";
+    std::string request = "\nEcco le operazioni disponibili:\n";
     send(clientSocket, request.c_str(), request.length(), 0);
 
     // Legge le opzioni all'utente
@@ -210,33 +211,48 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
             
             if (std::isdigit(messaggio[0])) {
                 int opzione = std::stoi(messaggio) - 1;
-                
-                if (opzione >= 0 && opzione < NUMERO_OPZIONI) {
-                    switch(opzione)
-                    {
-                        case 0:
-                            modificaNome(clientSocket);
-                            break;
-                        case 1:
-                            cercaProdottiDisponibili(clientSocket);
-                            break;
-                        case 2:
-                            std::cout << "Funzione Ordina prodotti non implementata\n";
-                            send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
-                            break;
-                        case 3:
-                            std::cout << "Funzione Aggiungi/Rimuovi prodotti da ordine non implementata\n";
-                            send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
-                            break;
-                        case 4:
-                            std::cout << "Funzione Aggiungi/Rimuovi metodi di pagamento non implementata\n";
-                            send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
-                            break;
-                    }
-                    attendiInput = false; // Input valido ricevuto, esce dal loop
-                } else {
-                    std::string errore = "Opzione non valida, riprova.\n";
-                    send(clientSocket, errore.c_str(), errore.length(), 0);
+                /*
+                    OPZIONI[0] = "Modifica nome e cognome";
+                    OPZIONI[1] = "Aggiungi prodotti al carrello o alla wishlist (tramite nome)";
+                    OPZIONI[2] = "Aggiungi prodotti al carrello o alla wishlist (normale)";
+                    OPZIONI[3] = "Rimuovi prodotti dal carrello"; 
+                    OPZIONI[4] = "Aggiungi/Rimuovi prodotti da ordine";
+                    OPZIONI[5] = "Aggiungi/Rimuovi metodo di pagamento";
+                */
+                switch(opzione)
+                {
+                    case 0:
+                        attendiInput = false; // Input valido ricevuto
+                        modificaNome(clientSocket); // Funziona!
+                        break;
+                    case 1:
+                        attendiInput = false; // Input valido ricevuto
+                        cercaProdottiDisponibili(clientSocket);
+                        break;
+                    case 2:
+                        attendiInput = false; // Input valido ricevuto, esce dal loop
+                        std::cout << "Funzione Ordina prodotti non implementata\n";
+                        send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                        break;
+                    case 3:
+                        attendiInput = false; // Input valido ricevuto, esce dal loop
+                        std::cout << "Funzione Aggiungi/Rimuovi prodotti da ordine non implementata\n";
+                        send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                        break;
+                    case 4:
+                        attendiInput = false; // Input valido ricevuto, esce dal loop
+                        std::cout << "Funzione Aggiungi/Rimuovi metodi di pagamento non implementata\n";
+                        send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                        break;
+                    case 5:
+                        attendiInput = false; // Input valido ricevuto, esce dal loop
+                        std::cout << "Funzione Aggiungi/Rimuovi metodi di pagamento non implementata\n";
+                        send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                        break;
+                    default:
+                        std::string errore = "Opzione non valida, riprova.\n";
+                        send(clientSocket, errore.c_str(), errore.length(), 0);
+                        break;
                 }
             } else {
                 std::string errore = "Input non valido, riprova.\n";

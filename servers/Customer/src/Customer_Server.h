@@ -33,8 +33,8 @@ class Customer_Server
         Customer CUSTOMER; // Struct che conserva le informazioni dell'utente attuale
         int ID_CONNESSIONE = 0;
         int SERVER_SOCKET;
-        int NUMERO_OPZIONI = 5;
-        std::string OPZIONI[5]; // Opzioni dell'utente
+        int NUMERO_OPZIONI = 6;
+        std::string OPZIONI[6]; // Opzioni dell'utente
         bool handshake(int clientSocket);
         bool gestisciAutenticazione(int clientSocket);
         bool gestisciOperazioni(int clientSocket);
