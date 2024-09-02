@@ -30,7 +30,6 @@ class Courier_Server
         // I parametri del Customer teniamoli privati per sicurezza
         redisContext *c2r; // c2r contiene le info sul contesto
         redisReply *reply; // reply contiene le risposte da Redis
-        Customer CUSTOMER; // Struct che conserva le informazioni dell'utente attuale (da cambiare)
         int ID_CONNESSIONE = 0;
         int SERVER_SOCKET;
         std::mutex id_mutex;
