@@ -5,7 +5,7 @@ Courier_Server::Courier_Server()
 {
     // Definisce le opzioni del Supplier nel database
     OPZIONI[0] = "Modifica profilo";
-    OPZIONI[1] = "Ricerca prodotti";
+    OPZIONI[1] = "Ricerca ordini";
     OPZIONI[2] = "Ordina prodotti";
     OPZIONI[3] = "Aggiungi/Rimuovi prodotti da ordine";
 
@@ -225,7 +225,7 @@ bool Courier_Server::gestisciOperazioni(int clientSocket)
                             send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
                             break;
                         case 1:
-                            cercaProdottiDisponibili(clientSocket);
+                            ricercaOrdini(int clientSocket);
                             break;
                         case 2:
                             std::cout << "Funzione Ordina prodotti non implementata\n";

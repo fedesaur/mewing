@@ -22,10 +22,10 @@ con2redis:
 autenticazione: autenticazione.cpp autenticazione.h 
 	$(CC) -c -o autenticazione.o $< $(CFLAGS) # Crea il file autenticazione.o
 
-ricerca:  ricercaProdotti.cpp ricercaProdotti.h 
-	$(CC) -c -o ricercaProdotti.o $< $(CFLAGS) # Crea il file ricercaProdotti.o
+ricerca:  ricercaOrdini.cpp ricercaOrdini.h 
+	$(CC) -c -o ricercaOrdini.o $< $(CFLAGS) # Crea il file ricercaOrdini.o
 
 .PHONY: clean
 
 clean:
-	rm autenticazione.o
+	rm autenticazione.o ricercaOrdini.o
