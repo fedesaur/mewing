@@ -31,7 +31,7 @@
 #define PASSWORD "admin"
 #define DB_NAME "mewingdb"
 
-bool rimuoviProdotti(int clientSocket);
+bool rimuoviDaCarrello(int clientSocket);
 bool rimuoviDaCarrelloDB(int idProdotto, int userID, Con2DB db, PGresult *res);
 
 #endif

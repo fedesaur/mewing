@@ -232,7 +232,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                         break;
                     case 3:
                         attendiInput = false; // Input valido ricevuto, esce dal loop
-                        esito = rimuoviProdotti(clientSocket);
+                        esito = rimuoviDaCarrello(clientSocket);
                         break;
                     case 4:
                         attendiInput = false; // Input valido ricevuto, esce dal loop

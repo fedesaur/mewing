@@ -1,5 +1,5 @@
 #include "rimuoviDaCarrello.h"
-bool rimuoviProdotti(int clientSocket)
+bool rimuoviDaCarrello(int clientSocket)
 {
     int USER_ID;
     int RIGHE;
