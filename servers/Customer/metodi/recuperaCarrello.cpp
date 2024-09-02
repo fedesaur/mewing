@@ -18,9 +18,7 @@ std::pair<int, Prodotto*> recuperaCarrello(int ID, Con2DB db, PGresult *res, int
     {
         // Mostriamo all'utente i prodotti nel suo carrello
         Prodotto* carrello = new Prodotto[rows];
-        //const char* totale = PQgetvalue(res, 0, PQfnumber(res, "totale")); //Recupera il totale...
-        std::string request = "PRODOTTI NEL CARRELLO (TOTALE : 0):\n"; //... e lo stampa
-	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+        // Recupera i prodotti e li memorizza in carrello
         for (int i = 0; i < rows; i++)
         {
             // Recupera gli attributi dei prodotti dalla query sopra svolta...
@@ -30,14 +28,6 @@ std::pair<int, Prodotto*> recuperaCarrello(int ID, Con2DB db, PGresult *res, int
             const char* nome = PQgetvalue(res, i, PQfnumber(res, "nome"));
             const char* fornitore = PQgetvalue(res, i, PQfnumber(res, "nomeF"));
             int quantita = atoi(PQgetvalue(res, i, PQfnumber(res, "quantita")));
-            // ...e li invia all'utente così che possa visualizzarli ed effettuarci operazioni
-            std::string prodotto = std::to_string(i+1) + ") ID Prodotto: " + std::to_string(ID) +
-             " Nome Prodotto: " + nome + 
-             " Descrizione: " + descrizione + 
-             " Fornitore: " + fornitore + 
-             " Prezzo Prodotto: " + std::to_string(prezzo) + 
-             " Quantità :" + std::to_string(quantita) + "\n";
-	        send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
 
             // Assegna gli attributi all'i-esimo Prodotto in prodottiDisponibili
             carrello[i].ID = ID;
@@ -55,32 +45,38 @@ std::pair<int, Prodotto*> recuperaCarrello(int ID, Con2DB db, PGresult *res, int
     // Se non ci sono oggetti
     risultato.first = 0;
     risultato.second = nullptr;
+    PQclear(res);
     return risultato;
 }
 
 void mostraCarrello(int clientSocket, Prodotto* carrello, int righe, PGresult *res)
 {
-    
-    double totale = atof(PQgetvalue(res, 0, PQfnumber(res, "totale"))); //Recupera il totale...
-    std::string request = "\nPRODOTTI NEL CARRELLO (TOTALE :" + std::to_string(totale) + "):\n"; //... e lo stampa
-	send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-    for (int i = 0; i < righe; i++)
+    if (righe > 0)
     {
+        double totale = atof(PQgetvalue(res, 0, PQfnumber(res, "totale"))); //Recupera il totale...
+        std::string request = "\nPRODOTTI NEL CARRELLO (TOTALE :" + std::to_string(totale) + "):\n"; //... e lo stampa
+	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+        for (int i = 0; i < righe; i++)
+        {
             // Recupera gli attributi dei prodotti dal carrello...
-        int ID = carrello[i].ID;
-        const char* descrizione = carrello[i].descrizione;
-        double prezzo = carrello[i].prezzo;
-        const char* nomeP = carrello[i].nome;
-        const char* fornitore = carrello[i].fornitore;
-        int quantita = carrello[i].quantita;
-        // ...e li invia all'utente così che possa visualizzarli ed effettuarci operazioni
-        std::string prodotto = std::to_string(i+1) + ") ID Prodotto: " + std::to_string(ID) +
+            int ID = carrello[i].ID;
+            const char* descrizione = carrello[i].descrizione;
+            double prezzo = carrello[i].prezzo;
+            const char* nomeP = carrello[i].nome;
+            const char* fornitore = carrello[i].fornitore;
+            int quantita = carrello[i].quantita;
+            // ...e li invia all'utente così che possa visualizzarli ed effettuarci operazioni
+            std::string prodotto = std::to_string(i+1) + ") ID Prodotto: " + std::to_string(ID) +
              " Nome Prodotto: " + nomeP + 
              " Descrizione: " + descrizione + 
              " Fornitore: " + fornitore + 
              " Prezzo Prodotto: " + std::to_string(prezzo) + 
              " Quantità :" + std::to_string(quantita) + "\n";
-	    send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
+	        send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
+        }
+    } else {
+        std::string request = "Non ci sono prodotti nel carrello!\n"; //... e lo stampa
+	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
     }
     return;
 }

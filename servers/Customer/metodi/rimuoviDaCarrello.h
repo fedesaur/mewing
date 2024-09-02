@@ -10,6 +10,7 @@
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../../../entities/Prodotto.h"
 #include "../../../servers/Customer/metodi/recuperaCarrello.h"
+#include "../../../lib/funzioniAusiliarie.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -31,8 +32,6 @@
 #define DB_NAME "mewingdb"
 
 bool rimuoviProdotti(int clientSocket);
-bool isNumber(std::string stringa); // Funzione ausiliaria per controllare se una stringa è un numero
-void rimuoviProdotto(int idP, Prodotto* carrello, int righe);
-bool rimuoviProdottoDB(int idProdotto, int userID, Con2DB db, PGresult *res);
+bool rimuoviDaCarrelloDB(int idProdotto, int userID, Con2DB db, PGresult *res);
 
 #endif

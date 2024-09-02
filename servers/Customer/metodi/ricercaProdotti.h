@@ -1,7 +1,7 @@
 #ifndef RICERCAPRODOTTI_H
 #define RICERCAPRODOTTI_H
 
-#include <string>
+#include <string> // Importa std::string
 #include <utility> //Importa pair
 #include <iostream>
 #include <sstream>
@@ -10,6 +10,7 @@
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../../../entities/Prodotto.h"
 #include "../../../servers/Customer/metodi/recuperaCarrello.h"
+#include "../../../lib/funzioniAusiliarie.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -31,6 +32,10 @@
 #define DB_NAME "mewingdb"
 
 std::pair<int, Prodotto*> recuperaProdottiDisponibili(Con2DB db, PGresult *res, int clientSocket);
+bool aggiungiAlCarrello(Con2DB db, PGresult *res, int USER_ID, std::pair<int, Prodotto*> carrello, std::pair<int, Prodotto*> disponibili, int clientSocket);
+bool aggiungiProdottoDB(int idProdotto, int userID, int quantita, Con2DB db, PGresult *res);
+void aggiungiProdotto(std::pair<int, Prodotto*> carrello, std::pair<int, Prodotto*> disponibili, int indice, int quanto);
+int richiediQuantita(int clientSocket);
 bool ricercaProdotti(int clientSocket);
 
 #endif

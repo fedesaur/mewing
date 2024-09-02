@@ -49,16 +49,17 @@ bool rimuoviProdotti(int clientSocket)
                         delete[] risultato.second;
                         attendiInput = false;
                         terminaConnessione = true;
-                    } else if (isNumber(messaggio)){
+                    } else if (isNumber(messaggio)){ //isNumber è una funzione ausiliaria in lib
                         int indice = stoi(messaggio) - 1;
                         if (indice >= 0 && indice < RIGHE)
                         {
                             attendiInput = false;
                             int idP = CARRELLO[indice].ID;
-                            bool esito = rimuoviProdottoDB(idP, USER_ID, db, res);
+                            bool esito = rimuoviDaCarrelloDB(idP, USER_ID, db, res); 
+                            // Se la rimozione dal DB va bene, viene eseguita anche quella locale
                             if (esito)
                             {
-                                rimuoviProdotto(idP, CARRELLO, RIGHE);
+                                rimuoviProdotto(idP, CARRELLO, RIGHE); // rimuoviProdotto è una funzione ausiliaria in lib
                                 RIGHE--;
                                 std::string successo = "Prodotto rimosso con successo!\n";
                                 send(clientSocket, successo.c_str(), successo.length(), 0);
@@ -88,29 +89,7 @@ bool rimuoviProdotti(int clientSocket)
     return true;
 }
 
-bool isNumber(std::string stringa)
-{
-    for (int i = 0; stringa.length(); i++)
-    {
-        if (!std::isdigit(stringa[i])) return false;
-    }
-    return true;
-}
-
-void rimuoviProdotto(int idP, Prodotto* carrello, int righe)
-{
-    int index = 0;
-    while (index < righe)
-    {
-        if (carrello[index].ID == idP) break; //Rimuove dal carrello il prodotto con quell'ID
-        index++;
-    }
-    
-    while (index < righe) carrello[index] = carrello[index+1]; //Sposta tutti gli elementi di una posizione a sinistra
-    return;
-}
-
-bool rimuoviProdottoDB(int idProdotto, int userID, Con2DB db, PGresult *res)
+bool rimuoviDaCarrelloDB(int idProdotto, int userID, Con2DB db, PGresult *res)
 {
     char comando[1000];
     sprintf(comando, "DELETE FROM prodincart WHERE prodotto = %d AND carrello = %d", idProdotto, userID);
