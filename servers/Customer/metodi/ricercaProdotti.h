@@ -31,10 +31,9 @@
 #define PASSWORD "admin"
 #define DB_NAME "mewingdb"
 
-std::pair<int, Prodotto*> recuperaProdottiDisponibili(Con2DB db, PGresult *res, int clientSocket);
+std::pair<int, Prodotto*> recuperaProdottiDisponibili(int userID, Con2DB db, PGresult *res, int clientSocket);
 bool aggiungiAlCarrello(Con2DB db, PGresult *res, int USER_ID, std::pair<int, Prodotto*> carrello, std::pair<int, Prodotto*> disponibili, int clientSocket);
-bool aggiungiProdottoDB(int idProdotto, int userID, int quantita, Con2DB db, PGresult *res);
-void aggiungiProdotto(std::pair<int, Prodotto*> carrello, std::pair<int, Prodotto*> disponibili, int indice, int quanto);
+bool aggiungiCarrelloDB(int idProdotto, int userID, int quantita, Con2DB db, PGresult *res);
 int richiediQuantita(int clientSocket);
 bool ricercaProdotti(int clientSocket);
 

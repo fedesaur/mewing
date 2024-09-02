@@ -18,31 +18,40 @@ bool ricercaProdotti(int clientSocket)
 
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     USER_ID = atoi(id.c_str()); // ID Customer
-
-    // Recupera i prodotti nel carrelo tramite una funzione ausiliaria
-    std::pair<int, Prodotto*> risultato1 = recuperaCarrello(USER_ID, db, res, clientSocket);
-    if (risultato1.first == -1) return false; // Se vi sono errori
     
-    std::pair<int, Prodotto*> risultato2 = recuperaProdottiDisponibili(db, res, clientSocket);
-    if (risultato2.first == -1) return false; // Se vi sono errori
-    else if (risultato2.first == 0) return true; // Se non ci sono prodotti disponibili, non ci sono operazioni da svolgere
-    
-    //...recuperati i prodotti, permette operazioni con quelli trovati e quelli anche nel carrello
     bool continuaOperazione = true;
-    while (continuaOperazione) {continuaOperazione = aggiungiAlCarrello(risultato1, risultato2, clientSocket);}
-    
-    // Libera lo spazio occupato dai prodotti nel carrello e/o quelli disponibili in vendita
-    delete[] risultato1.second;
-    delete[] risultato2.second;
+    while (continuaOperazione)
+    {
+        // Recupera i prodotti nel carrello tramite una funzione ausiliaria
+        std::pair<int, Prodotto*> risultato1 = recuperaCarrello(USER_ID, db, res, clientSocket);
+        if (risultato1.first == -1) return false; // Se vi sono errori
+
+        std::pair<int, Prodotto*> risultato2 = recuperaProdottiDisponibili(USER_ID, db, res, clientSocket);
+         if (risultato2.first == -1) return false; // Se vi sono errori
+        else if (risultato2.first == 0) 
+        {
+            // Se non ci sono prodotti disponibili, non ci sono operazioni da svolgere
+            continuaOperazione = false;
+            break;
+        };
+        continuaOperazione = aggiungiAlCarrello(risultato1, risultato2, clientSocket);
+        //...recuperati i prodotti, permette operazioni con quelli trovati e quelli anche nel carrello
+            
+        // Libera lo spazio occupato dai prodotti nel carrello e/o quelli disponibili in vendita
+        delete[] risultato1.second;
+        delete[] risultato2.second;
+    }
     return true;
 }
 
-std::pair<int, Prodotto*> recuperaProdottiDisponibili(Con2DB db, PGresult *res, int clientSocket)
+std::pair<int, Prodotto*> recuperaProdottiDisponibili(int userID, Con2DB db, PGresult *res, int clientSocket)
 {
     std::pair <int, Prodotto*> risultato;
     int rows;
     char comando[1000];
-    sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF FROM prodotto pr, fornitore fr WHERE pr.fornitore = fr.id");
+    // Seleziona tutti i prodotti disponibili che NON sono nel carrello
+    sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF FROM prodotto pr, fornitore fr"
+         "WHERE pr.fornitore = fr.id AND NOT EXISTS(SELECT * FROM prodincart WHERE customer = %d AND prodotto = pr.id)", userID);
     res = db.ExecSQLtuples(comando);
     if (PQresultStatus(res) != PGRES_TUPLES_OK)
     {
@@ -129,11 +138,10 @@ bool aggiungiAlCarrello(Con2DB db, PGresult *res, int USER_ID, std::pair<int, Pr
                     {
                         attendiInput = false;
                         int idP = PRODOTTI[indice].ID;
-                        int quantita = richiediQuantita(clientSocket);
-                        bool esito = aggiungiProdottoDB(idP, USER_ID, quantita, db, res);
+                        int quantita = richiediQuantita(clientSocket); // Chiede la quantita di prodotto desiderata dall'utente
+                        bool esito = aggiungiCarrelloDB(idP, USER_ID, quantita, db, res); // Aggiunge il prodotto al carrello
                         if (esito)
                         {
-                            aggiungiProdotto(carrello, disponibili, indice, quantita);
                             std::string successo = "Prodotto aggiunto al carrello con successo!\n";
                             send(clientSocket, successo.c_str(), successo.length(), 0);
                         } else {
@@ -191,7 +199,7 @@ int richiediQuantita(int clientSocket)
     return quantita;
 }
 
-bool aggiungiProdottoDB(int idProdotto, int userID, int quantita, Con2DB db, PGresult *res)
+bool aggiungiCarrelloDB(int idProdotto, int userID, int quantita, Con2DB db, PGresult *res)
 {
     char comando[1000];
 
@@ -208,31 +216,4 @@ bool aggiungiProdottoDB(int idProdotto, int userID, int quantita, Con2DB db, PGr
         return false;
     }
     return true;
-}
-
-void aggiungiProdotto(std::pair<int, Prodotto*> carrello, std::pair<int, Prodotto*> disponibili, int indice, int quanto)
-{
-    int RIGHE_CARRELLO = carrello.first;
-    Prodotto* CARRELLO = carrello.second;
-    int RIGHE_DISPONIBILI = disponibili.first;
-    Prodotto* PRODOTTI = disponibili.second;
-
-    if (RIGHE_CARRELLO == 0 && carrello.second == nullptr) {
-        carrello.first = 1;
-        RIGHE_CARRELLO = 1;
-        carrello.second = new Prodotto[1];
-    }
-    else {
-        Prodotto* newCart = new Prodotto[RIGHE_CARRELLO+1];
-        for (int i = 0; i < RIGHE_CARRELLO; i++) newCart[i] = CARRELLO[i]; // Sposta i prodotti nel nuovo carrello
-        delete[] carrello.second;
-        carrello.first++;
-        RIGHE_CARRELLO++;
-        carrello.second = newCart;
-    }
-    CARRELLO[RIGHE_CARRELLO] = PRODOTTI[indice];
-    CARRELLO[RIGHE_CARRELLO].quantita = quanto;
-    rimuoviProdotto(PRODOTTI[indice].ID, PRODOTTI, RIGHE_DISPONIBILI);
-    disponibili.first--;
-    return;
 }
