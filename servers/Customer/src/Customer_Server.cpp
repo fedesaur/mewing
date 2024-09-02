@@ -90,10 +90,8 @@ void Customer_Server::gestisciConnessioni()
     close(SERVER_SOCKET); // Chiudi il socket del server (questa parte non verrà mai raggiunta a causa del while infinito)
 }
 
-void Customer_Server::gestisciConnessioneCliente (int clientSocket, int connectionID){
-        
-        bool continuaConnessione=false;
-        
+void Customer_Server::gestisciConnessioneCliente (int clientSocket, int connectionID)
+{
       // Identifica l'ID della connessione
         std::cout << "ID della connessione: " + std::to_string(connectionID) << std::endl;
         std::cout.flush();
@@ -130,23 +128,12 @@ void Customer_Server::gestisciConnessioneCliente (int clientSocket, int connecti
             } else {
               std::string response = "Benvenuto " + nome + " " + cognome + "\n";// Saluta il customer appena autenticato
               send(clientSocket, response.c_str(), response.length(), 0);
-            
-              CUSTOMER.ID = atoi(ID.c_str());
-              CUSTOMER.nome = nome.c_str();
-              CUSTOMER.cognome = cognome.c_str();
-              CUSTOMER.mail = mail.c_str();
-              CUSTOMER.abita = atoi(abita.c_str());
-              continuaConnessione = true;
             }
 
+            bool continuaConnessione=true;
             // Andata a buon fine l'autenticazione, si rendono disponibile all'utente le varie funzionalità tramite una funzione ausiliaria
-            do{
-                continuaConnessione = gestisciOperazioni(clientSocket);
-            }
-            while (continuaConnessione);
-            
+            while (continuaConnessione) continuaConnessione = gestisciOperazioni(clientSocket);
         }
-
         close(clientSocket); // Chiudi la connessione con il client dopo averla gestita
         std::cout << "Conclusa connessione con ID: " + std::to_string(connectionID) << std::endl;
 
