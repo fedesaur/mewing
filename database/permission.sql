@@ -43,6 +43,7 @@ GRANT SELECT ON ordine to :producer;
 GRANT SELECT ON prodinord to :producer;
 
 
+GRANT UPDATE, SELECT on customers to :customer;
 GRANT INSERT, UPDATE, SELECT, DELETE on carrello to :customer;
 GRANT INSERT, UPDATE, SELECT, DELETE on custadd to :customer;
 GRANT INSERT, UPDATE, SELECT, DELETE on indirizzo to :customer;
