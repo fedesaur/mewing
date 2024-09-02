@@ -23,25 +23,25 @@ con2redis:
 aux: ../../../lib/funzioniAusiliarie.cpp ../../../lib/funzioniAusiliarie.h
 	$(CC) -c -o $(aux_OBJ) $< $(CFLAGS) # Crea il file ../../../lib/funzioniAusiliarie.o
 
-autenticazione: autenticazione.cpp autenticazione.h $(aux_OBJ)
+autenticazione: autenticazione.cpp autenticazione.h $(aux_OBJ) $(con2db_OBJ) $(con2redis_OBJ)
 	$(CC) -c -o autenticazione.o autenticazione.cpp $(CFLAGS) # Crea il file autenticazione.o
-	$(CC) -o autenticazione autenticazione.o $(aux_OBJ) $(CFLAGS) # Linka l'oggetto
+	$(CC) -o autenticazione autenticazione.o $(aux_OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(CFLAGS) # Linka l'oggetto
 
-ricercaNormale: ricercaProdotti.cpp ricercaProdotti.h $(aux_OBJ)
+ricercaNormale: ricercaProdotti.cpp ricercaProdotti.h $(aux_OBJ) $(con2db_OBJ) $(con2redis_OBJ)
 	$(CC) -c -o ricercaProdotti.o ricercaProdotti.cpp $(CFLAGS) # Crea il file ricercaProdotti.o
-	$(CC) -o ricercaNormale ricercaProdotti.o $(aux_OBJ) $(CFLAGS) # Linka l'oggetto
+	$(CC) -o ricercaNormale ricercaProdotti.o $(aux_OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(CFLAGS) # Linka l'oggetto
 
-modificaNome: modificaNome.cpp modificaNome.h $(aux_OBJ)
+modificaNome: modificaNome.cpp modificaNome.h $(aux_OBJ) $(con2db_OBJ) $(con2redis_OBJ)
 	$(CC) -c -o modificaNome.o modificaNome.cpp $(CFLAGS) # Crea il file modificaNome.o
-	$(CC) -o modificaNome modificaNome.o $(aux_OBJ) $(CFLAGS) # Linka l'oggetto
+	$(CC) -o modificaNome modificaNome.o $(aux_OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(CFLAGS) # Linka l'oggetto
 
-rimuoviDaCarrello: rimuoviDaCarrello.cpp rimuoviDaCarrello.h $(aux_OBJ)
+rimuoviDaCarrello: rimuoviDaCarrello.cpp rimuoviDaCarrello.h $(aux_OBJ) $(con2db_OBJ) $(con2redis_OBJ)
 	$(CC) -c -o rimuoviDaCarrello.o rimuoviDaCarrello.cpp $(CFLAGS) # Crea il file rimuoviDaCarrello.o
-	$(CC) -o rimuoviDaCarrello rimuoviDaCarrello.o $(aux_OBJ) $(CFLAGS) # Linka l'oggetto
+	$(CC) -o rimuoviDaCarrello rimuoviDaCarrello.o $(aux_OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(CFLAGS) # Linka l'oggetto
 
-recuperaCarrello: recuperaCarrello.cpp recuperaCarrello.h $(aux_OBJ)
+recuperaCarrello: recuperaCarrello.cpp recuperaCarrello.h $(aux_OBJ) $(con2db_OBJ) $(con2redis_OBJ)
 	$(CC) -c -o recuperaCarrello.o recuperaCarrello.cpp $(CFLAGS) # Crea il file recuperaCarrello.o
-	$(CC) -o recuperaCarrello recuperaCarrello.o $(aux_OBJ) $(CFLAGS) # Linka l'oggetto
+	$(CC) -o recuperaCarrello recuperaCarrello.o $(aux_OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(CFLAGS) # Linka l'oggetto
 
 .PHONY: clean
 
