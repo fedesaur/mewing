@@ -34,10 +34,9 @@ bool ricercaProdotti(int clientSocket)
             continuaOperazione = false;
             break;
         };
-        continuaOperazione = aggiungiAlCarrello(db, res, USER_ID, risultato1, risultato2, clientSocket);
-        //Con2DB db, PGresult *res, int USER_ID, std::pair<int, Prodotto*> carrello, std::pair<int, Prodotto*> disponibili, int clientSocket
         //...recuperati i prodotti, permette operazioni con quelli trovati e quelli anche nel carrello
-            
+        continuaOperazione = aggiungiAlCarrello(db, res, USER_ID, risultato1, risultato2, clientSocket);
+
         // Libera lo spazio occupato dai prodotti nel carrello e/o quelli disponibili in vendita
         delete[] risultato1.second;
         delete[] risultato2.second;

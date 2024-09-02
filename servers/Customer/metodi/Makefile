@@ -5,7 +5,6 @@ CFLAGS=-std=c++20 -I. -I$(IDIR) -I/usr/include/postgresql -lpq -lm -lhiredis
 
 con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
-aux_OBJ=../../../lib/funzioniAusiliarie.o
 
 all: con2db con2redis aux autenticazione ricercaNormale modificaNome rimuoviDaCarrello recuperaCarrello
 
@@ -16,7 +15,7 @@ con2redis:
 	$(MAKE) -C ../../../lib/con2redis/src
 
 aux: ../../../lib/funzioniAusiliarie.cpp ../../../lib/funzioniAusiliarie.h
-	$(CC) -c -o $(aux_OBJ) $< $(CFLAGS)
+	$(CC) -c -o ../../../lib/funzioniAusiliarie.o $< $(CFLAGS)
 
 autenticazione: autenticazione.cpp autenticazione.h
 	$(CC) -c -o autenticazione.o $< $(CFLAGS)
@@ -36,4 +35,4 @@ recuperaCarrello: recuperaCarrello.cpp recuperaCarrello.h
 .PHONY: clean
 
 clean:
-	rm -f *.o $(aux_OBJ)
+	rm -f *.o ../../../lib/funzioniAusiliarie.o
