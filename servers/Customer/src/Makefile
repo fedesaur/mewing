@@ -43,4 +43,4 @@ $(BDIR)/main: $(OBJ) $(DEPS)
 .PHONY: clean
 
 clean:
-	rm -r $(ODIR) $(BDIR) ../metodi/autenticazione.o ../metodi/ricercaProdotti.o ../metodi/modificaNome.o ../metodi/rimuoviDaCarrello.o ../metodi/recuperaCarrello.o
+	rm -r $(ODIR) $(BDIR) ../metodi/autenticazione.o ../metodi/ricercaProdotti.o ../metodi/modificaNome.o ../metodi/rimuoviDaCarrello.o ../metodi/recuperaCarrello.o ../../../lib/funzioniAusiliare.o
