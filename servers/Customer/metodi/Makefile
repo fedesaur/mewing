@@ -19,8 +19,8 @@ con2db:
 con2redis:
 	$(MAKE) -C ../../../lib/con2redis/src
 
-aux: ../../../lib/funzioniAusiliare.cpp ../../../lib/funzioniAusiliare.h
-	$(CC) -c -o ../../../lib/funzioniAusiliare.o $< $(CFLAGS) # Crea il file ../../../lib/funzioniAusiliare.o
+aux: ../../../lib/funzioniAusiliarie.cpp ../../../lib/funzioniAusiliarie.h
+	$(CC) -c -o ../../../lib/funzioniAusiliarie.o $< $(CFLAGS) # Crea il file ../../../lib/funzioniAusiliare.o
 
 autenticazione: autenticazione.cpp autenticazione.h 
 	$(CC) -c -o autenticazione.o $< $(CFLAGS) # Crea il file autenticazione.o
@@ -40,4 +40,4 @@ recuperaCarrello: recuperaCarrello.cpp recuperaCarrello.h
 .PHONY: clean
 
 clean:
-	rm autenticazione.o ricercaProdotti.o modificaNome.o rimuoviDaCarrello.o recuperaCarrello.o ../../../lib/funzioniAusiliare.o
+	rm autenticazione.o ricercaProdotti.o modificaNome.o rimuoviDaCarrello.o recuperaCarrello.o ../../../lib/funzioniAusiliarie.o

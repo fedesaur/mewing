@@ -34,7 +34,8 @@ bool ricercaProdotti(int clientSocket)
             continuaOperazione = false;
             break;
         };
-        continuaOperazione = aggiungiAlCarrello(risultato1, risultato2, clientSocket);
+        continuaOperazione = aggiungiAlCarrello(db, res, USER_ID, risultato1, risultato2, clientSocket);
+        //Con2DB db, PGresult *res, int USER_ID, std::pair<int, Prodotto*> carrello, std::pair<int, Prodotto*> disponibili, int clientSocket
         //...recuperati i prodotti, permette operazioni con quelli trovati e quelli anche nel carrello
             
         // Libera lo spazio occupato dai prodotti nel carrello e/o quelli disponibili in vendita
@@ -112,7 +113,7 @@ bool aggiungiAlCarrello(Con2DB db, PGresult *res, int USER_ID, std::pair<int, Pr
                 " Nome Prodotto: " + PRODOTTI[i].nome + 
                 " Descrizione: " + PRODOTTI[i].descrizione + 
                 " Fornitore: " + PRODOTTI[i].fornitore + 
-                " Prezzo Prodotto: " + std::to_string(PRODOTTI[i].fornitore) + "\n";
+                " Prezzo Prodotto: " + std::to_string(PRODOTTI[i].prezzo) + "\n";
 	        send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
         }
         //...incomincia le operazioni per aggiungerli
@@ -178,12 +179,12 @@ int richiediQuantita(int clientSocket)
         {
             std::string messaggio(buffer, bytesRead);
             messaggio.erase(std::remove(messaggio.begin(), messaggio.end(), '\n'), messaggio.end()); // Rimuove eventuali newline
-            if isNumber(messaggio)
+            if (isNumber(messaggio)) 
             {
                 int numero = stoi(messaggio);
-                if (numero > 0) quantita = numero;
-                else
-                {
+                if (numero > 0) {
+                    quantita = numero;
+                } else {
                     std::string errore = "Quantità non valida\n";
 	                send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
                 }
@@ -191,13 +192,12 @@ int richiediQuantita(int clientSocket)
                 std::string errore = "Input non valido\n";
 	            send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
             }
-        } else {
-            std::string errore = "Input non valido\n";
-	        send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-        }
+
     }
-    return quantita;
 }
+  return quantita;
+}
+
 
 bool aggiungiCarrelloDB(int idProdotto, int userID, int quantita, Con2DB db, PGresult *res)
 {

@@ -10,7 +10,7 @@
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../../../entities/Prodotto.h"
 #include "../../../servers/Customer/metodi/recuperaCarrello.h"
-#include "../../../lib/funzioniAusiliarie.h"
+#include "../../../lib/funzioniAusiliarie.cpp"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
