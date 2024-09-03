@@ -35,7 +35,7 @@ create or replace function tot_cart() returns trigger as $buy_price$
     BEGIN
     update carrello
     set totale=(select SUM((p.prezzo * NEW.quantita)) 
-            from  carello c, prodotto p
+            from  carrello c, prodotto p
             where c.customer=NEW.carrello 
             and NEW.prodotto=p.id)
      where carrello.customer=NEW.carrello;
