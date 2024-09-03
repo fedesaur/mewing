@@ -17,9 +17,10 @@ OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(SRC))
 con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
 metodi_OBJ = $(wildcard ../metodi/*.o)
+aux_OBJ = $(wildcard ../../../lib/*.o)
 
 
-all:	create_dirs con2db con2redis metodi customer_server $(BDIR)/main
+all:	create_dirs con2db con2redis aux metodi customer_server $(BDIR)/main
 
 create_dirs:
 	mkdir -p $(BDIR)
@@ -31,6 +32,9 @@ con2db:
 con2redis:
 	$(MAKE) -C ../../../lib/con2redis/src
 
+aux: ../../../lib/funzioniAusiliarie.cpp ../../../lib/funzioniAusiliarie.h
+	$(CC) -c -o ../../../lib/funzioniAusiliarie.o $< $(CFLAGS)
+
 metodi:
 	$(MAKE) -C ../metodi #Chiama il makefile dei metodi
 
@@ -38,9 +42,9 @@ customer_server: Customer_Server.cpp Customer_Server.h
 	$(CC) -c -o $(ODIR)/Customer_Server.o $< $(CFLAGS)
 
 $(BDIR)/main: $(OBJ) $(DEPS)
-	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(metodi_OBJ) $(CFLAGS)
+	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(aux_OBJ) $(metodi_OBJ) $(CFLAGS)
 
 .PHONY: clean
 
 clean:
-	rm -r $(ODIR) $(BDIR) ../metodi/autenticazione.o ../metodi/ricercaProdotti.o ../metodi/modificaNome.o ../metodi/rimuoviDaCarrello.o ../metodi/recuperaCarrello.o ../../../lib/funzioniAusiliare.o
+	rm -r $(ODIR) $(BDIR) ../metodi/*.o ../../../lib/funzioniAusiliarie.o

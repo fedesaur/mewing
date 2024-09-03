@@ -19,28 +19,28 @@ bool ricercaProdotti(int clientSocket)
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     USER_ID = atoi(id.c_str()); // ID Customer
     
+    std::pair<int, Prodotto*> risultato2 = recuperaProdottiDisponibili(USER_ID, db, res, clientSocket);
+    if (risultato2.first == -1) return false; // Se vi sono errori
+    else if (risultato2.first == 0) return true;
+    //...recuperati i prodotti, permette operazioni con quelli trovati e quelli anche nel carrello
     bool continuaOperazione = true;
     while (continuaOperazione)
     {
         // Recupera i prodotti nel carrello tramite una funzione ausiliaria
         std::pair<int, Prodotto*> risultato1 = recuperaCarrello(USER_ID, db, res, clientSocket);
-        if (risultato1.first == -1) return false; // Se vi sono errori
-
-        std::pair<int, Prodotto*> risultato2 = recuperaProdottiDisponibili(USER_ID, db, res, clientSocket);
-         if (risultato2.first == -1) return false; // Se vi sono errori
-        else if (risultato2.first == 0) 
+        if (risultato1.first == -1) 
         {
-            // Se non ci sono prodotti disponibili, non ci sono operazioni da svolgere
-            continuaOperazione = false;
-            break;
-        };
-        //...recuperati i prodotti, permette operazioni con quelli trovati e quelli anche nel carrello
+            delete[] risultato1.second;
+            delete[] risultato2.second;
+            return false; // Se vi sono errori
+        }
         continuaOperazione = aggiungiAlCarrello(db, res, USER_ID, risultato1, risultato2, clientSocket);
 
         // Libera lo spazio occupato dai prodotti nel carrello e/o quelli disponibili in vendita
         delete[] risultato1.second;
-        delete[] risultato2.second;
+
     }
+    delete[] risultato2.second;
     return true;
 }
 
@@ -50,50 +50,52 @@ std::pair<int, Prodotto*> recuperaProdottiDisponibili(int userID, Con2DB db, PGr
     int rows;
     char comando[1000];
     // Seleziona tutti i prodotti disponibili che NON sono nel carrello
-    sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF FROM prodotto pr, fornitore fr"
-         "WHERE pr.fornitore = fr.id AND NOT EXISTS(SELECT * FROM prodincart WHERE customer = %d AND prodotto = pr.id)", userID);
+    sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF FROM prodotto pr, fornitore fr WHERE pr.fornitore = fr.id");
     res = db.ExecSQLtuples(comando);
-    if (PQresultStatus(res) != PGRES_TUPLES_OK)
+    try
+    {
+        rows = PQntuples(res);
+        if (rows > 0)
+        {
+        // Prima mostriamo all'utente i prodotti disponibili..
+            std::string request = "PRODOTTI DISPONIBILI:\n"; //... e lo stampa
+	        send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+            Prodotto* prodottiDisponibili = new Prodotto[rows];
+
+            for (int i = 0; i < rows; i++)
+            {
+            // Recupera gli attributi dei prodotti dalla query sopra svolta...
+                int ID = atoi(PQgetvalue(res, i, PQfnumber(res, "id")));
+                const char* descrizione = PQgetvalue(res, i, PQfnumber(res, "descrizione"));
+                double prezzo = atof(PQgetvalue(res, i, PQfnumber(res, "prezzo")));
+                const char* nome = PQgetvalue(res, i, PQfnumber(res, "nome"));
+                const char* fornitore = PQgetvalue(res, i, PQfnumber(res, "nomeF"));
+
+            // Assegna gli attributi all'i-esimo Prodotto in prodottiDisponibili
+                prodottiDisponibili[i].ID = ID;
+                prodottiDisponibili[i].descrizione = descrizione;
+                prodottiDisponibili[i].prezzo = prezzo;
+                prodottiDisponibili[i].nome = nome;
+                prodottiDisponibili[i].fornitore = fornitore;
+            }
+            risultato.first = rows; // Ritorna il numero di righe dei prodottiDisponibili
+            risultato.second = prodottiDisponibili; // Ritorna l'array di prodotti disponibili
+            PQclear(res);
+            return risultato;
+        }   
+        // Se non ci sono oggetti
+	    std::string request = "Nessun prodotto disponibile!\n"; // Seleziona la frase del turno
+	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+        risultato.first = 0;
+        risultato.second = nullptr;
+        return risultato;
+    }
+    catch(...)
     {
         risultato.first = -1;
         risultato.second = nullptr;
         return risultato; // Controlla che la query sia andata a buon fine
     }
-    rows = PQntuples(res);
-    if (rows > 0)
-    {
-        // Prima mostriamo all'utente i prodotti disponibili..
-        std::string request = "PRODOTTI DISPONIBILI:\n"; //... e lo stampa
-	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-        Prodotto* prodottiDisponibili = new Prodotto[rows];
-
-        for (int i = 0; i < rows; i++)
-        {
-            // Recupera gli attributi dei prodotti dalla query sopra svolta...
-            int ID = atoi(PQgetvalue(res, i, PQfnumber(res, "id")));
-            const char* descrizione = PQgetvalue(res, i, PQfnumber(res, "descrizione"));
-            double prezzo = atof(PQgetvalue(res, i, PQfnumber(res, "prezzo")));
-            const char* nome = PQgetvalue(res, i, PQfnumber(res, "nome"));
-            const char* fornitore = PQgetvalue(res, i, PQfnumber(res, "nomeF"));
-
-            // Assegna gli attributi all'i-esimo Prodotto in prodottiDisponibili
-            prodottiDisponibili[i].ID = ID;
-            prodottiDisponibili[i].descrizione = descrizione;
-            prodottiDisponibili[i].prezzo = prezzo;
-            prodottiDisponibili[i].nome = nome;
-            prodottiDisponibili[i].fornitore = fornitore;
-        }
-        risultato.first = rows; // Ritorna il numero di righe dei prodottiDisponibili
-        risultato.second = prodottiDisponibili; // Ritorna l'array di prodotti disponibili
-        PQclear(res);
-        return risultato;
-    }
-    // Se non ci sono oggetti
-	std::string request = "Nessun prodotto disponibile!\n"; // Seleziona la frase del turno
-	send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-    risultato.first = 0;
-    risultato.second = nullptr;
-    return risultato;
 }
 
 bool aggiungiAlCarrello(Con2DB db, PGresult *res, int USER_ID, std::pair<int, Prodotto*> carrello, std::pair<int, Prodotto*> disponibili, int clientSocket)
@@ -191,9 +193,8 @@ int richiediQuantita(int clientSocket)
                 std::string errore = "Input non valido\n";
 	            send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
             }
-
+        }  
     }
-}
   return quantita;
 }
 
@@ -201,10 +202,17 @@ int richiediQuantita(int clientSocket)
 bool aggiungiCarrelloDB(int idProdotto, int userID, int quantita, Con2DB db, PGresult *res)
 {
     char comando[1000];
-
-    sprintf(comando, "INSERT INTO prodincart(carrello, prodotto, quantita) VALUES (%d, %d, %d)", userID, idProdotto, quantita);
+    int rows;
+    sprintf(comando, "SELECT quantita FROM prodincart WHERE prodotto = %d AND carrello = %d", idProdotto, userID);
     try
     {
+        res = db.ExecSQLcmd(comando);
+        if (rows == 1)
+        {
+            int plus = atoi(PQgetvalue(res, 0, PQfnumber(res, "quantita"))) + quantita;
+            sprintf(comando, "UPDATE prodincart SET quantita = %d WHERE prodotto = %d AND carrello = %d", plus, idProdotto, userID);
+        }
+        else sprintf(comando, "INSERT INTO prodincart(carrello, prodotto, quantita) VALUES (%d, %d, %d)", userID, idProdotto, quantita);
         res = db.ExecSQLcmd(comando);
         PQclear(res);
         return true;
