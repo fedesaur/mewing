@@ -2,13 +2,10 @@
 
 bool isNumber(std::string stringa)
 {
-    for (int i = 0; stringa.length(); i++)
-    {
-        if (!std::isdigit(stringa[i])) return false;
-    }
-    return true;
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && std::isdigit(*it)) ++it;
+    return !s.empty() && it == s.end();
 }
-
 void rimuoviProdotto(int idP, Prodotto* insieme, int righe)
 {
     int index = 0;
