@@ -16,7 +16,6 @@ std::pair<int, Prodotto*> recuperaCarrello(int ID, Con2DB db, PGresult *res, int
         return risultato; 
     }
     rows = PQntuples(res);
-    std::cout << rows << std::endl;
     if (rows > 0)
     {
 
@@ -55,7 +54,7 @@ void mostraCarrello(int clientSocket, Prodotto* carrello, int righe)
 {
     if (righe > 0)
     {
-        std::string request = "\nPRODOTTI NEL CARRELLO:\n"; //... e lo stampa
+        std::string request = "\nPRODOTTI FORNITI:\n"; //... e lo stampa
 	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
         for (int i = 0; i < righe; i++)
         {
