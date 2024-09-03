@@ -206,13 +206,13 @@ bool aggiungiCarrelloDB(int idProdotto, int userID, int quantita, Con2DB db, PGr
     sprintf(comando, "SELECT quantita FROM prodincart WHERE prodotto = %d AND carrello = %d", idProdotto, userID);
     try
     {
-        res = db.ExecSQLcmd(comando);
+        res = db.ExecSQLtuples(comando);
         if (rows == 1)
         {
             int plus = atoi(PQgetvalue(res, 0, PQfnumber(res, "quantita"))) + quantita;
             sprintf(comando, "UPDATE prodincart SET quantita = %d WHERE prodotto = %d AND carrello = %d", plus, idProdotto, userID);
         }
-        else sprintf(comando, "INSERT INTO prodincart(carrello, prodotto, quantita) VALUES (%d, %d, %d)", userID, idProdotto, quantita);
+        else {sprintf(comando, "INSERT INTO prodincart(carrello, prodotto, quantita) VALUES (%d, %d, %d)", userID, idProdotto, quantita);}
         res = db.ExecSQLcmd(comando);
         PQclear(res);
         return true;

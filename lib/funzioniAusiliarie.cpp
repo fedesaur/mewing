@@ -1,6 +1,6 @@
 #include "funzioniAusiliarie.h"
 
-bool isNumber(std::string stringa)
+bool isNumber(std::string s)
 {
     std::string::const_iterator it = s.begin();
     while (it != s.end() && std::isdigit(*it)) ++it;
