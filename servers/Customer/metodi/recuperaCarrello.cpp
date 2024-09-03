@@ -5,7 +5,9 @@ std::pair<int, Prodotto*> recuperaCarrello(int ID, Con2DB db, PGresult *res, int
     std::pair <int, Prodotto*> risultato;
     int rows;
     char comando[1000];
-    sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF, cr.totale, pc.quantita FROM prodotto pr, carrello cr, prodincart pc, fornitore fr WHERE pc.prodotto = pr.id AND pc.carrello = cr.customer AND pr.fornitore = fr.id AND cr.customer = %d", ID);
+    sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF, cr.totale, pc.quantita "
+    "FROM prodotto pr, carrello cr, prodincart pc, fornitore fr WHERE pc.prodotto = pr.id "
+    "AND pc.carrello = cr.customer AND pr.fornitore = fr.id AND cr.customer = %d", ID);
     res = db.ExecSQLtuples(comando);
     if (PQresultStatus(res) != PGRES_TUPLES_OK) // Controlla che la query sia andata a buon fine
     {
@@ -42,15 +44,6 @@ std::pair<int, Prodotto*> recuperaCarrello(int ID, Con2DB db, PGresult *res, int
         risultato.first = rows; // Ritorna il numero di righe dei prodottiDisponibili
         risultato.second = carrello; // Ritorna l'array di prodotti disponibili
     } else {     // Se non ci sono oggetti
-        sprintf(comando, "SELECT * FROM carrello WHERE customer = %d", ID);
-        res = db.ExecSQLtuples(comando);
-        rows = PQntuples(res);
-        if (rows == 0) // Se non esiste il carrello dell'utente...
-        {
-            //... lo crea
-            sprintf(comando, "INSERT INTO carrello(customer) VALUES (%d)", ID);
-            res = db.ExecSQLcmd(comando);
-        }
         risultato.first = 0;
         risultato.second = nullptr;
     }

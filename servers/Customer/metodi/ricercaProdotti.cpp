@@ -206,7 +206,7 @@ bool aggiungiCarrelloDB(int idProdotto, int userID, int quantita, Con2DB db, PGr
     try
     {
         res = db.ExecSQLtuples(comando);
-        if (rows == 1)
+        if (rows == 1) // Il prodotto già c'è, perciò aumenta il numero di prodotti presenti
         {
             int plus = atoi(PQgetvalue(res, 0, PQfnumber(res, "quantita"))) + quantita;
             sprintf(comando, "UPDATE prodincart SET quantita = %d WHERE prodotto = %d AND carrello = %d", plus, idProdotto, userID);

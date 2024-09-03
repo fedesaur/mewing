@@ -67,6 +67,13 @@ bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
         const char* cognome = PQgetvalue(res, 0, PQfnumber(res, "cognome"));
         int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "abita")));
 		bool esito = inviaDati(ID,nome,cognome,mail,abita);
+		sprintf(comando, "SELECT * FROM carrello WHERE customer = %d", ID);
+		res = db.ExecSQLtuples(comando);
+		if (rows == 0) // Per i casi in fill o per casi erronei
+		{
+			sprintf(comando, "INSERT INTO carrello(customer) VALUES (%d)", ID); // Crea il carrello del customer
+    		res = db.ExecSQLcmd(comando);
+		}
         PQclear(res); // <- Importante metterlo DOPO InviaDati altrimenti i dati vengono cancellati
         return esito;
     }
@@ -160,6 +167,10 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 	res = db.ExecSQLtuples(comando);
 	if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
 	int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'utente appena creato
+	
+	sprintf(comando, "INSERT INTO carrello(customer) VALUES (%d)", ID); // Crea il carrello del customer
+    res = db.ExecSQLcmd(comando);
+	
 	bool esito = inviaDati(ID,nome.c_str(),cognome.c_str(),mail,abita); // Invia i dati tramite Redis
 	PQclear(res);	
 	return esito;
