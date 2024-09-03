@@ -5,9 +5,8 @@ Supplier_Server::Supplier_Server()
 {
     // Definisce le opzioni del Supplier nel database
     OPZIONI[0] = "Modifica profilo";
-    OPZIONI[1] = "Ricerca prodotti";
-    OPZIONI[2] = "Ordina prodotti";
-    OPZIONI[3] = "Aggiungi/Rimuovi prodotti da ordine";
+    OPZIONI[1] = "Recupera Forniti";
+    OPZIONI[2] = "Aggiungi Prodotto";
 
     // Crea il socket del server
     SERVER_SOCKET = socket(AF_INET, SOCK_STREAM, 0); // Crea il socket
@@ -211,7 +210,10 @@ bool Supplier_Server::gestisciOperazioni(int clientSocket)
             if (messaggio == "q" || messaggio == "Q") {
                 return false; // Termina la connessione
             }
-            
+                OPZIONI[0] = "Modifica profilo";
+    OPZIONI[1] = "Recupera Forniti";
+    OPZIONI[2] = "Aggiungi Prodotto";
+
             if (std::isdigit(messaggio[0])) {
                 int opzione = std::stoi(messaggio) - 1;
                 
@@ -226,8 +228,7 @@ bool Supplier_Server::gestisciOperazioni(int clientSocket)
                             cercaProdottiDisponibili(clientSocket);
                             break;
                         case 2:
-                            std::cout << "Funzione Ordina prodotti non implementata\n";
-                            send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                            aggiungiProdotto(clientSocket);
                             break;
                         case 3:
                             std::cout << "Funzione Aggiungi/Rimuovi prodotti da ordine non implementata\n";

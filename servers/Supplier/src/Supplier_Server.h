@@ -7,7 +7,7 @@
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../metodi/autenticazione.h"
 #include "../metodi/ricercaProdotti.h"
-#include "../../../entities/Customer.h" //da modificare
+#include "../metodi/aggiungiProdotto.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -23,7 +23,6 @@
 #define SERVER_PORT 5001
 #define MAX_CONNECTIONS 100 //Numero di connessioni massime accettabili
 
-
 class Supplier_Server
 {
     private:
@@ -33,9 +32,9 @@ class Supplier_Server
         Customer CUSTOMER; // Struct che conserva le informazioni dell'utente attuale (da cambiare)
         int ID_CONNESSIONE = 0;
         int SERVER_SOCKET;
-        std::string OPZIONI[4]; // Opzioni dell'utente
+        std::string OPZIONI[3]; // Opzioni dell'utente
         std::mutex id_mutex;
-        int NUMERO_OPZIONI = 4;
+        int NUMERO_OPZIONI = 3;
         bool handshake(int clientSocket);
         void gestisciConnessioneCliente(int clientSocket, int connectionID);
         bool gestisciAutenticazione(int clientSocket);
