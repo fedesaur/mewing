@@ -16,6 +16,18 @@ BEGIN
 END $$;
 
 -------------------------------------------------------------------------
+
+create or replace function rim_prod() returns trigger as $rimuovi_prodotto$
+	BEGIN
+		delete from prodincart where prodotto=OLD.id
+		delete from inwish where prodotto=OLD.id
+	END
+	$rimuovi_prodotto$
+		language plpgsql;
+
+create or replace TRIGGER rimuovi_prodotto before remove on prodotto execute PRECEDURE rim_prod();
+-------------------------------------------------------------------------
+
 create or replace function take_pkg() returns trigger as $presa_ordine$
     BEGIN
         update ordine
