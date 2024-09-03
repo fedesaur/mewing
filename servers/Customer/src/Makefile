@@ -47,4 +47,4 @@ $(BDIR)/main: $(OBJ) $(DEPS)
 .PHONY: clean
 
 clean:
-	rm -r $(ODIR) $(BDIR) ../metodi/*.o ../../../lib/funzioniAusiliarie.o
+	rm -r $(ODIR) $(BDIR) ../metodi/*.o

@@ -32,7 +32,7 @@ bool rimuoviDaCarrello(int clientSocket)
         do
         {
             // Mostra all'utente gli elementi nel carrello tramite una funzione ausiliaria
-            mostraCarrello(clientSocket, CARRELLO, RIGHE, res);
+            mostraCarrello(clientSocket, CARRELLO, RIGHE);
             std::string request = "Quale prodotto vuoi rimuovere? (Digita il numero)\nOppure digita Q per terminare la connessione\n";
 	        send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
             bool attendiInput = true;

@@ -14,8 +14,10 @@ std::pair<int, Prodotto*> recuperaCarrello(int ID, Con2DB db, PGresult *res, int
         return risultato; 
     }
     rows = PQntuples(res);
+    std::cout << rows << std::endl;
     if (rows > 0)
     {
+
         // Mostriamo all'utente i prodotti nel suo carrello
         Prodotto* carrello = new Prodotto[rows];
         // Recupera i prodotti e li memorizza in carrello
@@ -39,22 +41,28 @@ std::pair<int, Prodotto*> recuperaCarrello(int ID, Con2DB db, PGresult *res, int
         }
         risultato.first = rows; // Ritorna il numero di righe dei prodottiDisponibili
         risultato.second = carrello; // Ritorna l'array di prodotti disponibili
-        PQclear(res);
-        return risultato;
+    } else {     // Se non ci sono oggetti
+        sprintf(comando, "SELECT * FROM carrello WHERE customer = %d", ID);
+        res = db.ExecSQLtuples(comando);
+        rows = PQntuples(res);
+        if (rows == 0) // Se non esiste il carrello dell'utente...
+        {
+            //... lo crea
+            sprintf(comando, "INSERT INTO carrello(customer) VALUES (%d)", ID);
+            res = db.ExecSQLcmd(comando);
+        }
+        risultato.first = 0;
+        risultato.second = nullptr;
     }
-    // Se non ci sono oggetti
-    risultato.first = 0;
-    risultato.second = nullptr;
     PQclear(res);
     return risultato;
 }
 
-void mostraCarrello(int clientSocket, Prodotto* carrello, int righe, PGresult *res)
+void mostraCarrello(int clientSocket, Prodotto* carrello, int righe)
 {
     if (righe > 0)
     {
-        double totale = atof(PQgetvalue(res, 0, PQfnumber(res, "totale"))); //Recupera il totale...
-        std::string request = "\nPRODOTTI NEL CARRELLO (TOTALE :" + std::to_string(totale) + "):\n"; //... e lo stampa
+        std::string request = "\nPRODOTTI NEL CARRELLO:\n"; //... e lo stampa
 	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
         for (int i = 0; i < righe; i++)
         {

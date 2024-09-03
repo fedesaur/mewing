@@ -34,11 +34,11 @@ bool ricercaProdotti(int clientSocket)
             delete[] risultato2.second;
             return false; // Se vi sono errori
         }
+        mostraCarrello(clientSocket, risultato1.second, risultato1.first);
         continuaOperazione = aggiungiAlCarrello(db, res, USER_ID, risultato1, risultato2, clientSocket);
 
         // Libera lo spazio occupato dai prodotti nel carrello e/o quelli disponibili in vendita
         delete[] risultato1.second;
-
     }
     delete[] risultato2.second;
     return true;
@@ -120,7 +120,6 @@ bool aggiungiAlCarrello(Con2DB db, PGresult *res, int USER_ID, std::pair<int, Pr
         //...incomincia le operazioni per aggiungerli
         bool attendiInput = true;
         // Mostra all'utente gli elementi nel carrello tramite una funzione ausiliaria in recuperaCarrello.h
-        mostraCarrello(clientSocket, CARRELLO, RIGHE_CARRELLO, res);
         std::string request = "\nQuale prodotto vuoi aggiungere? (Digita il numero)\nOppure digita Q per terminare la connessione\n";
 	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
         
@@ -132,7 +131,7 @@ bool aggiungiAlCarrello(Con2DB db, PGresult *res, int USER_ID, std::pair<int, Pr
                 std::string messaggio(buffer, bytesRead);
                 messaggio.erase(std::remove(messaggio.begin(), messaggio.end(), '\n'), messaggio.end()); // Rimuove eventuali newline
 
-                if (messaggio == "q" || messaggio == "Q") attendiInput = false;
+                if (messaggio == "q" || messaggio == "Q") return false;
                 else if (isNumber(messaggio))
                 {
                     int indice = stoi(messaggio) - 1;
