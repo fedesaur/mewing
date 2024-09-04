@@ -83,12 +83,13 @@ bool creaSupplier(Con2DB db, int clientSocket, const char* mail)
 		Nome, Cognome, Via, Civico, CAP, Città, Stato
 	*/
 	PGresult *res;
-	int datiRichiesti = 7;
+	int datiRichiesti = 9;
 	int datiRicevuti = 0;
 	char comando[1000];
 
 	std::string nome;
-	std::string cognome;
+	std::string IVA;
+	std::string telefono;
 	std::string via;
 	int civico;
 	int CAP;
@@ -97,12 +98,13 @@ bool creaSupplier(Con2DB db, int clientSocket, const char* mail)
 	
 	// Di seguito, le frasi mostrate all'utente ad ogni fase della creazione del Customer
 	std::string FRASI[] = {"Inserisci il tuo Nome\n",
-	"Inserisci il tuo Cognome\n",
-	"Inserisci la Via del tuo indirizzo\n",
-	"Inserisci il Civico del tuo indirizzo\n",
-	"Inserisci il CAP del tuo indirizzo\n",
-	"Inserisci la Città del tuo indirizzo\n",
-	"Inserisci lo Stato del tuo indirizzo\n"};
+	"Inserisci la tua partita IVA\n",
+	"Inserisci il tuo numero di telefono\n",
+	"Inserisci la via della sede dell'azienda\n"
+	"Inserisci il Civico dell'azienda\n",
+	"Inserisci il CAP dell'azienda\n",
+	"Inserisci la Città dell'azienda\n",
+	"Inserisci lo Stato dell'azienda\n"};
 
 	// Chiede i dati neccessari per creare il customer e l'indirizzo
 	while (datiRicevuti < datiRichiesti)
@@ -118,52 +120,87 @@ bool creaSupplier(Con2DB db, int clientSocket, const char* mail)
 			switch(datiRicevuti)
 			{
 				case 0:
-					nome = buffer;
-					nome.pop_back();
+					nome = buffer.pop_back();
+					datiRicevuti++;
 					break;
 				case 1:
-					cognome = buffer;
-					cognome.pop_back();
+					std::string temp = buffer.pop_back();
+					if (temp.length() == 11 && isNumber(temp))
+					{
+						IVA = temp;
+						datiRicevuti++;
+					} else {
+						std::string errore = "La partita IVA deve essere una stringa numerica di 11 cifre"; // Seleziona la frase del turno
+						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+					}
 					break;
 				case 2:
-					via = buffer;
-					via.pop_back();
+					std::string temp = buffer.pop_back();
+					if (temp.length() == 15 && isNumber(temp))
+					{
+						telefono = temp;
+						datiRicevuti++;
+					} else {
+						std::string errore = "Il numero di telefono deve essere una sequenza di massimo 15 cifre";
+						send(clientSocket, errore.c_str(), errore.length(), 0);
+					}
 					break;
 				case 3:
-					civico = atoi(buffer);
+					via = buffer.pop_back();
+					datiRicevuti++;
 					break;
 				case 4:
-					CAP = atoi(buffer);
-					break;
+					std::string temp = buffer.pop_back();
+					if (isNumber(temp) && stoi(temp) >= 0)
+					{
+						civico = stoi(temp);
+						datiRicevuti++;
+					} else {
+						std::string errore = "Il civico deve essere un numero positivo"; // Seleziona la frase del turno
+						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+					}
 				case 5:
-					city = buffer;
-					city.pop_back();
-					break;
+					std::string temp = buffer.pop_back();
+					if (isNumber(temp) && temp.length() == 5)
+					{
+						CAP = stoi(temp);
+						datiRicevuti++;
+					} else {
+						std::string errore = "Il CAP deve essere una sequenza di 5 cifre"; // Seleziona la frase del turno
+						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+					}
 				case 6:
-					stato = buffer;
-					stato.pop_back();
+					city = buffer.pop_back();
+					datiRicevuti++;
+					break;
+				case 7:
+					stato = buffer.pop_back();
+					datiRicevuti++;
 					break;
 			}
-			datiRicevuti++;
 		}
-		else return false;  // Se avviene un errore, l'operazione viene interrotta e non ritorna nulla
 	}
 	// Viene inserito il nuovo indirizzo nel database
-	sprintf(comando, "INSERT INTO Indirizzo(via, civico, cap, citta, stato) VALUES('%s', %d, %d, '%s', '%s') RETURNING id",
-	via.c_str(), civico, CAP, city.c_str(), stato.c_str());
-	res = db.ExecSQLtuples(comando); 
-	if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
-	int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'indirizzo appena aggiunto
-
-	// Viene inserito il nuovo customer nel database
-	sprintf(comando, "INSERT INTO customers(nome, cognome, mail, abita) VALUES('%s', '%s', '%s', %d) RETURNING id",
-	nome.c_str(), cognome.c_str(), mail, abita);
-	res = db.ExecSQLtuples(comando);
-	if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
-	int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'utente appena creato
-	bool esito = inviaDati(ID,nome.c_str(),cognome.c_str(),mail,abita); // Invia i dati tramite Redis
-	PQclear(res);	
-	return esito;
+	try
+	{
+		sprintf(comando, "INSERT INTO Indirizzo(via, civico, cap, citta, stato) VALUES('%s', %d, %d, '%s', '%s') RETURNING id", via.c_str(), civico, CAP, city.c_str(), stato.c_str());
+		res = db.ExecSQLtuples(comando); 
+		int sede = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'indirizzo appena aggiunto
+		
+		sprintf(comando, "INSERT INTO fornitore(nome, piva, mail, telefono, sede) VALUES('%s', '%s', '%s', %d) RETURNING id",
+		nome.c_str(), IVA.c_str(), mail, telefono.c_str(), sede);
+		res = db.ExecSQLtuples(comando); // Viene inserito il nuovo customer nel database
+		int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'utente appena creato
+		bool esito = inviaDati(ID,nome.c_str(),IVA.c_str(), telefono.c_str(), sede); // Invia i dati tramite Redis
+		PQclear(res);	
+		return esito;
+	}
+	catch(...)
+	{
+		std::string errore = "C'è stato un problema con le query\n"; // Seleziona la frase del turno
+		send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+		return false;
+	}
 }
 
 bool inviaDati(int ID, const char* nome, const char* piva, const char* telefono, int sede)

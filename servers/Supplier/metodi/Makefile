@@ -25,7 +25,7 @@ forniti: recuperaForniti.cpp recuperaForniti.h
 aggiungi: aggiungiFornito.cpp aggiungiFornito.h
 	$(CC) -c aggiungiFornito.o $< $(CFLAGS) # Crea il file aggiungiFornito.o
 
-autenticazione: autenticazione.cpp autenticazione.h 
+autenticazione: autenticazione.cpp autenticazione.h ../../../lib/funzioniAusiliarie.h
 	$(CC) -c -o autenticazione.o $< $(CFLAGS) # Crea il file autenticazione.o
 
 modifica: modificaFornito.cpp modificaFornito.h ../../../lib/funzioniAusiliarie.h
