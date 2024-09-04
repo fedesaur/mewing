@@ -31,7 +31,9 @@ create or replace TRIGGER rimuovi_prodotto before delete on prodotto execute PRO
 create or replace function cust_setUP() returns trigger as $customer_SetUp$
 
 	BEGIN 
-		insert into carrello(customer) values(NEW.id);
+		insert into carrello(customer) values(select c.id 
+							from customers c
+							where c.mail=NEW.mail);
 	END
 	$customer_SetUp$
 		language plpgsql;
