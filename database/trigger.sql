@@ -35,7 +35,7 @@ create or replace function cust_setUP() returns trigger as $customer_SetUp$
 	END
 	$customer_SetUp$
 		language plpgsql;
-create or replace TRIGGER customer_SetUp after insert on customer execute PROCEDURE cust_setUP();
+create or replace TRIGGER customer_SetUp after insert on customers execute PROCEDURE cust_setUP();
 -------------------------------------------------------------------------
 
 create or replace function take_pkg() returns trigger as $presa_ordine$
