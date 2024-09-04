@@ -3,7 +3,6 @@ CREATE sequence addr_id_sequence;
 CREATE sequence fornitore_id_seq;
 CREATE sequence customer_id_seq;
 CREATE sequence trasportatore_id_seq;
-CREATE sequence wishlist_id_seq;
 CREATE sequence metpag_id_seq;
 CREATE sequence corriere_id_seq;
 CREATE sequence prodotto_id_seq;
@@ -83,20 +82,6 @@ CREATE TABLE IF NOT EXISTS trasportatore
     CONSTRAINT ivalung CHECK (length(piva::text) = 11)
 );
 
-CREATE TABLE IF NOT EXISTS wishlist
-(
-    id integer NOT NULL DEFAULT nextval('wishlist_id_seq'::regclass),
-    customer integer NOT NULL,
-    nome character varying(25) COLLATE pg_catalog."default" NOT NULL,
-    CONSTRAINT wishlist_pkey PRIMARY KEY (id),
-    CONSTRAINT wishlist_customer_nome_key UNIQUE (customer, nome),
-    CONSTRAINT wishlist_customer_fkey FOREIGN KEY (customer)
-        REFERENCES customers (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
-);
-
-
 	
 CREATE TABLE IF NOT EXISTS metpag
 (
@@ -140,7 +125,7 @@ CREATE TABLE IF NOT EXISTS corriere
 CREATE TABLE IF NOT EXISTS carrello
 (
     customer integer NOT NULL,
-    totale numeric NOT NULL DEFAULT 0,
+    totale numeric DEFAULT 0,
     CONSTRAINT carrello_customer_key UNIQUE (customer),
     CONSTRAINT carrello_customer_fkey FOREIGN KEY (customer)
         REFERENCES customers (id) MATCH SIMPLE
@@ -289,13 +274,10 @@ CREATE TABLE IF NOT EXISTS consegna
 
 CREATE TABLE IF NOT EXISTS inwish
 (
-    list integer NOT NULL,
+    customer integer NOT NULL,
     prodotto integer NOT NULL,
-    CONSTRAINT inwish_pkey PRIMARY KEY (list, prodotto),
-    CONSTRAINT inwish_list_fkey FOREIGN KEY (list)
-        REFERENCES wishlist (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION,
+    CONSTRAINT inwish_pkey PRIMARY KEY (customer, prodotto),
+    CONSTRAINT inwish_list_fkey FOREIGN KEY (customer) REFERENCES customers(id),
     CONSTRAINT inwish_prodotto_fkey FOREIGN KEY (prodotto)
         REFERENCES prodotto (id) MATCH SIMPLE
         ON UPDATE NO ACTION
