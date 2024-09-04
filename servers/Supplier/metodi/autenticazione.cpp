@@ -109,6 +109,7 @@ bool creaSupplier(Con2DB db, int clientSocket, const char* mail)
 	// Chiede i dati neccessari per creare il customer e l'indirizzo
 	while (datiRicevuti < datiRichiesti)
 	{
+		std::string temp;
 		char buffer[1024] = {0};
 		std::string request = FRASI[datiRicevuti]; // Seleziona la frase del turno
 		send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
@@ -120,11 +121,13 @@ bool creaSupplier(Con2DB db, int clientSocket, const char* mail)
 			switch(datiRicevuti)
 			{
 				case 0:
-					nome = buffer.pop_back();
+					nome = buffer;
+					nome.pop_back();
 					datiRicevuti++;
 					break;
 				case 1:
-					std::string temp = buffer.pop_back();
+					temp = buffer;
+					temp.pop_back();
 					if (temp.length() == 11 && isNumber(temp))
 					{
 						IVA = temp;
@@ -135,7 +138,8 @@ bool creaSupplier(Con2DB db, int clientSocket, const char* mail)
 					}
 					break;
 				case 2:
-					std::string temp = buffer.pop_back();
+					temp = buffer;
+					temp.pop_back();
 					if (temp.length() == 15 && isNumber(temp))
 					{
 						telefono = temp;
@@ -146,11 +150,13 @@ bool creaSupplier(Con2DB db, int clientSocket, const char* mail)
 					}
 					break;
 				case 3:
-					via = buffer.pop_back();
+					via = buffer;
+					via.pop_back();
 					datiRicevuti++;
 					break;
 				case 4:
-					std::string temp = buffer.pop_back();
+					temp = buffer;
+					temp.pop_back();
 					if (isNumber(temp) && stoi(temp) >= 0)
 					{
 						civico = stoi(temp);
@@ -160,7 +166,8 @@ bool creaSupplier(Con2DB db, int clientSocket, const char* mail)
 						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
 					}
 				case 5:
-					std::string temp = buffer.pop_back();
+					temp = buffer;
+					temp.pop_back();
 					if (isNumber(temp) && temp.length() == 5)
 					{
 						CAP = stoi(temp);
@@ -170,11 +177,13 @@ bool creaSupplier(Con2DB db, int clientSocket, const char* mail)
 						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
 					}
 				case 6:
-					city = buffer.pop_back();
+					city = buffer;
+					city.pop_back();
 					datiRicevuti++;
 					break;
 				case 7:
-					stato = buffer.pop_back();
+					stato = buffer;
+					stato.pop_back();
 					datiRicevuti++;
 					break;
 			}
@@ -187,7 +196,7 @@ bool creaSupplier(Con2DB db, int clientSocket, const char* mail)
 		res = db.ExecSQLtuples(comando); 
 		int sede = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'indirizzo appena aggiunto
 		
-		sprintf(comando, "INSERT INTO fornitore(nome, piva, mail, telefono, sede) VALUES('%s', '%s', '%s', %d) RETURNING id",
+		sprintf(comando, "INSERT INTO fornitore(nome, piva, mail, telefono, sede) VALUES('%s', '%s', '%s','%s', %d) RETURNING id",
 		nome.c_str(), IVA.c_str(), mail, telefono.c_str(), sede);
 		res = db.ExecSQLtuples(comando); // Viene inserito il nuovo customer nel database
 		int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'utente appena creato

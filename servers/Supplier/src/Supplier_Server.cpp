@@ -189,7 +189,7 @@ bool Supplier_Server::gestisciOperazioni(int clientSocket, int PRODUCER_ID)
     send(clientSocket, termina.c_str(), termina.length(), 0);
     
     bool attendiInput = true; // Continua la richiesta finché non riceve un input adatto
-
+    std::pair<int, Prodotto*> risultato;
     do
     {
         int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
@@ -218,8 +218,9 @@ bool Supplier_Server::gestisciOperazioni(int clientSocket, int PRODUCER_ID)
                             send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
                             break;
                         case 1:
-                            std::pair<int, Prodotto*> risultato = recuperaForniti();
+                            risultato = recuperaForniti();
                             mostraForniti(clientSocket, risultato.second, risultato.first);
+                            delete[] risultato.second;
                             break;
                         case 2:
                             aggiungiFornito(clientSocket);

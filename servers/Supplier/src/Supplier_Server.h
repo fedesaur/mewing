@@ -11,6 +11,7 @@
 #include "../metodi/recuperaForniti.h"
 #include "../metodi/aggiungiFornito.h"
 #include "../metodi/rimuoviFornito.h"
+#include "../metodi/modificaFornito.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>

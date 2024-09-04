@@ -16,7 +16,7 @@ OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(SRC))
 
 con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
-autentication_OBJ = $(wildcard ../metodi/*.o)
+metodi_OBJ = $(wildcard ../metodi/*.o)
 aux_OBJ = $(wildcard ../../../lib/*.o)
 
 
@@ -42,7 +42,7 @@ supplier_server: Supplier_Server.cpp Supplier_Server.h
 	$(CC) -c -o $(ODIR)/Supplier_Server.o $< $(CFLAGS)
 
 $(BDIR)/main: $(OBJ) $(DEPS)
-	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(autentication_OBJ) $(aux_OBJ) $(CFLAGS)
+	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(aux_OBJ) $(metodi_OBJ) $(CFLAGS)
 
 .PHONY: clean
 

@@ -1,6 +1,6 @@
 #include "aggiungiFornito.h"
 
-bool aggiungiProdotto(int clientSocket)
+bool aggiungiFornito(int clientSocket)
 {
     int PRODUCER_ID;
     PGresult *res;
