@@ -86,7 +86,7 @@ bool modificaFornito(int clientSocket)
     return true;
 }
 
-bool modificaAttributoFornito(Prodotto* prodotto, int clientSocket)
+bool modificaAttributoFornito(Prodotto prodotto, int clientSocket)
 {
     char buffer[1024] = {0};
     int NUMERO_OPZIONI = 4;
@@ -94,7 +94,7 @@ bool modificaAttributoFornito(Prodotto* prodotto, int clientSocket)
     bool continuaConnessione = true;
     while (continuaConnessione)
     {
-        std::string = "Nome attuale: " + prodotto->nome + " Descrizione attuale: " + prodotto->descrizione + " Prezzo del prodotto: " + std::to_string(prodotto->prezzo) + "\n";
+        std::string = "Nome attuale: " + prodotto.nome + " Descrizione attuale: " + prodotto.descrizione + " Prezzo del prodotto: " + std::to_string(prodotto.prezzo) + "\n";
         for (int i = 0; i < NUMERO_OPZIONI ; i++) send(clientSocket, OPZIONI[i].c_str(), OPZIONI[i].length(), 0); // Stampa le opzioni
         bool attendiInput = true;
         while (attendiInput)
@@ -114,7 +114,7 @@ bool modificaAttributoFornito(Prodotto* prodotto, int clientSocket)
                     switch (opzione)
                     {
                         case 0:
-                            risultato = cambiaNomeProdotto(clientSocket, prodotto->ID)
+                            risultato = cambiaNomeProdotto(clientSocket, prodotto.ID)
                             if (risultato.second)
                             {
                                 std::string conferma = "Nome cambiato!\n";
@@ -123,7 +123,7 @@ bool modificaAttributoFornito(Prodotto* prodotto, int clientSocket)
                             }
                             break;
                         case 1:
-                            risultato = cambiaDescrizioneProdotto(clientSocket, prodotto->ID);
+                            risultato = cambiaDescrizioneProdotto(clientSocket, prodotto.ID);
                             if (risultato.second)
                             {   
                                 std::string conferma = "Descrizione cambiata!\n";
@@ -132,7 +132,7 @@ bool modificaAttributoFornito(Prodotto* prodotto, int clientSocket)
                             }        
                             break;
                         case 2:
-                            risultato = cambiaPrezzoProdotto(clientSocket, prodotto->ID);
+                            risultato = cambiaPrezzoProdotto(clientSocket, prodotto.ID);
                             if (risultato.second)
                             {   
                                 std::string conferma = "Prezzo cambiato!\n";

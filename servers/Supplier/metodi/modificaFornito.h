@@ -5,6 +5,7 @@
 #include <utility> //Importa pair
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../../../entities/Prodotto.h"
@@ -30,7 +31,7 @@
 #define DB_NAME "mewingdb"
 
 bool modificaFornito(int clientSocket);
-bool modificaAttributoFornito(Prodotto* prodotto, int clientSocket);
+bool modificaAttributoFornito(Prodotto prodotto, int clientSocket);
 std::pair<std::string,bool> cambiaNomeProdotto(int clientSocket, int idProdotto);
 std::pair<std::string,bool> cambiaDescrizioneProdotto(int clientSocket, int idProdotto);
 std::pair<std::string,bool> cambiaPrezzoProdotto(int clientSocket, int idProdotto);
