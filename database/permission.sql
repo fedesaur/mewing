@@ -20,7 +20,6 @@ ALTER TABLE prodmet OWNER TO :admin;
 ALTER TABLE prodotto OWNER TO :admin;
 ALTER TABLE transord OWNER TO :admin;
 ALTER TABLE trasportatore OWNER TO :admin;
-ALTER TABLE wishlist OWNER TO :admin;
 
 GRANT ALL ON SCHEMA public TO :admin;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO :admin;
@@ -51,7 +50,6 @@ GRANT INSERT, UPDATE, SELECT, DELETE on inwish to :customer;
 GRANT INSERT, UPDATE, SELECT, DELETE on metpag to :customer;
 GRANT INSERT, UPDATE, DELETE on ordine to :customer;
 GRANT INSERT, UPDATE, DELETE on prodincart to :customer;
-GRANT INSERT, UPDATE, DELETE, SELECT on wishlist to :customer;
 
 
 
