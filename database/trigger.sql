@@ -25,7 +25,7 @@ create or replace function rim_prod() returns trigger as $rimuovi_prodotto$
 	$rimuovi_prodotto$
 		language plpgsql;
 
-create or replace TRIGGER rimuovi_prodotto before remove on prodotto execute PRECEDURE rim_prod();
+create or replace TRIGGER rimuovi_prodotto before delete on prodotto execute PRECEDURE rim_prod();
 -------------------------------------------------------------------------
 
 create or replace function take_pkg() returns trigger as $presa_ordine$
