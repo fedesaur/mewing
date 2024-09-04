@@ -185,7 +185,7 @@ std::pair<std::string,bool> cambiaNomeProdotto(int clientSocket, int idProdotto)
             risultato.second = true;
             PQclear(res);
         }
-        catch(const std::exception& e)
+        catch(...)
         {
             risultato.first = "";
             risultato.second = false;
@@ -221,7 +221,7 @@ std::pair<std::string,bool> cambiaDescrizioneProdotto(int clientSocket, int idPr
             risultato.second = true;
             PQclear(res);
         }
-        catch(const std::exception& e)
+        catch(...)
         {
             risultato.first = "";
             risultato.second = false;
@@ -255,7 +255,7 @@ std::pair<std::string,bool> cambiaPrezzoProdotto(int clientSocket, int idProdott
             risultato.second = true;
             PQclear(res);
         }
-        catch(const std::exception& e)
+        catch(...)
         {
             risultato.first = "";
             risultato.second = false;
