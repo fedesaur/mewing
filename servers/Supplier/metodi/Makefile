@@ -11,7 +11,7 @@ CFLAGS=-std=c++20 -I. -I$(IDIR) -I/usr/include/postgresql -lpq -lm -lhiredis
 con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
 
-all:	con2db con2redis autenticazione ricerca forniti aggiungi
+all:	con2db con2redis autenticazione forniti aggiungi modifica rimuovi
 
 con2db:
 	$(MAKE) -C ../../../lib/con2db
@@ -22,14 +22,17 @@ con2redis:
 forniti: recuperaForniti.cpp recuperaForniti.h
 	$(CC) -c recuperaForniti.o $< $(CFLAGS) # Crea il file recuperaForniti.o
 
-aggiungi: aggiungiProdotto.cpp aggiungiProdotto.h
-	$(CC) -c aggiungiProdotto.o $< $(CFLAGS) # Crea il file aggiungiProdotto.o
+aggiungi: aggiungiFornito.cpp aggiungiFornito.h
+	$(CC) -c aggiungiFornito.o $< $(CFLAGS) # Crea il file aggiungiFornito.o
 
 autenticazione: autenticazione.cpp autenticazione.h 
 	$(CC) -c -o autenticazione.o $< $(CFLAGS) # Crea il file autenticazione.o
 
-ricerca:  ricercaProdotti.cpp ricercaProdotti.h 
-	$(CC) -c -o ricercaProdotti.o $< $(CFLAGS) # Crea il file ricercaProdotti.o
+modifica: modificaFornito.cpp modificaFornito.h ../../../lib/funzioniAusiliarie.h
+	$(CC) -c -o modificaFornito.o $< $(CFLAGS) # Crea il file modificaFornito.o
+
+rimuovi: rimuoviFornito.cpp rimuoviFornito.h ../../../lib/funzioniAusiliarie.h
+	$(CC) -c -o  rimuoviFornito.o $< $(CFLAGS) # Crea il file rimuoviFornito.o
 
 .PHONY: clean
 
