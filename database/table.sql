@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS customers
     mail character varying(50) COLLATE pg_catalog."default",
     abita integer,
     CONSTRAINT customers_pkey PRIMARY KEY (id),
+    CONSTRAINT unique_mail UNIQUE(mail),
     CONSTRAINT customers_abita_fkey FOREIGN KEY (abita)
         REFERENCES indirizzo (id) MATCH SIMPLE
         ON UPDATE NO ACTION
