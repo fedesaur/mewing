@@ -53,7 +53,7 @@ bool modificaFornito(int clientSocket)
                         if (indice >= 0 && indice < RIGHE)
                         {
                             attendiInput = false;
-                            bool esito = modificaAttributoFornito(FORNITI[indice], PRODUCER_ID, clientSocket); 
+                            bool esito = modificaAttributoFornito(FORNITI[indice], clientSocket); 
                             // Se la rimozione dal DB va bene, viene eseguita anche quella locale
                             if (esito)
                             {
@@ -94,7 +94,10 @@ bool modificaAttributoFornito(Prodotto prodotto, int clientSocket)
     bool continuaConnessione = true;
     while (continuaConnessione)
     {
-        std::string = "Nome attuale: " + prodotto.nome + " Descrizione attuale: " + prodotto.descrizione + " Prezzo del prodotto: " + std::to_string(prodotto.prezzo) + "\n";
+        std::string nome = prodotto.nome;
+        std::string descrizione = prodotto.descrizione;
+        std::string stato = "\nNome attuale: " + nome + " Descrizione attuale: " + descrizione + " Prezzo del prodotto: " + std::to_string(prodotto.prezzo) + "\n";
+        send(clientSocket, stato.c_str(), stato.length(), 0);
         for (int i = 0; i < NUMERO_OPZIONI ; i++) send(clientSocket, OPZIONI[i].c_str(), OPZIONI[i].length(), 0); // Stampa le opzioni
         bool attendiInput = true;
         while (attendiInput)
@@ -114,12 +117,12 @@ bool modificaAttributoFornito(Prodotto prodotto, int clientSocket)
                     switch (opzione)
                     {
                         case 0:
-                            risultato = cambiaNomeProdotto(clientSocket, prodotto.ID)
+                            risultato = cambiaNomeProdotto(clientSocket, prodotto.ID);
                             if (risultato.second)
                             {
                                 std::string conferma = "Nome cambiato!\n";
                                 send(clientSocket, conferma.c_str(), conferma.length(), 0);
-                                prodotto->nome = risultato.first.c_str();
+                                prodotto.nome = risultato.first.c_str();
                             }
                             break;
                         case 1:
@@ -128,7 +131,7 @@ bool modificaAttributoFornito(Prodotto prodotto, int clientSocket)
                             {   
                                 std::string conferma = "Descrizione cambiata!\n";
                                 send(clientSocket, conferma.c_str(), conferma.length(), 0);
-                                prodotto->descrizione = risultato.first.c_str();
+                                prodotto.descrizione = risultato.first.c_str();
                             }        
                             break;
                         case 2:
@@ -137,7 +140,7 @@ bool modificaAttributoFornito(Prodotto prodotto, int clientSocket)
                             {   
                                 std::string conferma = "Prezzo cambiato!\n";
                                 send(clientSocket, conferma.c_str(), conferma.length(), 0);
-                                prodotto->prezzo = stod(risultato.first);
+                                prodotto.prezzo = stod(risultato.first);
                             }        
                             break;
                         default: // Se gli altri casi non sono stati accettati...
@@ -246,7 +249,8 @@ std::pair<std::string,bool> cambiaPrezzoProdotto(int clientSocket, int idProdott
 	int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
     if (bytesRead > 0)
     {
-        double newPrezzo = atof(messaggio);
+        std::string messaggio(buffer, bytesRead);
+        double newPrezzo = stof(messaggio);
         sprintf(comando, "UPDATE prodotto SET prezzo = %f WHERE id = %d", newPrezzo, idProdotto);
         try
         {

@@ -57,7 +57,7 @@ bool rimuoviFornito(int clientSocket)
                         if (indice >= 0 && indice < RIGHE)
                         {
                             attendiInput = false;
-                            int idP = CARRELLO[indice].ID;
+                            int idP = FORNITI[indice].ID;
                             bool esito = rimuoviDaFornitiDB(idP, PRODUCER_ID, db, res); 
                             // Se la rimozione dal DB va bene, viene eseguita anche quella locale
                             if (esito)

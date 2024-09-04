@@ -124,23 +124,13 @@ void Supplier_Server::gestisciConnessioneCliente(int clientSocket, int connectio
             {
                 std::cerr << "Errore: non sono stati trovati nome o cognome con la chiave specificata." << std::endl;
             } else {
-              std::string response = "Benvenuto " + nome + " " + cognome + "\n";// Saluta il customer appena autenticato
-              send(clientSocket, response.c_str(), response.length(), 0);
-            
-              CUSTOMER.ID = atoi(ID.c_str());
-              CUSTOMER.nome = nome.c_str();
-              CUSTOMER.cognome = cognome.c_str();
-              CUSTOMER.mail = mail.c_str();
-              CUSTOMER.abita = atoi(abita.c_str());
-              continuaConnessione = true;
+                std::string response = "Benvenuto " + nome + " " + cognome + "\n";// Saluta il customer appena autenticato
+                send(clientSocket, response.c_str(), response.length(), 0);
+                bool continuaConnessione = true;
+                // Andata a buon fine l'autenticazione, si rendono disponibile all'utente le varie funzionalità tramite una funzione ausiliaria
+                while (continuaConnessione) continuaConnessione = gestisciOperazioni(clientSocket, stoi(ID));
             }
 
-            // Andata a buon fine l'autenticazione, si rendono disponibile all'utente le varie funzionalità tramite una funzione ausiliaria
-            do{
-                continuaConnessione = gestisciOperazioni(clientSocket, stoi(ID));
-            }
-            while (continuaConnessione);
-            
         }
 
         close(clientSocket); // Chiudi la connessione con il client dopo averla gestita
