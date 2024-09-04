@@ -1,12 +1,29 @@
 #include "recuperaForniti.h"
 
-std::pair<int, Prodotto*> recuperaForniti(int ID, Con2DB db, PGresult *res)
+std::pair<int, Prodotto*> recuperaForniti()
 {
     std::pair <int, Prodotto*> risultato;
     int rows;
+    int PRODUCER_ID;
     char comando[1000];
+    PGresult *res;
+    redisContext *c2r; // c2r contiene le info sul contesto
+	redisReply *reply; // reply contiene le risposte da Redis
+
     // Recupera i prodotti forniti
-    sprintf(comando, "SELECT id, descrizione, prezzo, nome FROM prodotto WHERE fornitore = %d", ID);
+    c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
+	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
+
+    reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
+    if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
+    {
+        std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
+        return false;
+    }
+    std::string id = reply->element[0]->element[1]->element[1]->str; 
+    PRODUCER_ID = stoi(id); // ID Customer
+
+    sprintf(comando, "SELECT id, descrizione, prezzo, nome FROM prodotto WHERE fornitore = %d", PRODUCER_ID);
     res = db.ExecSQLtuples(comando);
     if (PQresultStatus(res) != PGRES_TUPLES_OK) // Controlla che la query sia andata a buon fine
     {
@@ -43,11 +60,11 @@ std::pair<int, Prodotto*> recuperaForniti(int ID, Con2DB db, PGresult *res)
     return risultato;
 }
 
-void mostraCarrello(int clientSocket, Prodotto* forniti, int righe)
+void mostraForniti(int clientSocket, Prodotto* forniti, int righe)
 {
     if (righe > 0)
     {
-        std::string request = "\nPRODOTTI NEL CARRELLO:\n"; //... e lo stampa
+        std::string request = "\nPRODOTTI FORNITI:\n"; //... e lo stampa
 	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
         for (int i = 0; i < righe; i++)
         {
@@ -64,7 +81,7 @@ void mostraCarrello(int clientSocket, Prodotto* forniti, int righe)
 	        send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
         }
     } else {
-        std::string request = "Non ci sono prodotti forniti!\n"; //... e lo stampa
+        std::string request = "\nNessun prodotto fornito!\n"; //... e lo stampa
 	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
     }
     return;

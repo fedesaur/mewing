@@ -3,11 +3,13 @@
 
 #include <string>
 #include <iostream>
+#include <utility> //Importa pair
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../metodi/autenticazione.h"
-#include "../metodi/ricercaProdotti.h"
-#include "../metodi/aggiungiProdotto.h"
+#include "../metodi/recuperaForniti.h"
+#include "../metodi/aggiungiFornito.h"
+#include "../metodi/rimuoviFornito.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -32,13 +34,13 @@ class Supplier_Server
         Customer CUSTOMER; // Struct che conserva le informazioni dell'utente attuale (da cambiare)
         int ID_CONNESSIONE = 0;
         int SERVER_SOCKET;
-        std::string OPZIONI[3]; // Opzioni dell'utente
+        std::string OPZIONI[4]; // Opzioni dell'utente
         std::mutex id_mutex;
-        int NUMERO_OPZIONI = 3;
+        int NUMERO_OPZIONI = 4;
         bool handshake(int clientSocket);
         void gestisciConnessioneCliente(int clientSocket, int connectionID);
         bool gestisciAutenticazione(int clientSocket);
-        bool gestisciOperazioni(int clientSocket);
+        bool gestisciOperazioni(int clientSocket, int PRODUCER_ID);
     public:
         Supplier_Server(); // Costruttore di Customer
         void gestisciConnessioni(); // Metodi di Customer

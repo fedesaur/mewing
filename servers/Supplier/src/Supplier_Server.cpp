@@ -7,6 +7,7 @@ Supplier_Server::Supplier_Server()
     OPZIONI[0] = "Modifica profilo";
     OPZIONI[1] = "Recupera Forniti";
     OPZIONI[2] = "Aggiungi Prodotto";
+    OPZIONI[3] = "Rimuovi Prodotto";
 
     // Crea il socket del server
     SERVER_SOCKET = socket(AF_INET, SOCK_STREAM, 0); // Crea il socket
@@ -136,7 +137,7 @@ void Supplier_Server::gestisciConnessioneCliente(int clientSocket, int connectio
 
             // Andata a buon fine l'autenticazione, si rendono disponibile all'utente le varie funzionalità tramite una funzione ausiliaria
             do{
-                continuaConnessione = gestisciOperazioni(clientSocket);
+                continuaConnessione = gestisciOperazioni(clientSocket, stoi(ID));
             }
             while (continuaConnessione);
             
@@ -163,7 +164,7 @@ bool Supplier_Server::gestisciAutenticazione(int clientSocket)
     char buffer[1024] = {0};
     std::string request = "Inserisci la tua email\n";
     send(clientSocket, request.c_str(), request.length(), 0);
-
+    
     int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
     if (bytesRead > 0) {
         // Chiede all'utente un nome utile all'identificazione
@@ -182,7 +183,7 @@ bool Supplier_Server::gestisciAutenticazione(int clientSocket)
     return false;
 }
 
-bool Supplier_Server::gestisciOperazioni(int clientSocket)
+bool Supplier_Server::gestisciOperazioni(int clientSocket, int PRODUCER_ID)
 {
     char buffer[1024] = {0};
     std::string request = "Ecco le operazioni disponibili:\n";
@@ -210,10 +211,12 @@ bool Supplier_Server::gestisciOperazioni(int clientSocket)
             if (messaggio == "q" || messaggio == "Q") {
                 return false; // Termina la connessione
             }
+            /*
                 OPZIONI[0] = "Modifica profilo";
-    OPZIONI[1] = "Recupera Forniti";
-    OPZIONI[2] = "Aggiungi Prodotto";
-
+                OPZIONI[1] = "Recupera Forniti";
+                OPZIONI[2] = "Aggiungi Prodotto";
+                OPZIONI[3] = "Rimuovi Prodotto";
+            */
             if (std::isdigit(messaggio[0])) {
                 int opzione = std::stoi(messaggio) - 1;
                 
@@ -225,14 +228,14 @@ bool Supplier_Server::gestisciOperazioni(int clientSocket)
                             send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
                             break;
                         case 1:
-                            cercaProdottiDisponibili(clientSocket);
+                            std::pair<int, Prodotto*> risultato = recuperaForniti();
+                            mostraForniti(clientSocket, risultato.second, risultato.first);
                             break;
                         case 2:
-                            aggiungiProdotto(clientSocket);
+                            aggiungiFornito(clientSocket);
                             break;
                         case 3:
-                            std::cout << "Funzione Aggiungi/Rimuovi prodotti da ordine non implementata\n";
-                            send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                            rimuoviFornito(clientSocket);
                             break;
                     }
                     attendiInput = false; // Input valido ricevuto, esce dal loop

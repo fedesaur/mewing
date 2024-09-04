@@ -1,5 +1,5 @@
-#ifndef RECUPERA_FORNITI_H
-#define RECUPERA_FORNITI_H
+#ifndef AGGIUNGI_FORNITO_H
+#define AGGIUNGI_FORNITO_H
 
 #include <string>
 #include <utility> //Importa pair
@@ -19,13 +19,14 @@
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
 
+#define SERVER_PORT 5001
+
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
 #define USERNAME "producer"
 #define PASSWORD "producer"
 #define DB_NAME "mewingdb"
 
-std::pair<int, Prodotto*> recuperaForniti();
-void mostraForniti(int clientSocket, Prodotto* forniti, int righe);
+bool aggiungiFornito(int clientSocket);
 
 #endif
