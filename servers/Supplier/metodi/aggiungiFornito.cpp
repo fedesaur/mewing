@@ -42,18 +42,20 @@ bool aggiungiProdotto(int clientSocket)
 			    switch(datiRichiesti)
 			    {
 				    case 0:
-					    std::string temp = buffer.pop_back();
+				    {
+					    std::string temp = buffer; 
                         if (temp.length() > 100)
                         {
                             std::string errore = "La lunghezza del nome deve essere di massimo 100 caratteri!\n"; //... e lo stampa
-	                        send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
-                            break;
-                        }
+	                        send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente              
+                           } break;
+                        
 					    nomeProdotto = temp;
-					    datiRichiesti++;
+					    datiRichiesti++; 
+					    }
                         break;
 				    case 1:
-					    descrizioneProdotto = buffer.pop_back();
+					    descrizioneProdotto = buffer;
                         datiRichiesti++;
 					    break;
 				    case 2:

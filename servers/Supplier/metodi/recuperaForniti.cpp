@@ -18,7 +18,7 @@ std::pair<int, Prodotto*> recuperaForniti()
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
     {
         std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
-        return false;
+        
     }
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     PRODUCER_ID = stoi(id); // ID Customer
