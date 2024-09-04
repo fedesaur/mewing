@@ -19,13 +19,23 @@ END $$;
 
 create or replace function rim_prod() returns trigger as $rimuovi_prodotto$
 	BEGIN
-		delete from prodincart where prodotto=OLD.id
-		delete from inwish where prodotto=OLD.id
+		delete from prodincart where prodotto=OLD.id;
+		delete from inwish where prodotto=OLD.id;
 	END
 	$rimuovi_prodotto$
 		language plpgsql;
 
-create or replace TRIGGER rimuovi_prodotto before delete on prodotto execute PRECEDURE rim_prod();
+create or replace TRIGGER rimuovi_prodotto before delete on prodotto execute PROCEDURE rim_prod();
+-------------------------------------------------------------------------
+
+create or replace function cust_setUP() returns trigger as $customer_SetUp$
+
+	BEGIN 
+		insert into carrello(customer) values(NEW.id);
+	END
+	$customer_SetUp$
+		language plpgsql;
+create or replace TRIGGER customer_SetUp after insert on customer execute PROCEDURE cust_setUP();
 -------------------------------------------------------------------------
 
 create or replace function take_pkg() returns trigger as $presa_ordine$
