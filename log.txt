@@ -1,18 +1,24 @@
-bool Customer_Server::gestisciOperazioni(int)’:
-Customer_Server.cpp:203:56: error: cannot convert ‘std::__cxx11::basic_string<char>::iterator’ to ‘const char*’
-  203 |             messaggio.erase(std::remove(messaggio.begin(), messaggio.end(), '\n'), messaggio.end()); // Rimuove eventuali newline
-      |                                         ~~~~~~~~~~~~~~~^~
-      |                                                        |
-      |                                                        std::__cxx11::basic_string<char>::iterator
-In file included from /usr/include/c++/13/cstdio:42,
-                 from /usr/include/c++/13/ext/string_conversions.h:45,
-                 from /usr/include/c++/13/bits/basic_string.h:4109,
-                 from /usr/include/c++/13/string:54,
-                 from Customer_Server.h:4,
-                 from Customer_Server.cpp:1:
-/usr/include/stdio.h:158:32: note:   initializing argument 1 of ‘int remove(const char*)’
-  158 | extern int remove (const char *__filename) __THROW;
-      |                    ~~~~~~~~~~~~^~~~~~~~~~
-make: *** [Makefile:38: customer_server] Errore 1
-
+g++: warning: modificaInfoF.o: linker input file unused because linking not done
+g++ -c recuperaForniti.o recuperaForniti.cpp -std=c++20 -I. -I. -I/usr/include/postgresql -lpq -lm -lhiredis # Crea il file recuperaForniti.o
+g++: warning: recuperaForniti.o: linker input file unused because linking not done
+g++ -c aggiungiFornito.o aggiungiFornito.cpp -std=c++20 -I. -I. -I/usr/include/postgresql -lpq -lm -lhiredis # Crea il file aggiungiFornito.o
+g++: warning: aggiungiFornito.o: linker input file unused because linking not done
+g++ -c -o modificaFornito.o modificaFornito.cpp -std=c++20 -I. -I. -I/usr/include/postgresql -lpq -lm -lhiredis # Crea il file modificaFornito.o
+g++ -c -o  rimuoviFornito.o rimuoviFornito.cpp -std=c++20 -I. -I. -I/usr/include/postgresql -lpq -lm -lhiredis # Crea il file rimuoviFornito.o
+make[1]: uscita dalla directory «/home/federica/mewing/servers/Fornitore/metodi»
+g++ -c -o ../obj/Supplier_Server.o Supplier_Server.cpp -std=c++20 -I. -I. -I/usr/include/postgresql -lpq -lm -lhiredis
+In file included from Supplier_Server.h:11,
+                 from Supplier_Server.cpp:1:
+../metodi/recuperaForniti.h:24: warning: "USERNAME" redefined
+   24 | #define USERNAME "producer"
+      | 
+In file included from Supplier_Server.h:10:
+../metodi/autenticazione.h:26: note: this is the location of the previous definition
+   26 | #define USERNAME "admin"
+      | 
+../metodi/recuperaForniti.h:25: warning: "PASSWORD" redefined
+   25 | #define PASSWORD "producer"
+      | 
+../metodi/autenticazione.h:27: note: this is the location of the previous definition
+   27 | #define PASSWORD "admin"
 

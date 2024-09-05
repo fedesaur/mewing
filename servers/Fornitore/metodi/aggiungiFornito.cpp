@@ -94,7 +94,7 @@ bool aggiungiFornito(int clientSocket)
     {
         res = db.ExecSQLtuples(comando);
         if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-            std::cerr << "Errore durante l'inserimento nel database: " << PQerrorMessage(db.conn) << std::endl;
+            std::cerr << "Errore durante l'inserimento nel database: " << std::endl;
             return false;
         }
 
