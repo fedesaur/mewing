@@ -4,15 +4,20 @@ bool aggiungiFornito(int clientSocket)
 {
     int PRODUCER_ID;
     PGresult *res;
-    redisContext *c2r; // c2r contiene le info sul contesto
-	redisReply *reply; // reply contiene le risposte da Redis
+    redisContext *c2r;
+	redisReply *reply;
     char comando[1000];
     char buffer[1024] = {0};
     int DATI_NECESSARI = 3;
     std::string FRASI[] = {"Nome del prodotto:\n", "Descrizione del prodotto:\n", "Prezzo del prodotto\n"};
 
-	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
-	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
+	c2r = redisConnect(REDIS_IP, REDIS_PORT);
+	if (c2r == nullptr || c2r->err) {
+        std::cerr << "Errore di connessione a Redis: " << (c2r ? c2r->errstr : "Errore sconosciuto") << std::endl;
+        return false;
+    }
+    
+	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME);
 
     reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
@@ -20,34 +25,38 @@ bool aggiungiFornito(int clientSocket)
         std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
         return false;
     }
+
     std::string id = reply->element[0]->element[1]->element[1]->str; 
-    PRODUCER_ID = stoi(id); // ID Customer
+    PRODUCER_ID = stoi(id);
 
     int datiRichiesti = 0;
     std::string temp;
     std::string nomeProdotto;
     std::string descrizioneProdotto;
     double prezzo;
+    
     while (datiRichiesti < DATI_NECESSARI)
     {
-		std::string request = FRASI[datiRichiesti]; // Seleziona la frase del turno
-		send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+		std::string request = FRASI[datiRichiesti];
+		send(clientSocket, request.c_str(), request.length(), 0);
+
 		bool attendiInput = true;
         while (attendiInput)
         {
+            memset(buffer, 0, sizeof(buffer)); // Pulisce il buffer
             int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0); 
 		    if (bytesRead > 0)
 		    {
-			    // bool correctInput = true; Nel caso i dati non vadano bene, si potrebbe pensare a ripetere quel passaggio
+                buffer[bytesRead] = '\0'; // Assicurati che la stringa sia terminata
 			    switch(datiRichiesti)
 			    {
 				    case 0:
 					    temp = buffer;
-                        temp.pop_back(); 
+                        temp.pop_back();
                         if (temp.length() > 100)
                         {
-                            std::string errore = "La lunghezza del nome deve essere di massimo 100 caratteri!\n"; //... e lo stampa
-	                        send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente              
+                            std::string errore = "La lunghezza del nome deve essere di massimo 100 caratteri!\n";
+	                        send(clientSocket, errore.c_str(), errore.length(), 0); 
                             break;
                         }
 					    nomeProdotto = temp;
@@ -61,29 +70,43 @@ bool aggiungiFornito(int clientSocket)
 					    break;
 				    case 2:
 					    prezzo = atof(buffer);
+                        if (prezzo <= 0) { // Aggiunge validazione del prezzo
+                            std::string errore = "Prezzo non valido!\n";
+	                        send(clientSocket, errore.c_str(), errore.length(), 0); 
+                            break;
+                        }
                         datiRichiesti++;
 					    break;
 			    }
 		    } else {
+                std::cerr << "Errore nella ricezione dei dati. Codice di errore: " << errno << std::endl;
                 std::string errore = "Errore nella ricezione dei dati!\n";
-	            send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+	            send(clientSocket, errore.c_str(), errore.length(), 0); 
+                return false;
             }
 	    }
     }
-    // Viene inserito il nuovo indirizzo nel database
+
 	sprintf(comando, "INSERT INTO prodotto(descrizione, prezzo, nome, fornitore) VALUES('%s', %f, '%s', %d)",
     descrizioneProdotto.c_str(), prezzo, nomeProdotto.c_str(), PRODUCER_ID);
+    
     try
     {
         res = db.ExecSQLtuples(comando);
+        if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+            std::cerr << "Errore durante l'inserimento nel database: " << PQerrorMessage(db.conn) << std::endl;
+            return false;
+        }
+
         std::string successo = "Prodotto aggiunto correttamente!\n";
-        send(clientSocket, successo.c_str(), successo.length(), 0); // Invia il messaggio pre-impostato all'utente
+        send(clientSocket, successo.c_str(), successo.length(), 0);
         return true;
     }
-    catch(...)
+    catch(const std::exception& e)
     {
+        std::cerr << "Eccezione catturata: " << e.what() << std::endl;
         std::string errore = "Errore nel database!\n";
-	    send(clientSocket, errore.c_str(), errore.length(), 0);  // Invia il messaggio pre-impostato all'utente
+	    send(clientSocket, errore.c_str(), errore.length(), 0);
         return false;
     }
 }
