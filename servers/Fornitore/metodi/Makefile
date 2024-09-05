@@ -20,22 +20,22 @@ con2redis:
 	$(MAKE) -C ../../../lib/con2redis/src
 
 forniti: recuperaForniti.cpp recuperaForniti.h
-	$(CC) -c recuperaForniti.o $< $(CFLAGS) # Crea il file recuperaForniti.o
+	$(CC) -c $< $(CFLAGS) -o recuperaForniti.o # Crea il file recuperaForniti.o
 
 info: modificaInfoF.cpp modificaInfoF.h ../../../lib/funzioniAusiliarie.h
-	$(CC) -c modificaInfoF.o $< $(CFLAGS) # Crea il file modificaInfoF.o
+	$(CC) -c $< $(CFLAGS) -o modificaInfoF.o # Crea il file modificaInfoF.o
 
 aggiungi: aggiungiFornito.cpp aggiungiFornito.h
-	$(CC) -c aggiungiFornito.o $< $(CFLAGS) # Crea il file aggiungiFornito.o
+	$(CC) -c $< $(CFLAGS) -o aggiungiFornito.o # Crea il file aggiungiFornito.o
 
 autenticazione: autenticazione.cpp autenticazione.h ../../../lib/funzioniAusiliarie.h
-	$(CC) -c -o autenticazione.o $< $(CFLAGS) # Crea il file autenticazione.o
+	$(CC) -c $< $(CFLAGS) -o autenticazione.o # Crea il file autenticazione.o
 
 modifica: modificaFornito.cpp modificaFornito.h ../../../lib/funzioniAusiliarie.h
-	$(CC) -c -o modificaFornito.o $< $(CFLAGS) # Crea il file modificaFornito.o
+	$(CC) -c $< $(CFLAGS) -o modificaFornito.o # Crea il file modificaFornito.o
 
 rimuovi: rimuoviFornito.cpp rimuoviFornito.h ../../../lib/funzioniAusiliarie.h
-	$(CC) -c -o  rimuoviFornito.o $< $(CFLAGS) # Crea il file rimuoviFornito.o
+	$(CC) -c $< $(CFLAGS) -o rimuoviFornito.o # Crea il file rimuoviFornito.o
 
 .PHONY: clean
 
