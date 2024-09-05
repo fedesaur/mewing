@@ -24,10 +24,10 @@ bool aggiungiFornito(int clientSocket)
     PRODUCER_ID = stoi(id); // ID Customer
 
     int datiRichiesti = 0;
+    std::string temp;
     std::string nomeProdotto;
     std::string descrizioneProdotto;
     double prezzo;
-    
     while (datiRichiesti < DATI_NECESSARI)
     {
 		std::string request = FRASI[datiRichiesti]; // Seleziona la frase del turno
@@ -42,27 +42,28 @@ bool aggiungiFornito(int clientSocket)
 			    switch(datiRichiesti)
 			    {
 				    case 0:
-				    {
-					    std::string temp = buffer; 
+					    temp = buffer;
+                        temp.pop_back(); 
                         if (temp.length() > 100)
                         {
                             std::string errore = "La lunghezza del nome deve essere di massimo 100 caratteri!\n"; //... e lo stampa
 	                        send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente              
-                           } break;
-                        
+                            break;
+                        }
 					    nomeProdotto = temp;
 					    datiRichiesti++; 
-					    }
-                        break;
+					    break;
 				    case 1:
-					    descrizioneProdotto = buffer;
+					    temp = buffer;
+                        temp.pop_back();
+                        descrizioneProdotto = temp;
                         datiRichiesti++;
 					    break;
 				    case 2:
 					    prezzo = atof(buffer);
                         datiRichiesti++;
 					    break;
-			}
+			    }
 		    } else {
                 std::string errore = "Errore nella ricezione dei dati!\n";
 	            send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente

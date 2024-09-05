@@ -4,10 +4,11 @@
 Supplier_Server::Supplier_Server()
 {
     // Definisce le opzioni del Supplier nel database
-    OPZIONI[0] = "Modifica profilo";
-    OPZIONI[1] = "Recupera Forniti";
+    OPZIONI[0] = "Modifica Profilo";
+    OPZIONI[1] = "Recupera Prodotti";
     OPZIONI[2] = "Aggiungi Prodotto";
     OPZIONI[3] = "Rimuovi Prodotto";
+    OPZIONI[4] = "Modifica Prodotto";
 
     // Crea il socket del server
     SERVER_SOCKET = socket(AF_INET, SOCK_STREAM, 0); // Crea il socket
@@ -190,7 +191,7 @@ bool Supplier_Server::gestisciOperazioni(int clientSocket, int PRODUCER_ID)
     
     bool attendiInput = true; // Continua la richiesta finché non riceve un input adatto
     std::pair<int, Prodotto*> risultato;
-    do
+    while (attendiInput)
     {
         int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
         if (bytesRead > 0) {
@@ -214,8 +215,7 @@ bool Supplier_Server::gestisciOperazioni(int clientSocket, int PRODUCER_ID)
                     switch(opzione)
                     {
                         case 0:
-                            std::cout << "Funzione Modifica profilo non implementata\n";
-                            send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                            modificaInfoF(clientSocket);
                             break;
                         case 1:
                             risultato = recuperaForniti();
@@ -228,6 +228,9 @@ bool Supplier_Server::gestisciOperazioni(int clientSocket, int PRODUCER_ID)
                         case 3:
                             rimuoviFornito(clientSocket);
                             break;
+                        case 4:
+                            modificaFornito(clientSocket);
+                            break;
                     }
                     attendiInput = false; // Input valido ricevuto, esce dal loop
                 } else {
@@ -239,8 +242,7 @@ bool Supplier_Server::gestisciOperazioni(int clientSocket, int PRODUCER_ID)
                 send(clientSocket, errore.c_str(), errore.length(), 0);
             }
         }
-    } while (attendiInput); // Continua finché non riceve un input valido
-    
+    }
     return true;
 }
 

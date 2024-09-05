@@ -12,6 +12,7 @@
 #include "../metodi/aggiungiFornito.h"
 #include "../metodi/rimuoviFornito.h"
 #include "../metodi/modificaFornito.h"
+#include "../metodi/modificaInfoF.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -35,9 +36,9 @@ class Supplier_Server
         redisReply *reply; // reply contiene le risposte da Redis
         int ID_CONNESSIONE = 0;
         int SERVER_SOCKET;
-        std::string OPZIONI[4]; // Opzioni dell'utente
+        std::string OPZIONI[5]; // Opzioni dell'utente
         std::mutex id_mutex;
-        int NUMERO_OPZIONI = 4;
+        int NUMERO_OPZIONI = 5;
         bool handshake(int clientSocket);
         void gestisciConnessioneCliente(int clientSocket, int connectionID);
         bool gestisciAutenticazione(int clientSocket);
