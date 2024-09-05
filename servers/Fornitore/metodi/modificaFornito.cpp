@@ -161,7 +161,7 @@ bool modificaAttributoFornito(Prodotto prodotto, int clientSocket)
 std::pair<std::string,bool> cambiaNomeProdotto(int clientSocket, int idProdotto)
 {
     PGresult *res;
-    Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
+    Con2DB db(HOSTNAME, DB_PORT, USERNAMEP, PASSWORDP, DB_NAME); // Effettua la connessione al database
     char comando[1000];
     char buffer[1024] = {0};
     std::pair<std::string,bool> risultato;
@@ -205,7 +205,7 @@ std::pair<std::string,bool> cambiaNomeProdotto(int clientSocket, int idProdotto)
 std::pair<std::string,bool> cambiaDescrizioneProdotto(int clientSocket, int idProdotto)
 {
     PGresult *res;
-    Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
+    Con2DB db(HOSTNAME, DB_PORT, USERNAMEP, PASSWORDP, DB_NAME); // Effettua la connessione al database
     char comando[1000];
     char buffer[1024] = {0};
     std::pair<std::string,bool> risultato;
@@ -241,7 +241,7 @@ std::pair<std::string,bool> cambiaDescrizioneProdotto(int clientSocket, int idPr
 std::pair<std::string,bool> cambiaPrezzoProdotto(int clientSocket, int idProdotto)
 {
     PGresult *res;
-    Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
+    Con2DB db(HOSTNAME, DB_PORT, USERNAMEP, PASSWORDP, DB_NAME); // Effettua la connessione al database
     char comando[1000];
     char buffer[1024] = {0};
     std::pair<std::string,bool> risultato;

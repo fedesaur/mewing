@@ -17,7 +17,7 @@ bool aggiungiFornito(int clientSocket)
         return false;
     }
     
-	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME);
+	Con2DB db(HOSTNAME, DB_PORT, USERNAMEP, PASSWORDP, DB_NAME);
 
     reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)

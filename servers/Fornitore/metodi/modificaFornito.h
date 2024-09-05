@@ -26,8 +26,8 @@
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
-#define USERNAME "producer"
-#define PASSWORD "producer"
+#define USERNAMEP "producer"
+#define PASSWORDP "producer"
 #define DB_NAME "mewingdb"
 
 bool modificaFornito(int clientSocket);

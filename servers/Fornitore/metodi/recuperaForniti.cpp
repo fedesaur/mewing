@@ -12,7 +12,7 @@ std::pair<int, Prodotto*> recuperaForniti()
 
     // Recupera i prodotti forniti
     c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
-	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
+	Con2DB db(HOSTNAME, DB_PORT, USERNAMEP, PASSWORDP, DB_NAME); // Effettua la connessione al database
 
     reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
