@@ -55,6 +55,14 @@ bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
     std::cout << "sto recuperando il customer " << std::endl;
     std::cout.flush();
     
+	sprintf(comando, "SELECT * FROM customers WHERE id = %d", 1);
+	res = db.ExecSQLtuples(comando);
+	rows = PQntuples(res);
+	if (rows > 0) std::cout << "C'è qualcuno con ID 1: " << PQgetvalue(res, 0, PQfnumber(res, "nome")) << "\n";
+	else std::cout << "Non c'è nessuno con id 1\n";
+	PQclear(res);
+
+
     sprintf(comando, "SELECT * FROM customers WHERE mail = '%s' ", mail);
     res = db.ExecSQLtuples(comando);
 
