@@ -245,7 +245,7 @@ CREATE TABLE IF NOT EXISTS prodincart
     quantita integer,
     CONSTRAINT prodincart_pkey PRIMARY KEY (carrello, prodotto),
     CONSTRAINT prodincart_carrello_fkey FOREIGN KEY (carrello)
-        REFERENCES carrello (customer) MATCH SIMPLE
+        REFERENCES customers (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION,
     CONSTRAINT prodincart_prodotto_fkey FOREIGN KEY (prodotto)
