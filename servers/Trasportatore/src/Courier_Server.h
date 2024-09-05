@@ -7,7 +7,6 @@
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../metodi/autenticazione.h"
 #include "../metodi/ricercaOrdini.h"
-#include "../../../entities/Customer.h" //da modificare
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
