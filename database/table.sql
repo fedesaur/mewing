@@ -149,11 +149,11 @@ CREATE TABLE IF NOT EXISTS prodotto
 );
 CREATE TABLE IF NOT EXISTS prodmet
 (
-    prod integer NOT NULL,
+    prodotto integer NOT NULL,
     metodo tipometpag NOT NULL,
-    CONSTRAINT prodmet_pkey PRIMARY KEY (prod, metodo),
+    CONSTRAINT prodmet_pkey PRIMARY KEY (prodotto, metodo),
     
-    CONSTRAINT prodmet_prodotto_fkey FOREIGN KEY (prod)
+    CONSTRAINT prodmet_prodotto_fkey FOREIGN KEY (prodotto)
         REFERENCES prodotto (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
