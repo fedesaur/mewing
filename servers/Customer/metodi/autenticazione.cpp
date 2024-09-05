@@ -67,13 +67,6 @@ bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail)
         const char* cognome = PQgetvalue(res, 0, PQfnumber(res, "cognome"));
         int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "abita")));
 		bool esito = inviaDati(ID,nome,cognome,mail,abita);
-		sprintf(comando, "SELECT * FROM carrello WHERE customer = %d", ID);
-		res = db.ExecSQLtuples(comando);
-		if (rows == 0) // Per i casi in fill o per casi erronei
-		{
-			sprintf(comando, "INSERT INTO carrello(customer) VALUES (%d)", ID); // Crea il carrello del customer
-    		res = db.ExecSQLcmd(comando);
-		}
         PQclear(res); // <- Importante metterlo DOPO InviaDati altrimenti i dati vengono cancellati
         return esito;
     }
@@ -113,6 +106,7 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 	// Chiede i dati neccessari per creare il customer e l'indirizzo
 	while (datiRicevuti < datiRichiesti)
 	{
+		std::string temp;
 		char buffer[1024] = {0};
 		std::string request = FRASI[datiRicevuti]; // Seleziona la frase del turno
 		send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
@@ -126,31 +120,51 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 				case 0:
 					nome = buffer;
 					nome.pop_back();
+					datiRicevuti++;
 					break;
 				case 1:
 					cognome = buffer;
 					cognome.pop_back();
+					datiRicevuti++;
 					break;
 				case 2:
 					via = buffer;
 					via.pop_back();
+					datiRicevuti++;
 					break;
 				case 3:
-					civico = atoi(buffer);
-					break;
+					temp = buffer;
+					temp.pop_back();
+					if (isNumber(temp) && stoi(temp) >= 0)
+					{
+						civico = stoi(temp);
+						datiRicevuti++;
+					} else {
+						std::string errore = "Il civico deve essere un numero positivo"; // Seleziona la frase del turno
+						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+					}
 				case 4:
-					CAP = atoi(buffer);
-					break;
+					temp = buffer;
+					temp.pop_back();
+					if (isNumber(temp) && temp.length() == 5)
+					{
+						CAP = stoi(temp);
+						datiRicevuti++;
+					} else {
+						std::string errore = "Il CAP deve essere una sequenza di 5 cifre"; // Seleziona la frase del turno
+						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+					}
 				case 5:
 					city = buffer;
 					city.pop_back();
+					datiRicevuti++;
 					break;
 				case 6:
 					stato = buffer;
 					stato.pop_back();
+					datiRicevuti++;
 					break;
 			}
-			datiRicevuti++;
 		}
 		else return false;  // Se avviene un errore, l'operazione viene interrotta e non ritorna nulla
 	}
@@ -167,10 +181,6 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 	res = db.ExecSQLtuples(comando);
 	if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
 	int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'utente appena creato
-	
-	sprintf(comando, "INSERT INTO carrello(customer) VALUES (%d)", ID); // Crea il carrello del customer
-    res = db.ExecSQLcmd(comando);
-	
 	bool esito = inviaDati(ID,nome.c_str(),cognome.c_str(),mail,abita); // Invia i dati tramite Redis
 	PQclear(res);	
 	return esito;

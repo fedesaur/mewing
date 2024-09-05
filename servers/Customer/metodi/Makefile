@@ -14,7 +14,7 @@ con2db:
 con2redis:
 	$(MAKE) -C ../../../lib/con2redis/src
 
-autenticazione: autenticazione.cpp autenticazione.h
+autenticazione: autenticazione.cpp autenticazione.h ../../../lib/funzioniAusiliarie.h
 	$(CC) -c -o autenticazione.o $< $(CFLAGS)
 
 ricercaNormale: ricercaProdotti.cpp ricercaProdotti.h ../../../lib/funzioniAusiliarie.h
