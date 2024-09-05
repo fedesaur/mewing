@@ -126,7 +126,7 @@ CREATE TABLE IF NOT EXISTS carrello
 (
     customer integer NOT NULL,
     totale numeric DEFAULT 0,
-    CONSTRAINT carrello_customer_key UNIQUE (customer),
+    CONSTRAINT carrello_customer_key PRIMARY KEY (customer),
     CONSTRAINT carrello_customer_fkey FOREIGN KEY (customer)
         REFERENCES customers (id) MATCH SIMPLE
         ON UPDATE NO ACTION
