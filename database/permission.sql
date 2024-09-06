@@ -41,6 +41,7 @@ GRANT INSERT, UPDATE, SELECT on indirizzo to :producer;
 GRANT UPDATE, SELECT, DELETE on prodincart to :producer;
 GRANT SELECT ON ordine to :producer;
 GRANT SELECT ON prodinord to :producer;
+GRANT UPDATE, SELECT, DELETE on inwish to :producer;
 
 
 GRANT UPDATE, SELECT on customers to :customer;
