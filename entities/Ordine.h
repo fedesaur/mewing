@@ -1,18 +1,12 @@
 #ifndef ORDINE_H
 #define ORDINE_H
 
-enum StatoOrdine {
-    ANNULLATO,
-    PENDENTE,
-    ACCETTATO
-};
-
 struct Ordine{
     int ID;
-    int CustomerID;
+    const char* MailCustomer;
     time_t DataRichiesta;
-    StatoOrdine Stato;
-    int Pagamento;
+    const char* Stato;
+    const char* Pagamento;
     int Indirizzo;
     double Totale;
 };

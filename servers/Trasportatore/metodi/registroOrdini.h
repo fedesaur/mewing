@@ -2,13 +2,14 @@
 #define REGISTRO_ORDINI_H
 
 #include <string> // Importa std::string
-#include <utility> //Importa pair
+#include <tuple> // Importa std::tuple
 #include <iostream>
 #include <sstream>
 #include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../../../entities/Ordine.h"
+#include "../../../entities/Indirizzo.h"
 #include "../../../lib/funzioniAusiliarie.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -30,6 +31,8 @@
 #define PASSWORD "courier"
 #define DB_NAME "mewingdb"
 
-std::pair<int, Ordine*> registroOrdini(int clientSocket);
+std::tuple<int, Ordine*, Indirizzo*> registroOrdini(int clientSocket);
+int ordinaOrdini(int RIGHE, Prodotto* ORDINI, Indirizzo* INDIRIZZI);
+void mostraOrdini(int RIGHE, Prodotto* ORDINI, Indirizzo* INDIRIZZI);
 
 #endif
