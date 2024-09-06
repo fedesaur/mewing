@@ -123,6 +123,7 @@ bool modificaAttributoFornito(Prodotto prodotto, int clientSocket)
                                 std::string conferma = "Nome cambiato!\n";
                                 send(clientSocket, conferma.c_str(), conferma.length(), 0);
                                 prodotto.nome = risultato.first.c_str();
+                                attendiInput = false;
                             }
                             break;
                         case 1:
@@ -132,6 +133,7 @@ bool modificaAttributoFornito(Prodotto prodotto, int clientSocket)
                                 std::string conferma = "Descrizione cambiata!\n";
                                 send(clientSocket, conferma.c_str(), conferma.length(), 0);
                                 prodotto.descrizione = risultato.first.c_str();
+                                attendiInput = false;
                             }        
                             break;
                         case 2:
@@ -141,6 +143,7 @@ bool modificaAttributoFornito(Prodotto prodotto, int clientSocket)
                                 std::string conferma = "Prezzo cambiato!\n";
                                 send(clientSocket, conferma.c_str(), conferma.length(), 0);
                                 prodotto.prezzo = stod(risultato.first);
+                                attendiInput = false;
                             }        
                             break;
                         default: // Se gli altri casi non sono stati accettati...

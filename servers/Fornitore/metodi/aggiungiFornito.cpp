@@ -39,72 +39,55 @@ bool aggiungiFornito(int clientSocket)
     {
 		std::string request = FRASI[datiRichiesti];
 		send(clientSocket, request.c_str(), request.length(), 0);
-
-		bool attendiInput = true;
-        while (attendiInput)
-        {
-            memset(buffer, 0, sizeof(buffer)); // Pulisce il buffer
-            int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0); 
-		    if (bytesRead > 0)
-		    {
-                buffer[bytesRead] = '\0'; // Assicurati che la stringa sia terminata
-			    switch(datiRichiesti)
-			    {
-				    case 0:
-					    temp = buffer;
-                        temp.pop_back();
-                        if (temp.length() > 100)
-                        {
-                            std::string errore = "La lunghezza del nome deve essere di massimo 100 caratteri!\n";
-	                        send(clientSocket, errore.c_str(), errore.length(), 0); 
-                            break;
-                        }
-					    nomeProdotto = temp;
-					    datiRichiesti++; 
-					    break;
-				    case 1:
-					    temp = buffer;
-                        temp.pop_back();
-                        descrizioneProdotto = temp;
-                        datiRichiesti++;
-					    break;
-				    case 2:
-					    prezzo = atof(buffer);
-                        if (prezzo <= 0) { // Aggiunge validazione del prezzo
-                            std::string errore = "Prezzo non valido!\n";
-	                        send(clientSocket, errore.c_str(), errore.length(), 0); 
-                            break;
-                        }
-                        datiRichiesti++;
-					    break;
-			    }
-		    } else {
-                std::cerr << "Errore nella ricezione dei dati. Codice di errore: " << errno << std::endl;
-                std::string errore = "Errore nella ricezione dei dati!\n";
-	            send(clientSocket, errore.c_str(), errore.length(), 0); 
-                return false;
-            }
+        int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0); 
+		if (bytesRead > 0)
+		{
+			switch(datiRichiesti)
+			{
+			    case 0:
+					temp = buffer;
+                    temp.pop_back();
+                    if (temp.length() > 100)
+                    {
+                        std::string errore = "La lunghezza del nome deve essere di massimo 100 caratteri!\n";
+	                    send(clientSocket, errore.c_str(), errore.length(), 0); 
+                    } else {
+                        nomeProdotto = temp;
+					    datiRichiesti++;   
+                    }
+					break;
+				case 1:
+					temp = buffer;
+                    temp.pop_back();
+                    descrizioneProdotto = temp;
+                    datiRichiesti++;
+					break;
+				case 2:
+					prezzo = atof(buffer);
+                    if (prezzo <= 0) { // Aggiunge validazione del prezzo
+                        std::string errore = "Prezzo non valido!\n";
+	                    send(clientSocket, errore.c_str(), errore.length(), 0);
+                    } else {datiRichiesti++;}
+					break;
+			}
+		} else {
+            std::cerr << "Errore nella ricezione dei dati. Codice di errore: " << errno << std::endl;
+            std::string errore = "Errore nella ricezione dei dati!\n";
+	        send(clientSocket, errore.c_str(), errore.length(), 0); 
 	    }
     }
 
 	sprintf(comando, "INSERT INTO prodotto(descrizione, prezzo, nome, fornitore) VALUES('%s', %f, '%s', %d)",
     descrizioneProdotto.c_str(), prezzo, nomeProdotto.c_str(), PRODUCER_ID);
-    
     try
     {
         res = db.ExecSQLtuples(comando);
-        if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-            std::cerr << "Errore durante l'inserimento nel database: " << std::endl;
-            return false;
-        }
-
         std::string successo = "Prodotto aggiunto correttamente!\n";
         send(clientSocket, successo.c_str(), successo.length(), 0);
         return true;
     }
-    catch(const std::exception& e)
+    catch(...)
     {
-        std::cerr << "Eccezione catturata: " << e.what() << std::endl;
         std::string errore = "Errore nel database!\n";
 	    send(clientSocket, errore.c_str(), errore.length(), 0);
         return false;

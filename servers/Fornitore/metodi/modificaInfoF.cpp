@@ -37,7 +37,6 @@ bool modificaInfoF(int clientSocket)
         std::string IVA = PQgetvalue(res, 0, PQfnumber(res, "iva"));
         std::string mail = PQgetvalue(res, 0, PQfnumber(res, "mail"));
         std::string telefono = PQgetvalue(res, 0, PQfnumber(res, "telefono"));
-        std::string sede = PQgetvalue(res, 0, PQfnumber(res, "sede"));
 
         bool concludiOperazione = false;
         while (!concludiOperazione)
