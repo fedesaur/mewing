@@ -1,5 +1,5 @@
-#ifndef RICERCAORDINI_H
-#define RICERCAORDINI_H
+#ifndef REGISTRO_ORDINI_H
+#define REGISTRO_ORDINI_H
 
 #include <string> // Importa std::string
 #include <utility> //Importa pair
@@ -30,10 +30,6 @@
 #define PASSWORD "courier"
 #define DB_NAME "mewingdb"
 
-bool ricercaOrdini(int clientSocket);
-std::pair<int, Prodotto*> recuperaProdottiDisponibili(int userID, Con2DB db, PGresult *res, int clientSocket);
-bool aggiungiAlCarrello(Con2DB db, PGresult *res, int USER_ID, std::pair<int, Prodotto*> carrello, std::pair<int, Prodotto*> disponibili, int clientSocket);
-bool aggiungiCarrelloDB(int idProdotto, int userID, int quantita, Con2DB db, PGresult *res);
-
+std::pair<int, Ordine*> registroOrdini(int clientSocket);
 
 #endif
