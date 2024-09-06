@@ -79,11 +79,11 @@ bool recuperaSupplier(Con2DB db, int clientSocket, const char* mail)
 bool creaSupplier(Con2DB db, int clientSocket, const char* mail)
 {
 	/* 
-		Sono richiesti 7 dati all'utente:
-		Nome, Cognome, Via, Civico, CAP, Città, Stato
+		Sono richiesti 8 dati all'utente:
+		Nome, IVA, Telefono, Via, Civico, CAP, Città, Stato
 	*/
 	PGresult *res;
-	int datiRichiesti = 9;
+	int datiRichiesti = 8;
 	int datiRicevuti = 0;
 	char comando[1000];
 
@@ -100,7 +100,7 @@ bool creaSupplier(Con2DB db, int clientSocket, const char* mail)
 	std::string FRASI[] = {"Inserisci il tuo Nome\n",
 	"Inserisci la tua partita IVA\n",
 	"Inserisci il tuo numero di telefono\n",
-	"Inserisci la via della sede dell'azienda\n"
+	"Inserisci la via della sede dell'azienda\n",
 	"Inserisci il Civico dell'azienda\n",
 	"Inserisci il CAP dell'azienda\n",
 	"Inserisci la Città dell'azienda\n",
@@ -116,8 +116,6 @@ bool creaSupplier(Con2DB db, int clientSocket, const char* mail)
 		int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0); // Riceve la risposta dall'utente e la memorizza nello stream
 		if (bytesRead > 0)
 		{
-			// bool correctInput = true; Nel caso i dati non vadano bene, si potrebbe pensare a ripetere quel passaggio
-			std::cout << buffer;
 			switch(datiRicevuti)
 			{
 				case 0:
@@ -133,20 +131,20 @@ bool creaSupplier(Con2DB db, int clientSocket, const char* mail)
 						IVA = temp;
 						datiRicevuti++;
 					} else {
-						std::string errore = "La partita IVA deve essere una stringa numerica di 11 cifre"; // Seleziona la frase del turno
+						std::string errore = "La partita IVA deve essere una stringa numerica di 11 cifre\n"; // Seleziona la frase del turno
 						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
 					}
 					break;
 				case 2:
 					temp = buffer;
 					temp.pop_back();
-					if (temp.length() == 15 && isNumber(temp))
+					if (temp.length() > 15 || temp.length() < 10 || !isNumber(temp)) 
 					{
+						std::string errore = "Il numero di telefono deve essere una sequenza di massimo 15 cifre e minimo 10\n";
+						send(clientSocket, errore.c_str(), errore.length(), 0);
+					} else {
 						telefono = temp;
 						datiRicevuti++;
-					} else {
-						std::string errore = "Il numero di telefono deve essere una sequenza di massimo 15 cifre";
-						send(clientSocket, errore.c_str(), errore.length(), 0);
 					}
 					break;
 				case 3:
@@ -162,9 +160,10 @@ bool creaSupplier(Con2DB db, int clientSocket, const char* mail)
 						civico = stoi(temp);
 						datiRicevuti++;
 					} else {
-						std::string errore = "Il civico deve essere un numero positivo"; // Seleziona la frase del turno
+						std::string errore = "Il civico deve essere un numero positivo\n"; // Seleziona la frase del turno
 						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
 					}
+					break;
 				case 5:
 					temp = buffer;
 					temp.pop_back();
@@ -173,9 +172,10 @@ bool creaSupplier(Con2DB db, int clientSocket, const char* mail)
 						CAP = stoi(temp);
 						datiRicevuti++;
 					} else {
-						std::string errore = "Il CAP deve essere una sequenza di 5 cifre"; // Seleziona la frase del turno
+						std::string errore = "Il CAP deve essere una sequenza di 5 cifre\n"; // Seleziona la frase del turno
 						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
 					}
+					break;
 				case 6:
 					city = buffer;
 					city.pop_back();
