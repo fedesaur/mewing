@@ -38,6 +38,7 @@ GRANT INSERT, UPDATE, SELECT, DELETE on prodotto to :producer;
 GRANT INSERT, UPDATE, SELECT, DELETE on fornitore to :producer;
 GRANT INSERT, UPDATE, SELECT, DELETE on prodmet to :producer;
 GRANT INSERT, UPDATE, SELECT on indirizzo to :producer;
+GRANT DELETE on prodincart to :producer;
 GRANT SELECT ON ordine to :producer;
 GRANT SELECT ON prodinord to :producer;
 
