@@ -81,7 +81,7 @@ bool aggiungiFornito(int clientSocket)
     descrizioneProdotto.c_str(), prezzo, nomeProdotto.c_str(), PRODUCER_ID);
     try
     {
-        res = db.ExecSQLtuples(comando);
+        res = db.ExecSQLcmd(comando);
         std::string successo = "Prodotto aggiunto correttamente!\n";
         send(clientSocket, successo.c_str(), successo.length(), 0);
         return true;

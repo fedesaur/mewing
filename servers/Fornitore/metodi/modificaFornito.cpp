@@ -96,7 +96,8 @@ bool modificaAttributoFornito(Prodotto prodotto, int clientSocket)
     {
         std::string nome = prodotto.nome;
         std::string descrizione = prodotto.descrizione;
-        std::string stato = "\nNome attuale: " + nome + " Descrizione attuale: " + descrizione + " Prezzo del prodotto: " + std::to_string(prodotto.prezzo) + "\n";
+        std::string prezzo = std::to_string(prodotto.prezzo);
+        std::string stato = "\nNome attuale: " + nome + " Descrizione attuale: " + descrizione + " Prezzo del prodotto: " + prezzo + "\n";
         send(clientSocket, stato.c_str(), stato.length(), 0);
         for (int i = 0; i < NUMERO_OPZIONI ; i++) send(clientSocket, OPZIONI[i].c_str(), OPZIONI[i].length(), 0); // Stampa le opzioni
         bool attendiInput = true;
