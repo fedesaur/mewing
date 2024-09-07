@@ -12,7 +12,7 @@ con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
 
 
-all:	con2db con2redis autenticazione ricerca registro
+all:	con2db con2redis autenticazione ricerca registro registraCorr
 
 con2db:
 	$(MAKE) -C ../../../lib/con2db
@@ -28,6 +28,9 @@ ricerca:  ricercaOrdini.cpp ricercaOrdini.h
 
 registro: registroOrdini.cpp registroOrdini.h
 	$(CC) -c -o registroOrdini.o $< $(CFLAGS) # Crea il file registroOrdini.o
+
+registraCorr: registraCorriere.cpp registraCorriere.h
+	$(CC) -c -o registraCorriere.o $< $(CFLAGS) # Crea il file registraCorriere.o
 
 .PHONY: clean
 
