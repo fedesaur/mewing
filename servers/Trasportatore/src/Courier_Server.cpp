@@ -7,7 +7,7 @@ Courier_Server::Courier_Server()
     OPZIONI[0] = "Modifica profilo";
     OPZIONI[1] = "Ricerca ordini";
     OPZIONI[2] = "Ordina prodotti";
-    OPZIONI[3] = "Aggiungi/Rimuovi prodotti da ordine";
+    OPZIONI[3] = "Gestisci Corrieri";
 
     // Crea il socket del server
     SERVER_SOCKET = socket(AF_INET, SOCK_STREAM, 0); // Crea il socket
@@ -225,15 +225,14 @@ bool Courier_Server::gestisciOperazioni(int clientSocket)
                             send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
                             break;
                         case 1:
-                            ricercaOrdini(int clientSocket);
+                            ricercaOrdini(clientSocket);
                             break;
                         case 2:
                             std::cout << "Funzione Ordina prodotti non implementata\n";
                             send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
                             break;
                         case 3:
-                            std::cout << "Funzione Aggiungi/Rimuovi prodotti da ordine non implementata\n";
-                            send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                            gestisciCorrieri(clientSocket);
                             break;
                     }
                     attendiInput = false; // Input valido ricevuto, esce dal loop
