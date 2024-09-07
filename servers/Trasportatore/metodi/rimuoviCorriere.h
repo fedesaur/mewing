@@ -2,7 +2,6 @@
 #define RIMUOVI_CORRIERE_H
 
 #include <string> // Importa std::string
-#include <tuple> // Importa std::tuple
 #include <iostream>
 #include <sstream>
 #include <algorithm>

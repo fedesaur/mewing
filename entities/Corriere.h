@@ -6,4 +6,5 @@ struct Corriere{
     const char* nome;
     const char* cognome;
 };
+
 #endif

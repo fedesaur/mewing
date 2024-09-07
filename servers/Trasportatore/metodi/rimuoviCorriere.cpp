@@ -3,7 +3,6 @@
 bool rimuoviCorriere(int clientSocket, int courierID)
 {
     int TRASPORTER_ID;
-    int rows;
     char comando[1000];
     PGresult *res;
     redisContext *c2r; // c2r contiene le info sul contesto
@@ -23,15 +22,17 @@ bool rimuoviCorriere(int clientSocket, int courierID)
     sprintf(comando, "DELETE FROM corriere WHERE id = %d AND azienda = %d", courierID, TRASPORTER_ID);
     try
     {
-        db.ExecSQLcmd(comando);
+        res = db.ExecSQLcmd(comando);
         std::string conferma = "Corriere rimosso dal database!\n";
         send(clientSocket, conferma.c_str(), conferma.length(), 0);
+        PQclear(res);
         return true;
     }
     catch(...)
     {
         std::string errore = "C'è stato un errore nel database\n";
 		send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+        PQclear(res);
         return false;
     }
 }

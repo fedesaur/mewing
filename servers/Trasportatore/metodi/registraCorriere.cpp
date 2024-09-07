@@ -3,7 +3,6 @@
 bool registraCorriere(int clientSocket)
 {
     int COURIER_ID;
-    int rows;
     char comando[1000];
     PGresult *res;
     redisContext *c2r; // c2r contiene le info sul contesto
@@ -78,15 +77,17 @@ bool registraCorriere(int clientSocket)
     COURIER_ID, nome.c_str(), cognome.c_str());
     try
     {
-        db.ExecSQLcmd(comando);
+        res = db.ExecSQLcmd(comando);
         std::string conferma = "Corriere inserito nel database!\n";
         send(clientSocket, conferma.c_str(), conferma.length(), 0);
+        PQclear(res);
         return true;
     }
     catch(...)
     {
         std::string errore = "C'è stato un errore nel database\n";
 		send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+        PQclear(res);
         return false;
     }
 }

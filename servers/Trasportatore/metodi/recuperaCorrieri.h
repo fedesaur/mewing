@@ -1,12 +1,14 @@
-#ifndef REGISTRA_CORRIERE_H
-#define REGISTRA_CORRIERE_H
+#ifndef RECUPERA_CORRIERI_H
+#define RECUPERA_CORRIERI_H
 
 #include <string> // Importa std::string
+#include <utility> // Importa std::pair
 #include <iostream>
 #include <sstream>
 #include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
+#include "../../../entities/Corriere.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -27,6 +29,6 @@
 #define PASSWORD "courier"
 #define DB_NAME "mewingdb"
 
-bool registraCorriere(int clientSocket);
-
+std::pair<int, Corriere*> recuperaCorrieri(int clientSocket);
+void mostraCorrieri(int clientSocket, int righe, Corriere* corrieri);
 #ifndef
