@@ -5,11 +5,9 @@ Customer_Server::Customer_Server()
 {
     // Definisce le opzioni del Customer nel database
     OPZIONI[0] = "Modifica nome e cognome";
-    OPZIONI[1] = "Aggiungi prodotti al carrello (normale)";
-    OPZIONI[2] = "Aggiungi prodotti al carrello (tramite nome)";
-    OPZIONI[3] = "Rimuovi prodotti dal carrello"; 
-    OPZIONI[4] = "Aggiungi/Rimuovi prodotti da ordine";
-    OPZIONI[5] = "Aggiungi/Rimuovi metodo di pagamento";
+    OPZIONI[1] = "Aggiungi/Rimuovi prodotti dal carrello";
+    OPZIONI[2] = "Aggiungi/Rimuovi prodotti da ordini";
+    OPZIONI[3] = "Aggiungi/Rimuovi metodo di pagamento";
 
     // Crea il socket del server
     SERVER_SOCKET = socket(AF_INET, SOCK_STREAM, 0); // Crea il socket

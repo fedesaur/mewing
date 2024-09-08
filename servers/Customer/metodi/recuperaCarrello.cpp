@@ -1,13 +1,30 @@
 #include "recuperaCarrello.h"
 
-std::pair<int, Prodotto*> recuperaCarrello(int ID, Con2DB db, PGresult *res, int clientSocket)
+std::pair<int, Prodotto*> recuperaCarrello(int clientSocket)
 {
     std::pair <int, Prodotto*> risultato;
     int rows;
+    int USER_ID;
     char comando[1000];
+    PGresult *res;
+    redisContext *c2r; // c2r contiene le info sul contesto
+	redisReply *reply; // reply contiene le risposte da Redis
+
+	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
+	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
+
+    reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
+    if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
+    {
+        std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
+    }
+
+    std::string id = reply->element[0]->element[1]->element[1]->str; 
+    USER_ID = atoi(id.c_str()); // ID Customer
+    
     sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF, cr.totale, pc.quantita "
     "FROM prodotto pr, carrello cr, prodincart pc, fornitore fr WHERE pc.prodotto = pr.id "
-    "AND pc.carrello = cr.customer AND pr.fornitore = fr.id AND cr.customer = %d", ID);
+    "AND pc.carrello = cr.customer AND pr.fornitore = fr.id AND cr.customer = %d", USER_ID);
     res = db.ExecSQLtuples(comando);
     if (PQresultStatus(res) != PGRES_TUPLES_OK) // Controlla che la query sia andata a buon fine
     {
@@ -54,7 +71,7 @@ void mostraCarrello(int clientSocket, Prodotto* carrello, int righe)
 {
     if (righe > 0)
     {
-        std::string request = "\nPRODOTTI FORNITI:\n"; //... e lo stampa
+        std::string request = "\nPRODOTTI NEL CARRELLO:\n"; //... e lo stampa
 	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
         for (int i = 0; i < righe; i++)
         {

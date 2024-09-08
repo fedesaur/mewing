@@ -29,7 +29,7 @@
 #define PASSWORD "admin"
 #define DB_NAME "mewingdb"
 
-std::pair<int, Prodotto*> recuperaCarrello(int ID, Con2DB db, PGresult *res, int clientSocket);
+std::pair<int, Prodotto*> recuperaCarrello(int clientSocket);
 void mostraCarrello(int clientSocket, Prodotto* carrello, int righe);
 
 #endif

@@ -1,16 +1,15 @@
-#ifndef RICERCAPRODOTTI_H
-#define RICERCAPRODOTTI_H
+#ifndef GESTISCI_CARRELLO_H
+#define GESTISCI_CARRELLO_H
 
-#include <string> // Importa std::string
-#include <utility> //Importa pair
+#include <string>
 #include <iostream>
 #include <sstream>
-#include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
+#include "../metodi/recuperaCarrello.h"
+#include "../metodi/ricercaProdotti.h"
+#include "../metodi/rimuoviDaCarrello.h"
 #include "../../../entities/Prodotto.h"
-#include "../../../servers/Customer/metodi/recuperaCarrello.h"
-#include "../../../lib/funzioniAusiliarie.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -31,8 +30,7 @@
 #define PASSWORD_CUST "customer"
 #define DB_NAME "mewingdb"
 
-bool aggiungiCarrelloDB(int idProdotto, int userID, int quantita, Con2DB db, PGresult *res);
-int richiediQuantita(int clientSocket);
-bool ricercaProdotti(int clientSocket);
+bool gestisciCarrello(int clientSocket);
 
-#endif
+
+#endif //AUTENTICAZIONE_H
