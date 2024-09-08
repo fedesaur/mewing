@@ -53,7 +53,7 @@ bool gestisciIndirizzi(int clientSocket)
                 {
                     attendiInput = false;
                     terminaConnessione = true;
-                } else if (isdigit(messaggio)){
+                } else if (isdigit(messaggio[0])){
                     int opzione = std::stoi(messaggio) - 1;
                     bool esito = false;
                     switch (opzione)
