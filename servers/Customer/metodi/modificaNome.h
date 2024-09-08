@@ -23,8 +23,8 @@
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
-#define USERNAME "admin"
-#define PASSWORD "admin"
+#define USERNAME_CUST "customer"
+#define PASSWORD_CUST "customer"
 #define DB_NAME "mewingdb"
 
 bool modificaNome(int clientSocket);

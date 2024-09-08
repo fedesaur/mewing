@@ -6,8 +6,9 @@ Customer_Server::Customer_Server()
     // Definisce le opzioni del Customer nel database
     OPZIONI[0] = "Modifica nome e cognome";
     OPZIONI[1] = "Aggiungi/Rimuovi prodotti dal carrello";
-    OPZIONI[2] = "Aggiungi/Rimuovi prodotti da ordini";
-    OPZIONI[3] = "Aggiungi/Rimuovi metodo di pagamento";
+    OPZIONI[2] = "Gestisci gli indirizzi registrati";
+    OPZIONI[3] = "Aggiungi/Rimuovi prodotti da ordini";
+    OPZIONI[4] = "Aggiungi/Rimuovi metodo di pagamento";
 
     // Crea il socket del server
     SERVER_SOCKET = socket(AF_INET, SOCK_STREAM, 0); // Crea il socket
@@ -206,12 +207,11 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
             if (std::isdigit(messaggio[0])) {
                 int opzione = std::stoi(messaggio) - 1;
                 /*
-                    OPZIONI[0] = "Modifica nome e cognome";
-                    OPZIONI[1] = "Aggiungi prodotti al carrello (normale)";
-                    OPZIONI[2] = "Aggiungi prodotti al carrello (tramite nome)";
-                    OPZIONI[3] = "Rimuovi prodotti dal carrello"; 
-                    OPZIONI[4] = "Aggiungi/Rimuovi prodotti da ordine";
-                    OPZIONI[5] = "Aggiungi/Rimuovi metodo di pagamento";
+    OPZIONI[0] = "Modifica nome e cognome";
+    OPZIONI[1] = "Aggiungi/Rimuovi prodotti dal carrello";
+    OPZIONI[2] = "Gestisci gli indirizzi registrati";
+    OPZIONI[3] = "Aggiungi/Rimuovi prodotti da ordini";
+    OPZIONI[4] = "Aggiungi/Rimuovi metodo di pagamento";
                 */
                 switch(opzione)
                 {
@@ -225,19 +225,14 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                         break;
                     case 2:
                         attendiInput = false; // Input valido ricevuto, esce dal loop
-                        std::cout << "Funzione Aggiungi prodotti al carrello (tramite nome) non implementata\n";
-                        send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                        esito = gestisciIndirizzi(clientSocket);
                         break;
                     case 3:
-                        attendiInput = false; // Input valido ricevuto, esce dal loop
-                        esito = rimuoviDaCarrello(clientSocket);
-                        break;
-                    case 4:
                         attendiInput = false; // Input valido ricevuto, esce dal loop
                         std::cout << "Funzione Aggiungi/Rimuovi prodotti da un ordine non implementata\n";
                         send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
                         break;
-                    case 5:
+                    case 4:
                         attendiInput = false; // Input valido ricevuto, esce dal loop
                         std::cout << "Funzione Aggiungi/Rimuovi metodi di pagamento non implementata\n";
                         send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);

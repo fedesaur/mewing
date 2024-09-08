@@ -1,14 +1,11 @@
-#ifndef RECUPERA_CARRELLO_H
-#define RECUPERA_CARRELLO_H
+#ifndef AGGIUNGI_INDIRIZZO_H
+#define AGGIUNGI_INDIRIZZO_H
 
 #include <string>
-#include <utility> //Importa pair
 #include <iostream>
 #include <sstream>
-#include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../../../entities/Prodotto.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -29,7 +26,7 @@
 #define PASSWORD_CUST "customer"
 #define DB_NAME "mewingdb"
 
-std::pair<int, Prodotto*> recuperaCarrello(int clientSocket);
-void mostraCarrello(int clientSocket, Prodotto* carrello, int righe);
+bool aggiungiIndirizzo(int clientSocket);
 
-#endif
+
+#endif //AUTENTICAZIONE_H

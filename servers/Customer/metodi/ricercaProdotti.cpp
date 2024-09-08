@@ -138,13 +138,16 @@ int richiediQuantita(int clientSocket)
                     quantita = numero;
                 } else {
                     std::string errore = "Quantità non valida\n";
-	                send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+	                send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
                 }
             } else {
                 std::string errore = "Input non valido\n";
-	            send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+	            send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
             }
-        }  
+        } else {
+            std::string errore = "Input non valido, riprova.\n";
+            send(clientSocket, errore.c_str(), errore.length(), 0);
+        }
     }
   return quantita;
 }

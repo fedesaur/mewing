@@ -12,7 +12,7 @@ bool modificaNome(int clientSocket)
     std::string OPZIONI[] = {"1) Cambia Nome\n", "2) Cambia Cognome\n", "Altrimenti digita Q per terminare\n"};
 
 	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
-	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
+	Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
 
     reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)

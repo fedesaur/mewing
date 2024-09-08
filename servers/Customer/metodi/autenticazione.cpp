@@ -98,7 +98,7 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 	std::string cognome;
 	std::string via;
 	int civico;
-	int CAP;
+	std::string CAP;
 	std::string city;
 	std::string stato;
 	
@@ -156,7 +156,7 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 					temp.pop_back();
 					if (isNumber(temp) && temp.length() == 5)
 					{
-						CAP = stoi(temp);
+						CAP = temp;
 						datiRicevuti++;
 					} else {
 						std::string errore = "Il CAP deve essere una sequenza di 5 cifre"; // Seleziona la frase del turno
@@ -177,8 +177,8 @@ bool creaCustomer(Con2DB db, int clientSocket, const char* mail)
 		else return false;  // Se avviene un errore, l'operazione viene interrotta e non ritorna nulla
 	}
 	// Viene inserito il nuovo indirizzo nel database
-	sprintf(comando, "INSERT INTO Indirizzo(via, civico, cap, citta, stato) VALUES('%s', %d, %d, '%s', '%s') RETURNING id",
-	via.c_str(), civico, CAP, city.c_str(), stato.c_str());
+	sprintf(comando, "INSERT INTO Indirizzo(via, civico, cap, citta, stato) VALUES('%s', %d, '%s', '%s', '%s') RETURNING id",
+	via.c_str(), civico, CAP.c_str(), city.c_str(), stato.c_str());
 	res = db.ExecSQLtuples(comando); 
 	if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
 	int abita = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'indirizzo appena aggiunto

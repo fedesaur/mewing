@@ -9,6 +9,7 @@
 #include "../metodi/autenticazione.h"
 #include "../metodi/gestisciCarrello.h"
 #include "../metodi/modificaNome.h"
+#include "../metodi/gestioneIndirizzi.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -32,8 +33,8 @@ class Customer_Server
         redisReply *reply; // reply contiene le risposte da Redis
         int ID_CONNESSIONE = 0;
         int SERVER_SOCKET;
-        int NUMERO_OPZIONI = 6;
-        std::string OPZIONI[6]; // Opzioni dell'utente
+        int NUMERO_OPZIONI = 5;
+        std::string OPZIONI[5]; // Opzioni dell'utente
         std::mutex id_mutex;
         bool handshake(int clientSocket);
         void gestisciConnessioneCliente(int clientSocket, int connectionID);
