@@ -23,7 +23,7 @@ bool gestisciIndirizzi(int clientSocket)
         std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
     }
     std::string id = reply->element[0]->element[1]->element[1]->str; 
-    CUSTOMER_ID = stoi(id); // ID Customer
+    CUSTOMER_ID = std::stoi(id); // ID Customer
     
     // Usa una funzione ausiliaria per recuperare gli indirizzi registrati
     risultato = recuperaIndirizzi(clientSocket);
@@ -132,7 +132,7 @@ int riceviIndice(int clientSocket, int righe)
             messaggio.erase(std::remove(messaggio.begin(), messaggio.end(), '\n'), messaggio.end()); // Rimuove eventuali newline
             if (isNumber(messaggio)) //isNumber è una funzione ausiliaria in lib
             {
-                int numero = stoi(messaggio-1);
+                int numero = std::stoi(messaggio) - 1;
                 if (numero > 0 && numero < righe) indice = numero;
                 else 
                 {

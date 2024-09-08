@@ -52,7 +52,7 @@ bool aggiungiIndirizzo(int clientSocket)
 				case 0:
 					temp = buffer;
 					temp.pop_back();
-                    if (via.length() > 100 || via.length == 0)
+                    if (temp.length() > 100 || temp.length() == 0)
                     {
                        	std::string errore = "La via deve avere al massimo 100 caratteri"; // Seleziona la frase del turno
 						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente 
@@ -86,7 +86,7 @@ bool aggiungiIndirizzo(int clientSocket)
 				case 3:
 					temp = buffer;
 					temp.pop_back();
-                    if (via.length() > 30 || via.length == 0)
+                    if (temp.length() > 30 || temp.length() == 0)
                     {
                        	std::string errore = "La città deve avere al massimo 30 caratteri"; // Seleziona la frase del turno
 						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente 
@@ -98,7 +98,7 @@ bool aggiungiIndirizzo(int clientSocket)
 				case 4:
 					temp = buffer;
 					temp.pop_back();
-                    if (via.length() > 30 || via.length == 0)
+                    if (temp.length() > 30 || temp.length() == 0)
                     {
                        	std::string errore = "Lo stato deve avere al massimo 30 caratteri"; // Seleziona la frase del turno
 						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente 
@@ -119,8 +119,8 @@ bool aggiungiIndirizzo(int clientSocket)
 	    sprintf(comando, "INSERT INTO Indirizzo(via, civico, cap, citta, stato) VALUES('%s', %d, '%s', '%s', '%s') RETURNING id", via.c_str(), civico, CAP.c_str(), city.c_str(), stato.c_str());
 	    res = db.ExecSQLtuples(comando);
         PQclear(res);
-        int id = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'indirizzo appena aggiunto
-        sprintf(comando, "INSERT INTO custadd(customer, addr) VALUES (%d, %d)" CUSTOMER_ID, id);
+        int address = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'indirizzo appena aggiunto
+        sprintf(comando, "INSERT INTO custadd(customer, addr) VALUES (%d, %d)", CUSTOMER_ID, address);
         res = db.ExecSQLcmd(comando);
         std::string errore = "Indirizzo aggiunto al database\n\n";
 		send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente    
