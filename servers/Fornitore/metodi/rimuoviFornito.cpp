@@ -59,17 +59,21 @@ bool rimuoviFornito(int clientSocket)
                             attendiInput = false;
                             int idP = FORNITI[indice].ID;
                             bool esito = rimuoviDaFornitiDB(idP, PRODUCER_ID, db, res);
-                            
+                            return esito;
+                            /*
                             if (esito)
                             {
                                 rimuoviProdotto(idP, FORNITI, RIGHE);
                                 RIGHE--;
                                 std::string successo = "Prodotto rimosso con successo!\n";
                                 send(clientSocket, successo.c_str(), successo.length(), 0);
+
                             } else {
                                 std::string errore = "C'è stato un errore nella query\n";
                                 send(clientSocket, errore.c_str(), errore.length(), 0);
+
                             }
+                            */
                         } else {
                             std::string errore = "Opzione non valida, riprova.\n";
                             send(clientSocket, errore.c_str(), errore.length(), 0);
