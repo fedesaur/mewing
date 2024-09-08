@@ -53,7 +53,7 @@ bool gestisciCarrello(int clientSocket)
                 {
                     attendiInput = false;
                     terminaConnessione = true;
-                } else if (isdigit(messaggio)){ //isNumber è una funzione ausiliaria in lib
+                } else if (isdigit(messaggio)){
                     int opzione = std::stoi(messaggio) - 1;
                     bool esito = false;
                     switch (opzione)

@@ -23,7 +23,7 @@ bool rimuoviDaCarrello(int clientSocket)
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     USER_ID = stoi(id); // ID Customer
     // Usa una funzione ausiliaria per recuperare il carrello dell'utente
-    risultato = recuperaCarrello(USER_ID, db, res, clientSocket);
+    risultato = recuperaCarrello(clientSocket);
     if (risultato.first == -1) return false;  // C'è stato un errore nella query
     RIGHE = risultato.first;
     CARRELLO = risultato.second;
@@ -82,7 +82,7 @@ bool rimuoviDaCarrello(int clientSocket)
             if (rimozione)
             {
                 delete[] risultato.second; // Libera la memoria occupata dal carrello
-                risultato = recuperaCarrello(USER_ID, db, res, clientSocket);
+                risultato = recuperaCarrello(clientSocket);
                 if (risultato.first == -1) return false;  // C'è stato un errore nella query
                 RIGHE = risultato.first;
                 CARRELLO = risultato.second;
