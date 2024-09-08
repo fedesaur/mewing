@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <cassert>
+#include <optional>
 
 #define WRITE_STREAM "CourierW"
 #define READ_STREAM "CourierR"
@@ -27,12 +28,12 @@
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
-#define USERNAME "courier"
-#define PASSWORD "courier"
+#define USERNAMEC "courier"
+#define PASSWORDC "courier"
 #define DB_NAME "mewingdb"
 
-std::tuple<int, Ordine*, Indirizzo*> registroOrdini(int clientSocket);
-int ordinaOrdini(int RIGHE, Prodotto* ORDINI, Indirizzo* INDIRIZZI);
-void mostraOrdini(int RIGHE, Prodotto* ORDINI, Indirizzo* INDIRIZZI);
+std::optional<std::tuple<int, Ordine*, Indirizzo*>> registroOrdini(int clientSocket);
+int ordinaOrdini(int RIGHE, Ordine* ORDINI, Indirizzo* INDIRIZZI);
+void mostraOrdini(int RIGHE, Ordine* ORDINI, Indirizzo* INDIRIZZI);
 
 #endif

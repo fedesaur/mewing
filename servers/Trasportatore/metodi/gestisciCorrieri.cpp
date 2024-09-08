@@ -6,7 +6,7 @@ bool gestisciCorrieri(int clientSocket)
     int RIGHE;
     char buffer[1024] = {0};
     char comando[1000];
-    int OPERAZIONI_DISPONIBILI = 4
+    int OPERAZIONI_DISPONIBILI = 4;
     std::string OPERAZIONI[] = {"1) Modifica un corriere\n", "2) Aggiungi un corriere\n", "3) Rimuovi un corriere\n", "Altrimenti digita Q per terminare\n"};
     Corriere* CORRIERI;
     PGresult *res;
@@ -14,7 +14,7 @@ bool gestisciCorrieri(int clientSocket)
 	redisReply *reply; // reply contiene le risposte da Redis
 
 	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
-	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
+	Con2DB db(HOSTNAME, DB_PORT, USERNAMEC, PASSWORDC, DB_NAME); // Effettua la connessione al database
 
     reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
@@ -53,16 +53,18 @@ bool gestisciCorrieri(int clientSocket)
                     delete[] risultato.second;
                     attendiInput = false;
                     terminaConnessione = true;
-                } else if (isdigit(messaggio)){ //isNumber è una funzione ausiliaria in lib
-                    int opzione = stoi(messaggio) - 1;
+                } else if (isNumber(messaggio)){ //isNumber è una funzione ausiliaria in lib
+                    int opzione = std::stoi(messaggio) - 1;
                     bool esito = false;
                     switch (opzione)
                     {
                         case 0:
+                            {
                             std::string implement = "Funzione ancora da implementare!\n";
                             send(clientSocket, implement.c_str(), implement.length(), 0);
                             attendiInput = false;
                             break;
+                            }
                         case 1:
                             esito = registraCorriere(clientSocket);
                             if (esito) 
@@ -75,6 +77,7 @@ bool gestisciCorrieri(int clientSocket)
                             attendiInput = false;
                             break;
                         case 2:
+                        {
                             int indice = -1;
                             while (indice == -1 && indice < RIGHE)
                             {
@@ -85,7 +88,7 @@ bool gestisciCorrieri(int clientSocket)
                                 {
                                     std::string messaggio(buffer, bytesRead);
                                     messaggio.erase(std::remove(messaggio.begin(), messaggio.end(), '\n'), messaggio.end()); // Rimuove eventuali newline
-                                    if (isNumber(messaggio)) indice = stoi(messaggio-1);
+                                    if (isNumber(messaggio)) indice = std::stoi(messaggio)-1;
                                     else
                                     {
                                         std::string errore = "Input non valido, riprova.\n";
@@ -108,7 +111,7 @@ bool gestisciCorrieri(int clientSocket)
                                     CORRIERI = risultato.second;
                             }
                             attendiInput = false;
-                            break;
+                            break;}
 
                         default:
                             std::string errore = "Opzione non valida, riprova.\n";

@@ -1,6 +1,7 @@
 #include "registroOrdini.h"
 
-std::tuple<int, Ordine*, Indirizzo*> registroOrdini(int clientSocket)
+std::optional<std::tuple<int, Ordine*, Indirizzo*>> registroOrdini(int clientSocket)  
+//per il momento metto optional per ritornare una tupla vuota
 {
     int COURIER_ID;
     int rows;
@@ -10,7 +11,7 @@ std::tuple<int, Ordine*, Indirizzo*> registroOrdini(int clientSocket)
 	redisReply *reply; // reply contiene le risposte da Redis
 
 	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
-	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
+	Con2DB db(HOSTNAME, DB_PORT, USERNAMEC, PASSWORDC, DB_NAME); // Effettua la connessione al database
 
     reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
@@ -37,8 +38,8 @@ std::tuple<int, Ordine*, Indirizzo*> registroOrdini(int clientSocket)
                 int ID = atoi(PQgetvalue(res, i, PQfnumber(res, "id")));
                 const char* mail = PQgetvalue(res, i, PQfnumber(res, "nome"));
                 unsigned char* data = (unsigned char*) PQgetvalue(res, i, PQfnumber(res, "datarich"));
-                time_t time = _atoi64((char*)data); // Converte il timestamp in time_t
-                const char* statoOrd = atof(PQgetvalue(res, i, PQfnumber(res, "stato")));
+                time_t time = static_cast<time_t>(std::stoll(reinterpret_cast<char*>(data))); // Converte il timestamp in time_t
+                double statoOrd = atof(PQgetvalue(res, i, PQfnumber(res, "stato")));
                 const char* paga = PQgetvalue(res, i, PQfnumber(res, "pagamento"));
                 const char* via = PQgetvalue(res, i, PQfnumber(res, "via"));
                 int civico = atoi(PQgetvalue(res, i, PQfnumber(res, "civico")));
@@ -69,8 +70,8 @@ std::tuple<int, Ordine*, Indirizzo*> registroOrdini(int clientSocket)
         {
             std::string vuoto = "Nessun ordine registrato!\n";
             send(clientSocket, vuoto.c_str(), vuoto.length(), 0);
-            std::tuple<int, Ordine*, Indirizzo*> vuoto(0,nullptr, nullptr);
-            return vuoto;
+            //std::tuple<int, Ordine*, Indirizzo*> vuoto(0,nullptr, nullptr);
+            return std::nullopt;
         }
     }
     catch(...)
@@ -82,18 +83,19 @@ std::tuple<int, Ordine*, Indirizzo*> registroOrdini(int clientSocket)
     }
 }
 
-int ordinaOrdini(int RIGHE, Prodotto* ORDINI, Indirizzo* INDIRIZZI)
+int ordinaOrdini(int RIGHE, Ordine* ORDINI, Indirizzo* INDIRIZZI)
 {
     // Gli ordini vengono ordinati in modo che i primi siano quelli accettati e gli ultimi quelli consegnati
     int a = 0;
     int b = RIGHE-1;
     while (a < b)
     {
-        if (ORDINI[a].Stato)
+        //if (ORDINI[a].Stato)
     }
+    return 0;
 }
 
-void mostraOrdini(int RIGHE, Prodotto* ORDINI, Indirizzo* INDIRIZZI)
+void mostraOrdini(int RIGHE, Ordine* ORDINI, Indirizzo* INDIRIZZI)
 {
 
 }

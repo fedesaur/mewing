@@ -5,7 +5,7 @@ struct Ordine{
     int ID;
     const char* MailCustomer;
     time_t DataRichiesta;
-    const char* Stato;
+    double Stato;
     const char* Pagamento;
     int Indirizzo;
     double Totale;
