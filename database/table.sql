@@ -20,7 +20,7 @@ CREATE TYPE statoordine AS ENUM
     ('annullato', 'pendente', 'accettato');
 
 CREATE TYPE tipometpag AS ENUM
-    ('Virtuale', 'contante', 'buono', 'carta prepagata', 'carta di credito','bancomat');
+    ('Virtuale', 'contante', 'carta prepagata', 'carta di credito','bancomat');
 
 
 CREATE TABLE IF NOT EXISTS indirizzo
