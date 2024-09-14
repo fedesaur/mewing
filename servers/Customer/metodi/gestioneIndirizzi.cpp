@@ -6,9 +6,9 @@ bool gestisciIndirizzi(int clientSocket)
     int RIGHE;
     char buffer[1024] = {0};
     char comando[1000];
-    int OPERAZIONI_DISPONIBILI = 4;
+    int OPERAZIONI_DISPONIBILI = 3;
     std::pair <int, Indirizzo*> risultato;
-    std::string OPERAZIONI[] = {"1) Aggiungi Indirizzo\n", "2) Modifica Indirizzo\n", "3) Rimuovi Indirizzo\n", "Altrimenti digita Q per terminare\n"};
+    std::string OPERAZIONI[] = {"1) Aggiungi Indirizzo\n", "2) Rimuovi Indirizzo\n", "Altrimenti digita Q per terminare\n"};
     Indirizzo* INDIRIZZI;
     PGresult *res;
     redisContext *c2r; // c2r contiene le info sul contesto
@@ -66,19 +66,13 @@ bool gestisciIndirizzi(int clientSocket)
                             break;
                             }
                         case 1:
-                            // Ancora da implementare la modifica degli indirizzi
-                            attendiInput = false;
-                            break;
-                        case 2:
                         {
-                            std::string request = "Quale indirizzo vuoi rimuovere?\n";
+                            std::string request = "Quale indirizzo vuoi rimuovere? Digita il numero\n";
 	                        send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
                             int index = riceviIndice(clientSocket, RIGHE);
                             try
                             {
                                 int idInd = INDIRIZZI[index].ID;
-                                sprintf(comando, "DELETE FROM custadd WHERE customer = %d AND addr = %d", CUSTOMER_ID, idInd);
-                                res = db.ExecSQLcmd(comando);
                                 sprintf(comando, "DELETE FROM indirizzo WHERE id = %d", idInd);
                                 res = db.ExecSQLcmd(comando);
                                 std::string request = "Indirizzo rimosso con successo!\n\n";
@@ -118,36 +112,4 @@ bool gestisciIndirizzi(int clientSocket)
     }
     delete[] risultato.second; // Libera la memoria occupata dal carrello
     return true;
-}
-
-int riceviIndice(int clientSocket, int righe)
-{
-    char buffer[1024] = {0};
-    int indice = -1;
-    while (indice == -1)
-    {
-        int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
-        if (bytesRead > 0) 
-        {
-            std::string messaggio(buffer, bytesRead);
-            messaggio.erase(std::remove(messaggio.begin(), messaggio.end(), '\n'), messaggio.end()); // Rimuove eventuali newline
-            if (isNumber(messaggio)) //isNumber è una funzione ausiliaria in lib
-            {
-                int numero = std::stoi(messaggio) - 1;
-                if (numero >= 0 && numero < righe) indice = numero;
-                else 
-                {
-                    std::string errore = "Input non valido\n";
-	                send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
-                }
-            } else {
-                std::string errore = "Input non valido\n";
-	            send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
-            }
-        } else {
-            std::string errore = "Input non valido, riprova.\n";
-            send(clientSocket, errore.c_str(), errore.length(), 0);
-        }
-    }
-    return indice;
 }

@@ -1,5 +1,5 @@
-#ifndef GESTIONE_INDIRIZZI_H
-#define GESTIONE_INDIRIZZI_H
+#ifndef GESTIONE_METODI_H
+#define GESTIONE_METODI_H
 
 #include <string>
 #include <iostream>
@@ -7,9 +7,8 @@
 #include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../metodi/recuperaIndirizzi.h"
 #include "../metodi/aggiungiIndirizzo.h"
-#include "../../../entities/Indirizzo.h"
+#include "../../../entities/Metodo.h"
 #include "../../../lib/funzioniAusiliarie.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -31,6 +30,9 @@
 #define PASSWORD_CUST "customer"
 #define DB_NAME "mewingdb"
 
-bool gestisciIndirizzi(int clientSocket);
+bool gestisciMetodi(int clientSocket);
+std::pair <int, Metodo*> recuperaMetodi(int CUSTOMER_ID);
+void mostraMetodi(int clientSocket, int righe, Metodo* metodi);
+bool aggiungiMetodo(int clientSocket);
 
 #endif //AUTENTICAZIONE_H

@@ -234,8 +234,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                         break;
                     case 4:
                         attendiInput = false; // Input valido ricevuto, esce dal loop
-                        std::cout << "Funzione Aggiungi/Rimuovi metodi di pagamento non implementata\n";
-                        send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                        esito = gestisciIndirizzi(clientSocket);
                         break;
                     default:
                         std::string errore = "Opzione non valida, riprova.\n";

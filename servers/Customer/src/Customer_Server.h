@@ -10,6 +10,7 @@
 #include "../metodi/gestisciCarrello.h"
 #include "../metodi/modificaNome.h"
 #include "../metodi/gestioneIndirizzi.h"
+#include "../metodi/gestisciMetodi.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
