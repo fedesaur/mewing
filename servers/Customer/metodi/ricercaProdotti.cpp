@@ -21,10 +21,11 @@ bool ricercaProdotti(int clientSocket)
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     USER_ID = atoi(id.c_str()); // ID Customer
     // Seleziona tutti i prodotti disponibili che NON sono nel carrello
-    sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF FROM prodotto pr, fornitore fr WHERE pr.fornitore = fr.id");
 
     try
     {
+        sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF "
+        "FROM prodotto pr, fornitore fr WHERE pr.fornitore = fr.id");
         res = db.ExecSQLtuples(comando);
         int RIGHE = PQntuples(res);
         if (RIGHE > 0)
