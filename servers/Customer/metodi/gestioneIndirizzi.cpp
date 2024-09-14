@@ -24,20 +24,23 @@ bool gestisciIndirizzi(int clientSocket)
     }
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     CUSTOMER_ID = std::stoi(id); // ID Customer
+    std::cout << "Inizio funzione\n";
     
     // Usa una funzione ausiliaria per recuperare gli indirizzi registrati
     risultato = recuperaIndirizzi(clientSocket);
+    std::cout << "Indirizzi recuperati\n";
     if (risultato.first == -1) return false;  // C'è stato un errore nella query
     
     RIGHE = risultato.first;
     INDIRIZZI = risultato.second;
     bool terminaConnessione = false;
     
+    std::cout << "Inizio connessione\n";
     while(!terminaConnessione)
     {
         // Mostra all'utente gli elementi nel carrello tramite una funzione ausiliaria
         mostraIndirizzi(clientSocket, RIGHE, INDIRIZZI);
-        std::string request = "\nQuale operazione vuoi svolgere?\n";
+        std::string request = "Quale operazione vuoi svolgere?\n";
 	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
         for (int i = 0; i < OPERAZIONI_DISPONIBILI; i++) send(clientSocket, OPERAZIONI[i].c_str(), OPERAZIONI[i].length(), 0);
         bool attendiInput = true;

@@ -22,13 +22,17 @@ std::pair<int, Indirizzo*> recuperaIndirizzi(int clientSocket)
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     CUSTOMER_ID = atoi(id.c_str()); // ID Customer
     sprintf(comando, "SELECT ind.id, ind.via, ind.civico, ind.cap, ind.citta, ind.stato "
-    "FROM indirizzo ind, custadd cst WHERE cst.customer = %d AND cst.add = ind.id", CUSTOMER_ID);
+    "FROM indirizzo ind, custadd cst WHERE cst.customer = %d AND cst.addr = ind.id", CUSTOMER_ID);
     try
     {
+        res = db.ExecSQLtuples(comando);
+        std::cout << "Query riuscita\n";
         RIGHE = PQntuples(res);
         if (RIGHE > 0)
         {
+            
             Indirizzo* indirizzi = new Indirizzo[RIGHE];
+            std::cout << "Check 1\n";
             // Recupera gli indirizzi e li memorizza
             for (int i = 0; i < RIGHE; i++)
             {
@@ -47,13 +51,16 @@ std::pair<int, Indirizzo*> recuperaIndirizzi(int clientSocket)
                 indirizzi[i].CAP = CAP;
                 indirizzi[i].citta = citta;
                 indirizzi[i].stato = stato;
+                std::cout << "Check 2\n";
             }
+            std::cout << "Check 3\n";
             risultato.first = RIGHE; // Ritorna il numero di righe degli indirizzi
             risultato.second = indirizzi; // Ritorna l'array degli indirizzi
         } else {     // Se non ci sono indirizzi
         risultato.first = 0;
         risultato.second = nullptr;
         }
+        std::cout << "Check 4\n";
         PQclear(res);
         return risultato;
     }
