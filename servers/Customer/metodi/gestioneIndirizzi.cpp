@@ -24,18 +24,15 @@ bool gestisciIndirizzi(int clientSocket)
     }
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     CUSTOMER_ID = std::stoi(id); // ID Customer
-    std::cout << "Inizio funzione\n";
     
     // Usa una funzione ausiliaria per recuperare gli indirizzi registrati
     risultato = recuperaIndirizzi(clientSocket);
-    std::cout << "Indirizzi recuperati\n";
     if (risultato.first == -1) return false;  // C'è stato un errore nella query
     
     RIGHE = risultato.first;
     INDIRIZZI = risultato.second;
     bool terminaConnessione = false;
     
-    std::cout << "Inizio connessione\n";
     while(!terminaConnessione)
     {
         // Mostra all'utente gli elementi nel carrello tramite una funzione ausiliaria
@@ -44,9 +41,9 @@ bool gestisciIndirizzi(int clientSocket)
 	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
         for (int i = 0; i < OPERAZIONI_DISPONIBILI; i++) send(clientSocket, OPERAZIONI[i].c_str(), OPERAZIONI[i].length(), 0);
         bool attendiInput = true;
+        bool esito = false;
         while (attendiInput)
         {
-            bool esito = false;
             int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
             if (bytesRead > 0) 
             {
@@ -74,15 +71,15 @@ bool gestisciIndirizzi(int clientSocket)
                             break;
                         case 2:
                         {
-                            std::string request = "\nQuale indirizzo vuoi rimuovere?\n";
+                            std::string request = "Quale indirizzo vuoi rimuovere?\n";
 	                        send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
                             int index = riceviIndice(clientSocket, RIGHE);
                             try
                             {
                                 int idInd = INDIRIZZI[index].ID;
-                                sprintf(comando, "DELETE FROM indirizzo WHERE id = %d", idInd);
-                                res = db.ExecSQLcmd(comando);
                                 sprintf(comando, "DELETE FROM custadd WHERE customer = %d AND addr = %d", CUSTOMER_ID, idInd);
+                                res = db.ExecSQLcmd(comando);
+                                sprintf(comando, "DELETE FROM indirizzo WHERE id = %d", idInd);
                                 res = db.ExecSQLcmd(comando);
                                 std::string request = "Indirizzo rimosso con successo!\n\n";
 	                            send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
@@ -109,14 +106,15 @@ bool gestisciIndirizzi(int clientSocket)
                 std::string errore = "Input non valido, riprova.\n";
                 send(clientSocket, errore.c_str(), errore.length(), 0);
             }
-            if (esito)
-            {
-                delete[] risultato.second;
-                risultato = recuperaIndirizzi(clientSocket);
-                RIGHE = risultato.first;
-                INDIRIZZI = risultato.second;
-            }
-        }   
+        }
+        if (esito)
+        {
+            delete[] risultato.second;
+            risultato = recuperaIndirizzi(clientSocket);
+            RIGHE = risultato.first;
+            INDIRIZZI = risultato.second;
+        }
+           
     }
     delete[] risultato.second; // Libera la memoria occupata dal carrello
     return true;
@@ -136,7 +134,7 @@ int riceviIndice(int clientSocket, int righe)
             if (isNumber(messaggio)) //isNumber è una funzione ausiliaria in lib
             {
                 int numero = std::stoi(messaggio) - 1;
-                if (numero > 0 && numero < righe) indice = numero;
+                if (numero >= 0 && numero < righe) indice = numero;
                 else 
                 {
                     std::string errore = "Input non valido\n";

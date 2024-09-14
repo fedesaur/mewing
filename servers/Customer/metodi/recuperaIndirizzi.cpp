@@ -26,13 +26,11 @@ std::pair<int, Indirizzo*> recuperaIndirizzi(int clientSocket)
     try
     {
         res = db.ExecSQLtuples(comando);
-        std::cout << "Query riuscita\n";
         RIGHE = PQntuples(res);
         if (RIGHE > 0)
         {
             
             Indirizzo* indirizzi = new Indirizzo[RIGHE];
-            std::cout << "Check 1\n";
             // Recupera gli indirizzi e li memorizza
             for (int i = 0; i < RIGHE; i++)
             {
@@ -51,16 +49,13 @@ std::pair<int, Indirizzo*> recuperaIndirizzi(int clientSocket)
                 indirizzi[i].CAP = CAP;
                 indirizzi[i].citta = citta;
                 indirizzi[i].stato = stato;
-                std::cout << "Check 2\n";
             }
-            std::cout << "Check 3\n";
             risultato.first = RIGHE; // Ritorna il numero di righe degli indirizzi
             risultato.second = indirizzi; // Ritorna l'array degli indirizzi
         } else {     // Se non ci sono indirizzi
         risultato.first = 0;
         risultato.second = nullptr;
         }
-        std::cout << "Check 4\n";
         PQclear(res);
         return risultato;
     }
@@ -92,7 +87,7 @@ void mostraIndirizzi(int clientSocket, int righe, Indirizzo* indirizzi)
 	        send(clientSocket, indirizzo.c_str(), indirizzo.length(), 0);
         }
     } else {
-        std::string request = "Non ci sono indirizzi registrati!\n\n"; //... e lo stampa
+        std::string request = "\nNon ci sono indirizzi registrati!\n\n"; //... e lo stampa
 	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
     }
     return;
