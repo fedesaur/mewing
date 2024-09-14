@@ -1,0 +1,9 @@
+REGISTRAZIONE NUOVO TRASPORTATORE: Errore nel comando Redis o stream vuoto
+Errore di segmentazione (core dump creato)
+MODIFICA PROFILO: Ancora non implementata
+RICERCA ORDINI: ExecSQLtuples(): SQL command failed: SELECT ord.id, cst.nome, ord.datarich, ord.stato, ord.pagamento, ord.indirizzo, ord.totale FROM Ordine ord, Customer cst WHERE cst.id = ord.customer AND ord.id NOT IN (SELECT id FROM ordineconse) AND ord.id NOT IN (SELECT ordine FROM consegna)
+ExecSQLtuples(): PGRES_FATAL_ERROR
+ORDINA PRODOTTI: Da cambiare
+GESTISCI CORRIERI: ExecSQLtuples(): SQL command failed: SELECT id, nome, cognome FROM corriere WHERE azienda = 2
+ExecSQLtuples(): PGRES_FATAL_ERROR
+

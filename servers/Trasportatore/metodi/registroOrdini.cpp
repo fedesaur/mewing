@@ -43,7 +43,7 @@ std::optional<std::tuple<int, Ordine*, Indirizzo*>> registroOrdini(int clientSoc
                 const char* paga = PQgetvalue(res, i, PQfnumber(res, "pagamento"));
                 const char* via = PQgetvalue(res, i, PQfnumber(res, "via"));
                 int civico = atoi(PQgetvalue(res, i, PQfnumber(res, "civico")));
-                int CAP = atoi(PQgetvalue(res, i, PQfnumber(res, "cap")));
+                const char* CAP = PQgetvalue(res, i, PQfnumber(res, "cap"));
                 const char* city = PQgetvalue(res, i, PQfnumber(res, "citta"));
                 const char* stato = PQgetvalue(res, i, PQfnumber(res, "statoIND"));
                 double totale = atof(PQgetvalue(res, i, PQfnumber(res, "totale")));
