@@ -46,8 +46,8 @@ CREATE TABLE IF NOT EXISTS fornitore
     CONSTRAINT unique_piva UNIQUE (piva),
     CONSTRAINT fornitore_sede_fkey FOREIGN KEY (sede)
         REFERENCES indirizzo (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION,
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
     CONSTRAINT lengpiva CHECK (length(piva::text) = 11)
 );
 
@@ -62,8 +62,8 @@ CREATE TABLE IF NOT EXISTS customers
     CONSTRAINT unique_mail UNIQUE(mail),
     CONSTRAINT customers_abita_fkey FOREIGN KEY (abita)
         REFERENCES indirizzo (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 
@@ -77,8 +77,8 @@ CREATE TABLE IF NOT EXISTS trasportatore
     CONSTRAINT trasportatore_piva_key UNIQUE (piva),
     CONSTRAINT trasportatore_indirizzo_fkey FOREIGN KEY (indirizzo)
         REFERENCES indirizzo (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION,
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
     CONSTRAINT ivalung CHECK (length(piva::text) = 11)
 );
 
@@ -101,12 +101,12 @@ CREATE TABLE IF NOT EXISTS custadd
     CONSTRAINT custadd_pkey PRIMARY KEY (customer, addr),
     CONSTRAINT custadd_addr_fkey FOREIGN KEY (addr)
         REFERENCES indirizzo (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION,
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
     CONSTRAINT custadd_customer_fkey FOREIGN KEY (customer)
         REFERENCES customers (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS corriere
@@ -118,8 +118,8 @@ CREATE TABLE IF NOT EXISTS corriere
     CONSTRAINT corriere_pkey PRIMARY KEY (id),
     CONSTRAINT corriere_azienda_fkey FOREIGN KEY (azienda)
         REFERENCES trasportatore (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS carrello
@@ -129,8 +129,8 @@ CREATE TABLE IF NOT EXISTS carrello
     CONSTRAINT carrello_customer_key PRIMARY KEY (customer),
     CONSTRAINT carrello_customer_fkey FOREIGN KEY (customer)
         REFERENCES customers (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS prodotto
@@ -144,8 +144,8 @@ CREATE TABLE IF NOT EXISTS prodotto
     CONSTRAINT prodotto_pkey PRIMARY KEY (id),
     CONSTRAINT prodotto_fornitore_fkey FOREIGN KEY (fornitore)
         REFERENCES fornitore (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS prodmet
 (
@@ -155,8 +155,8 @@ CREATE TABLE IF NOT EXISTS prodmet
     
     CONSTRAINT prodmet_prodotto_fkey FOREIGN KEY (prodotto)
         REFERENCES prodotto (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS buono
 (
@@ -165,8 +165,8 @@ CREATE TABLE IF NOT EXISTS buono
     valore pos NOT NULL,
     CONSTRAINT buono_id_fkey FOREIGN KEY (id)
         REFERENCES metpag (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS ordine
@@ -199,8 +199,8 @@ CREATE TABLE IF NOT EXISTS ordineconse
     CONSTRAINT ordineconse_pkey PRIMARY KEY (id),
     CONSTRAINT ordineconse_id_fkey FOREIGN KEY (id)
         REFERENCES ordine (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS prodinord
@@ -229,12 +229,12 @@ CREATE TABLE IF NOT EXISTS transord
     CONSTRAINT "transOrd_pkey" PRIMARY KEY (ordine, trasportatore),
     CONSTRAINT "transOrd_ordine_fkey" FOREIGN KEY (ordine)
         REFERENCES ordine (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION,
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
     CONSTRAINT "transOrd_trasportatore_fkey" FOREIGN KEY (trasportatore)
         REFERENCES trasportatore (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 
@@ -246,12 +246,12 @@ CREATE TABLE IF NOT EXISTS prodincart
     CONSTRAINT prodincart_pkey PRIMARY KEY (carrello, prodotto),
     CONSTRAINT prodincart_carrello_fkey FOREIGN KEY (carrello)
         REFERENCES customers (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION,
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
     CONSTRAINT prodincart_prodotto_fkey FOREIGN KEY (prodotto)
         REFERENCES prodotto (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 
@@ -262,12 +262,12 @@ CREATE TABLE IF NOT EXISTS consegna
     CONSTRAINT consegna_pkey PRIMARY KEY (ordine, corriere),
     CONSTRAINT consegna_corriere_fkey FOREIGN KEY (corriere)
         REFERENCES corriere (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION,
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
     CONSTRAINT consegna_ordine_fkey FOREIGN KEY (ordine)
         REFERENCES ordine (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 
@@ -280,6 +280,6 @@ CREATE TABLE IF NOT EXISTS inwish
     CONSTRAINT inwish_list_fkey FOREIGN KEY (customer) REFERENCES customers(id),
     CONSTRAINT inwish_prodotto_fkey FOREIGN KEY (prodotto)
         REFERENCES prodotto (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
