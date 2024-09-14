@@ -54,7 +54,7 @@ bool aggiungiIndirizzo(int clientSocket)
 					temp.pop_back();
                     if (temp.length() > 100 || temp.length() == 0)
                     {
-                       	std::string errore = "La via deve avere al massimo 100 caratteri"; // Seleziona la frase del turno
+                       	std::string errore = "La via deve avere al massimo 100 caratteri\n"; // Seleziona la frase del turno
 						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente 
                     } else {
                         via = temp;
@@ -69,9 +69,10 @@ bool aggiungiIndirizzo(int clientSocket)
 						civico = stoi(temp);
 						datiRicevuti++;
 					} else {
-						std::string errore = "Il civico deve essere un numero positivo"; // Seleziona la frase del turno
+						std::string errore = "Il civico deve essere un numero positivo\n"; // Seleziona la frase del turno
 						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
 					}
+					break;
 				case 2:
 					temp = buffer;
 					temp.pop_back();
@@ -80,15 +81,16 @@ bool aggiungiIndirizzo(int clientSocket)
 						CAP = temp;
 						datiRicevuti++;
 					} else {
-						std::string errore = "Il CAP deve essere una sequenza di 5 cifre"; // Seleziona la frase del turno
+						std::string errore = "Il CAP deve essere una sequenza di 5 cifre\n"; // Seleziona la frase del turno
 						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
 					}
+					break;
 				case 3:
 					temp = buffer;
 					temp.pop_back();
                     if (temp.length() > 30 || temp.length() == 0)
                     {
-                       	std::string errore = "La città deve avere al massimo 30 caratteri"; // Seleziona la frase del turno
+                       	std::string errore = "La città deve avere al massimo 30 caratteri\n"; // Seleziona la frase del turno
 						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente 
                     } else {
                         city = temp;
@@ -100,7 +102,7 @@ bool aggiungiIndirizzo(int clientSocket)
 					temp.pop_back();
                     if (temp.length() > 30 || temp.length() == 0)
                     {
-                       	std::string errore = "Lo stato deve avere al massimo 30 caratteri"; // Seleziona la frase del turno
+                       	std::string errore = "Lo stato deve avere al massimo 30 caratteri\n"; // Seleziona la frase del turno
 						send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente 
                     } else {
                         stato = temp;
