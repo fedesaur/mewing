@@ -120,13 +120,13 @@ bool aggiungiIndirizzo(int clientSocket)
     {
 	    sprintf(comando, "INSERT INTO Indirizzo(via, civico, cap, citta, stato) VALUES('%s', %d, '%s', '%s', '%s') RETURNING id", via.c_str(), civico, CAP.c_str(), city.c_str(), stato.c_str());
 	    res = db.ExecSQLtuples(comando);
-        PQclear(res);
         int address = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'indirizzo appena aggiunto
         sprintf(comando, "INSERT INTO custadd(customer, addr) VALUES (%d, %d)", CUSTOMER_ID, address);
         res = db.ExecSQLcmd(comando);
         std::string errore = "Indirizzo aggiunto al database\n\n";
 		send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente    
-        return true;
+        PQclear(res);
+		return true;
     }
     catch(...) //Se c'è stato un errore, lo segnala all'utente
     {
