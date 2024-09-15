@@ -234,7 +234,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                         break;
                     case 4:
                         attendiInput = false; // Input valido ricevuto, esce dal loop
-                        esito = gestisciIndirizzi(clientSocket);
+                        esito = gestisciMetodi(clientSocket);
                         break;
                     default:
                         std::string errore = "Opzione non valida, riprova.\n";

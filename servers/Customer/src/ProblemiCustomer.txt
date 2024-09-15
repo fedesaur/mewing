@@ -3,6 +3,6 @@ AGGIUNGI/RIMUOVI PRODOTTO DAL CARRELLO: ExecSQLtuples(): SQL command failed: SEL
 ExecSQLtuples(): PGRES_FATAL_ERROR
 Errore nel reperimento del carrello
 GESTIONE INDIRIZZI REGISTRATI: Funziona, ma bisogna uscire e rientrare per mostrare le modifiche
-Le altre due funzioni ancora non sono state implementate
+GESTIONE METODI PAGAMENTI: AggiungiMetodi non funziona per qualche motivo
 
 

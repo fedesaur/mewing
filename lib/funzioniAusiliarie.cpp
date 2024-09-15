@@ -34,7 +34,7 @@ int riceviIndice(int clientSocket, int righe)
             if (isNumber(messaggio)) //isNumber è una funzione ausiliaria in lib
             {
                 int numero = std::stoi(messaggio) - 1;
-                if (numero >= 0 && numero < righe) indice = numero;
+                if (numero >= 0 && numero < righe) return numero;
                 else 
                 {
                     std::string errore = "Input non valido\n";

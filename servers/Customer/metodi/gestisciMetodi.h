@@ -7,7 +7,6 @@
 #include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../metodi/aggiungiIndirizzo.h"
 #include "../../../entities/Metodo.h"
 #include "../../../lib/funzioniAusiliarie.h"
 #include <netinet/in.h>

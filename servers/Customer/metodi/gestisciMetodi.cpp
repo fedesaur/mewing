@@ -1,6 +1,6 @@
 #include "gestisciMetodi.h"
 
-bool gestisciIndirizzi(int clientSocket)
+bool gestisciMetodi(int clientSocket)
 {
     int CUSTOMER_ID;
     int RIGHE;
@@ -25,8 +25,8 @@ bool gestisciIndirizzi(int clientSocket)
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     CUSTOMER_ID = std::stoi(id); // ID Customer
     
-    // Usa una funzione ausiliaria per recuperare gli indirizzi registrati
-    risultato = recuperaIndirizzi(clientSocket);
+    // Usa una funzione ausiliaria per recuperare i metodi di pagamento registrati
+    risultato = recuperaMetodi(CUSTOMER_ID);
     if (risultato.first == -1)
     {
         std::string errore = "C'è stato un errore nel database\n\n";
@@ -42,7 +42,7 @@ bool gestisciIndirizzi(int clientSocket)
     {
         // Mostra all'utente gli elementi nel carrello tramite una funzione ausiliaria
         mostraMetodi(clientSocket, RIGHE, METODI);
-        std::string request = "Quale operazione vuoi svolgere?\n";
+        std::string request = "\nQuale operazione vuoi svolgere?\n";
 	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
         for (int i = 0; i < OPERAZIONI_DISPONIBILI; i++) send(clientSocket, OPERAZIONI[i].c_str(), OPERAZIONI[i].length(), 0);
         bool attendiInput = true;
@@ -109,7 +109,7 @@ bool gestisciIndirizzi(int clientSocket)
         if (esito)
         {
             delete[] risultato.second;
-            risultato = recuperaMetodi(clientSocket);
+            risultato = recuperaMetodi(CUSTOMER_ID);
             RIGHE = risultato.first;
             METODI = risultato.second;
         }
@@ -182,7 +182,7 @@ void mostraMetodi(int clientSocket, int righe, Metodo* metodi)
 	        send(clientSocket, metodo.c_str(), metodo.length(), 0);
         }
     } else {
-        std::string request = "\nNon ci sono metodi registrati!\n\n"; //... e lo stampa
+        std::string request = "\nNon ci sono metodi registrati!\n"; //... e lo stampa
 	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
     }
     return;
@@ -215,9 +215,9 @@ bool aggiungiMetodo(int clientSocket)
 	// Di seguito, le frasi mostrate all'utente ad ogni fase della creazione del Metodo
     std::string METODI[] = {"Virtuale", "contante", "carta prepagata", "carta di credito", "bancomat"};
     std::string FRASI[] = {"Inserisci il nome del metodo di pagamento\n",
-    "Inserisci il tipo del metodo (digita il numero): 1) Virtuale 2) Contante 3) Carta Prepagata 4) Carta di Credito 5) Bancomat\n"};
+    "Inserisci il tipo del metodo (digita il numero):\n 1) Virtuale\n 2) Contante\n 3) Carta Prepagata\n 4) Carta di Credito\n 5) Bancomat\n"};
 
-	// Chiede i dati neccessari per creare il customer e l'indirizzo
+	// Chiede i dati necessari per creare il nuovo metodo di pagamento
 	while (datiRicevuti < datiRichiesti)
 	{
 		std::string temp;
@@ -244,6 +244,7 @@ bool aggiungiMetodo(int clientSocket)
 					break;
 				case 1:
                     indice = riceviIndice(clientSocket, 5);
+                    datiRicevuti++;
 					break;
 			}
         } else {
@@ -254,19 +255,17 @@ bool aggiungiMetodo(int clientSocket)
 	// Viene inserito il nuovo metodo nel database
     try
     {
-	    sprintf(comando, "INSERT INTO metpag(nome, tipo) VALUES('%s','%s')", nome.c_str(), tipo.c_str());
+	    sprintf(comando, "INSERT INTO metpag(nome, tipo) VALUES('%s','%s')", nome.c_str(), METODI[indice].c_str());
         res = db.ExecSQLcmd(comando);
-        std::string successo = "Metodo aggiunto al database\n\n";
+        std::string successo = "Metodo aggiunto al database\n";
 		send(clientSocket, successo.c_str(), successo.length(), 0); // Invia il messaggio pre-impostato all'utente    
         PQclear(res);
 		return true;
     }
     catch(...) //Se c'è stato un errore, lo segnala all'utente
     {
-        std::string errore = "C'è stato un errore nel database\n\n";
+        std::string errore = "C'è stato un errore nel database\n";
 		send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente    
         return false;
     }
-    
-
 }
