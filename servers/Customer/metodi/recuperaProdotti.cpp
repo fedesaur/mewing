@@ -66,7 +66,7 @@ std::pair<int, Prodotto*> recuperaProdottiPerNome(int clientSocket, std::string 
     {
         std::string searched = "%" + nome + "%";
         sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF "
-        "FROM prodotto pr, fornitore fr WHERE pr.fornitore = fr.id AND pr.nome LIKE '%s' ", searched);
+        "FROM prodotto pr, fornitore fr WHERE pr.fornitore = fr.id AND pr.nome LIKE '%s' ", searched.c_str());
         res = db.ExecSQLtuples(comando);
         int RIGHE = PQntuples(res);
         if (RIGHE > 0)
