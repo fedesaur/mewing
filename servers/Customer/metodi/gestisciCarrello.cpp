@@ -127,5 +127,40 @@ bool gestisciCarrello(int clientSocket)
 
 bool effettuaOrdine(int clientSocket, int customerID)
 {
+    /*
+        Sono richiesti all'utente 2 dati:
+        Uno degli indirizzi e uno dei metodi di pagamento tra quelli da lui posseduti
+    */
+    char buffer[1024] = {0};
+    char comando[1000];
+	int datiRichiesti = 5;
+	int datiRicevuti = 0;
+    std::string FRASI[] = {"1) Aggiungi prodotto (normale)\n", "2) Aggiungi prodotto (per nome)\n", "3) Rimuovi prodotto dal carrello \n", "4) Ordina prodotti nel carrello \n" , "Altrimenti digita Q per terminare\n"};
+    PGresult *res;
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
+
+/*
+CREATE TABLE IF NOT EXISTS ordine
+(
+    id integer NOT NULL DEFAULT nextval('ordine_id_seq'::regclass),
+    customer integer NOT NULL,
+    datarich timestamp without time zone NOT NULL,
+    stato statoordine NOT NULL DEFAULT 'pendente'::statoordine,
+    pagamento tipometpag,
+    indirizzo integer NOT NULL,
+    totale numeric NOT NULL,
+    CONSTRAINT ordine_pkey PRIMARY KEY (id),
+    CONSTRAINT "indCust" FOREIGN KEY (indirizzo)
+        REFERENCES indirizzo (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID,
+    CONSTRAINT ordine_customer_fkey FOREIGN KEY (customer)
+        REFERENCES customers (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+*/
+
     return false;
 }

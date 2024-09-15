@@ -158,16 +158,6 @@ CREATE TABLE IF NOT EXISTS prodmet
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
-CREATE TABLE IF NOT EXISTS buono
-(
-    id integer NOT NULL,
-    scadenza timestamp without time zone NOT NULL,
-    valore pos NOT NULL,
-    CONSTRAINT buono_id_fkey FOREIGN KEY (id)
-        REFERENCES metpag (id) MATCH SIMPLE
-        ON UPDATE CASCADE
-        ON DELETE CASCADE
-);
 
 CREATE TABLE IF NOT EXISTS ordine
 (
