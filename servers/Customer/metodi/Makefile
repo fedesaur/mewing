@@ -23,13 +23,10 @@ ricercaNormale: ricercaProdotti.cpp ricercaProdotti.h ../../../lib/funzioniAusil
 modificaNome: modificaNome.cpp modificaNome.h
 	$(CC) -c -o modificaNome.o $< $(CFLAGS)
 
-rimuoviDaCarrello: rimuoviDaCarrello.cpp rimuoviDaCarrello.h
-	$(CC) -c -o rimuoviDaCarrello.o $< $(CFLAGS)
-
 recuperaCarrello: recuperaCarrello.cpp recuperaCarrello.h
 	$(CC) -c -o recuperaCarrello.o $< $(CFLAGS)
 
-gestisciCarrello: gestisciCarrello.cpp gestisciCarrello.h
+gestisciCarrello: gestisciCarrello.cpp gestisciCarrello.h ../../../lib/funzioniAusiliarie.h
 	$(CC) -c -o gestisciCarrello.o $< $(CFLAGS)
 
 recuperaIndirizzi: recuperaIndirizzi.cpp recuperaIndirizzi.h

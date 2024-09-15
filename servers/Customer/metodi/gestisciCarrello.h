@@ -9,7 +9,7 @@
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../metodi/recuperaCarrello.h"
 #include "../metodi/ricercaProdotti.h"
-#include "../metodi/rimuoviDaCarrello.h"
+#include "../../../lib/funzioniAusiliarie.h"
 #include "../../../entities/Prodotto.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -32,6 +32,7 @@
 #define DB_NAME "mewingdb"
 
 bool gestisciCarrello(int clientSocket);
+bool effettuaOrdine(int clientSocket, int customerID);
 
 
 #endif //AUTENTICAZIONE_H

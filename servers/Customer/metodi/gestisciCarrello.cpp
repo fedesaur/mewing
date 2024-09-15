@@ -6,9 +6,9 @@ bool gestisciCarrello(int clientSocket)
     int RIGHE;
     char buffer[1024] = {0};
     char comando[1000];
-    int OPERAZIONI_DISPONIBILI = 4;
+    int OPERAZIONI_DISPONIBILI = 5;
     std::pair <int, Prodotto*> risultato;
-    std::string OPERAZIONI[] = {"1) Aggiungi prodotto (normale)\n", "2) Aggiungi prodotto (per nome)\n", "3) Rimuovi prodotto dal carrello \n", "Altrimenti digita Q per terminare\n"};
+    std::string OPERAZIONI[] = {"1) Aggiungi prodotto (normale)\n", "2) Aggiungi prodotto (per nome)\n", "3) Rimuovi prodotto dal carrello \n", "4) Ordina prodotti nel carrello \n" , "Altrimenti digita Q per terminare\n"};
     Prodotto* CARRELLO;
     PGresult *res;
     redisContext *c2r; // c2r contiene le info sul contesto
@@ -59,22 +59,46 @@ bool gestisciCarrello(int clientSocket)
                     switch (opzione)
                     {
                         case 0:
-                            {
                             // Permette ad un Customer di cercare un prodotto e aggiungerlo al carrello
                             esito = ricercaProdotti(clientSocket);
                             attendiInput = false;
                             break;
-                            }
                         case 1:
                             // Ancora da implementare la ricerca dei prodotti
                             attendiInput = false;
                             break;
                         case 2:
-                        {
-                            esito = rimuoviDaCarrello(clientSocket);
+                            if (RIGHE > 0)
+                            {
+                                std::string request = "Quale prodotto vuoi rimuovere? (Digita il numero)\n";
+	                            send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+                                int indice = riceviIndice(clientSocket, RIGHE);
+                                sprintf(comando, "DELETE FROM prodincart WHERE prodotto = %d AND carrello = %d", CARRELLO[indice].ID, CUSTOMER_ID);
+                                try
+                                {
+                                    res = db.ExecSQLcmd(comando);
+                                    PQclear(res);
+                                    std::string successo = "Prodotto rimosso correttamente dal carrello!\n";
+	                                send(clientSocket, successo.c_str(), successo.length(), 0); // Invia il messaggio pre-impostato all'utente
+                                    esito = true;
+                                }
+                                catch(...)
+                                {
+                                    std::string errore = "C'è stato un errore nel database!\n";
+	                                send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+                                    // Se ci sono errori nella query, vengono catturati da catch
+                                }
+                            } else {
+                                std::string request = "\nNessun prodotto nel carrello da rimuovere!\n";
+                                send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+                            }
                             attendiInput = false;
                             break;
-                        }
+                        case 3:
+                            esito = effettuaOrdine(clientSocket, CUSTOMER_ID);
+                            attendiInput = false;
+                            break;
+
                         default:
                             std::string errore = "Opzione non valida, riprova.\n";
                             send(clientSocket, errore.c_str(), errore.length(), 0);
@@ -99,4 +123,9 @@ bool gestisciCarrello(int clientSocket)
     }
     delete[] risultato.second; // Libera la memoria occupata dal carrello
     return true;
+}
+
+bool effettuaOrdine(int clientSocket, int customerID)
+{
+    return false;
 }
