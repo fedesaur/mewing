@@ -1,68 +1,60 @@
 #include "aggiungiCarrello.h"
 
-bool aggiungiCarrello(int clientSocket, int customerID, int RIGHE, Prodotto* PRODOTTI)
+bool aggiungiCarrello(int clientSocket, int customerID, Prodotto* prodotti, int RIGHE)
 {
     char buffer[1024] = {0};
-    try
-    {
-        if (RIGHE > 0)
-        {
-            bool terminaConnessione = false;
-            while (!terminaConnessione)
-            {
-                mostraProdotti(clientSocket, PRODOTTI, RIGHE);
-                std::string request = "\nQuale prodotto vuoi aggiungere al carrello? (Digita il numero)\nOppure digita Q per terminare la connessione\n";
-	            send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-                int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
-                if (bytesRead > 0) 
-                {
-                    std::string messaggio(buffer, bytesRead);
-                    messaggio.erase(std::remove(messaggio.begin(), messaggio.end(), '\n'), messaggio.end()); // Rimuove eventuali newline
+    ProdottiManager prodottiManager;
+    
+    if (RIGHE <= 0) {
+        std::string request = "Nessun prodotto disponibile!\n";
+        send(clientSocket, request.c_str(), request.length(), 0);
+        return false;
+    }
 
-                    if (messaggio == "q" || messaggio == "Q") terminaConnessione = false;
-                    else if (isNumber(messaggio))
-                    {
-                        int indice = stoi(messaggio) - 1;
-                        if (indice >= 0 && indice < RIGHE)
-                        {
-                            int idP = prodottiDisponibili[indice].ID;
-                            int quantita = richiediQuantita(clientSocket); // Chiede la quantita di prodotto desiderata dall'utente
-                            bool esito = aggiungiCarrelloDB(idP, customerID, quantita); // Aggiunge il prodotto al carrello
-                            if (esito)
-                            {
-                                std::string successo = "Prodotto aggiunto al carrello con successo!\n\n";
-                                send(clientSocket, successo.c_str(), successo.length(), 0);
-                            } else {
-                                std::string errore = "C'è stato un errore nella query\n\n";
-                                send(clientSocket, errore.c_str(), errore.length(), 0);
-                            } 
-                        } else {
-                            std::string errore = "Opzione non valida, riprova.\n\n";
-                            send(clientSocket, errore.c_str(), errore.length(), 0);
-                        }
+    bool terminaConnessione = false;
+    while (!terminaConnessione)
+    {
+        mostraProdotti(clientSocket, prodotti, RIGHE);
+        std::string request = "\nQuale prodotto vuoi aggiungere al carrello? (Digita il numero)\nOppure digita Q per terminare la connessione\n";
+        send(clientSocket, request.c_str(), request.length(), 0);
+        
+        int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+        if (bytesRead > 0)
+        {
+            std::string messaggio(buffer, bytesRead);
+            messaggio.erase(std::remove(messaggio.begin(), messaggio.end(), '\n'), messaggio.end());
+
+            if (messaggio == "q" || messaggio == "Q") {
+                terminaConnessione = true;
+            }
+            else if (isNumber(messaggio)) {
+                int indice = stoi(messaggio) - 1;
+                if (indice >= 0 && indice < RIGHE) {
+                    int idP = prodotti[indice].ID;
+                    int quantita = richiediQuantita(clientSocket); 
+                    bool esito = aggiungiCarrelloDB(idP, customerID, quantita);
+                    if (esito) {
+                        std::string successo = "Prodotto aggiunto al carrello con successo!\n\n";
+                        send(clientSocket, successo.c_str(), successo.length(), 0);
                     } else {
-                        std::string errore = "Input non valido, riprova.\n\n";
+                        std::string errore = "C'è stato un errore nella query\n\n";
                         send(clientSocket, errore.c_str(), errore.length(), 0);
                     }
+                } else {
+                    std::string errore = "Opzione non valida, riprova.\n\n";
+                    send(clientSocket, errore.c_str(), errore.length(), 0);
                 }
+            } else {
                 std::string errore = "Input non valido, riprova.\n\n";
                 send(clientSocket, errore.c_str(), errore.length(), 0);
             }
-            PQclear(res);
-            return true;
-        }   
-        // Se non ci sono oggetti
-        PQclear(res);
-	    std::string request = "Nessun prodotto disponibile!\n\n"; // Seleziona la frase del turno
-	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-        return false;
+        } else {
+            std::string errore = "Errore di input, riprova.\n\n";
+            send(clientSocket, errore.c_str(), errore.length(), 0);
+        }
     }
-    catch(...)
-    {
-        std::string errore = "C'è stato un errore nel database!\n"; // Seleziona la frase del turno
-	    send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
-        return false; // Controlla che la query sia andata a buon fine
-    }
+    
+    return true;
 }
 
 int richiediQuantita(int clientSocket)
@@ -102,28 +94,31 @@ int richiediQuantita(int clientSocket)
 bool aggiungiCarrelloDB(int idProdotto, int userID, int quantita)
 {
     char comando[1000];
-    int rows;
     PGresult *res;
-    Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
-    sprintf(comando, "SELECT quantita FROM prodincart WHERE prodotto = %d AND carrello = %d", idProdotto, userID);
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Connessione DB
+
     try
     {
+        sprintf(comando, "SELECT quantita FROM prodincart WHERE prodotto = %d AND carrello = %d", idProdotto, userID);
         res = db.ExecSQLtuples(comando);
-        rows = PQntuples(res);
-        if (rows == 1) // Il prodotto già c'è, perciò aumenta il numero di prodotti presenti
-        {
+        
+        int rows = PQntuples(res);
+        if (rows == 1) {
             int plus = atoi(PQgetvalue(res, 0, PQfnumber(res, "quantita"))) + quantita;
             sprintf(comando, "UPDATE prodincart SET quantita = %d WHERE prodotto = %d AND carrello = %d", plus, idProdotto, userID);
+        } else {
+            sprintf(comando, "INSERT INTO prodincart(carrello, prodotto, quantita) VALUES (%d, %d, %d)", userID, idProdotto, quantita);
         }
-        else {sprintf(comando, "INSERT INTO prodincart(carrello, prodotto, quantita) VALUES (%d, %d, %d)", userID, idProdotto, quantita);}
+
+        PQclear(res);
         res = db.ExecSQLcmd(comando);
         PQclear(res);
+
         return true;
     }
     catch(...)
     {
-        std::string errore = "C'è stato un errore nel database!\n"; // Seleziona la frase del turno
-	    send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+        // Gestione errori database
         return false;
     }
 }
