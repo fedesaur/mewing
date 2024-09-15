@@ -201,7 +201,7 @@ bool effettuaOrdine(int clientSocket, int customerID, int RIGHE_CARRELLO, Prodot
         //Inserisce l'ordine nel database
         sprintf(comando, "INSERT INTO ordine(customer, datarich, pagamento, indirizzo) VALUES (%d, NOW, '%s', %d) RETURNING id",
         customerID, METODI[indMetodo].tipo, INDIRIZZI[indIndirizzo].ID);
-        res = db.ExecSQLtuples(res);
+        res = db.ExecSQLtuples(comando);
         if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
 	    int idOrd = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'ordine appena creato
         PQclear(res);
@@ -209,13 +209,13 @@ bool effettuaOrdine(int clientSocket, int customerID, int RIGHE_CARRELLO, Prodot
         // Ogni prodotto viene inserito nell'ordine
         for (int i = 0; i < RIGHE_CARRELLO; i++)
         {
-            sprint(comando, "INSERT INTO prodinord(prodotto, ordine, quantita) VALUES (%d, %d, %d)",
+            sprintf(comando, "INSERT INTO prodinord(prodotto, ordine, quantita) VALUES (%d, %d, %d)",
             CARRELLO[i].ID, idOrd, CARRELLO[i].quantita);
             res = db.ExecSQLcmd(comando);
             PQclear(res);
         }
         std::string successo = "Ordine effettuato correttamente!\n\n";
-	    send(clientSocket, vuoto.c_str(), vuoto.length(), 0); // Invia il messaggio pre-impostato all'utente
+	    send(clientSocket, successo.c_str(), successo.length(), 0); // Invia il messaggio pre-impostato all'utente
         delete[] risultato1.second;
         delete[] risultato2.second;
         return true;
