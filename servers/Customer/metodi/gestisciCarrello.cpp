@@ -95,10 +95,9 @@ bool gestisciCarrello(int clientSocket)
                             attendiInput = false;
                             break;
                         case 3:
-                            esito = effettuaOrdine(clientSocket, CUSTOMER_ID);
+                            esito = effettuaOrdine(clientSocket, CUSTOMER_ID, RIGHE, CARRELLO);
                             attendiInput = false;
                             break;
-
                         default:
                             std::string errore = "Opzione non valida, riprova.\n";
                             send(clientSocket, errore.c_str(), errore.length(), 0);
@@ -125,7 +124,7 @@ bool gestisciCarrello(int clientSocket)
     return true;
 }
 
-bool effettuaOrdine(int clientSocket, int customerID)
+bool effettuaOrdine(int clientSocket, int customerID, int RIGHE_CARRELLO, Prodotto* CARRELLO)
 {
     /*
         Sono richiesti all'utente 2 dati:
@@ -133,34 +132,101 @@ bool effettuaOrdine(int clientSocket, int customerID)
     */
     char buffer[1024] = {0};
     char comando[1000];
-	int datiRichiesti = 5;
+	int datiRichiesti = 2;
 	int datiRicevuti = 0;
-    std::string FRASI[] = {"1) Aggiungi prodotto (normale)\n", "2) Aggiungi prodotto (per nome)\n", "3) Rimuovi prodotto dal carrello \n", "4) Ordina prodotti nel carrello \n" , "Altrimenti digita Q per terminare\n"};
+    std::pair<int, Indirizzo*> risultato1;
+    std::pair<int, Metodo*> risultato2;
+    int RIGHE_INDIRIZZI;
+    Indirizzo* INDIRIZZI;
+    int RIGHE_METODI;
+    Metodo* METODI;
+    std::string FRASI[] = {"A quale indirizzo vuoi effettuare la consegna? (Digita il numero)\n", "Con quale metodo di pagamento vuoi pagare? (Digita il numero)\n"};
     PGresult *res;
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
 
-/*
-CREATE TABLE IF NOT EXISTS ordine
-(
-    id integer NOT NULL DEFAULT nextval('ordine_id_seq'::regclass),
-    customer integer NOT NULL,
-    datarich timestamp without time zone NOT NULL,
-    stato statoordine NOT NULL DEFAULT 'pendente'::statoordine,
-    pagamento tipometpag,
-    indirizzo integer NOT NULL,
-    totale numeric NOT NULL,
-    CONSTRAINT ordine_pkey PRIMARY KEY (id),
-    CONSTRAINT "indCust" FOREIGN KEY (indirizzo)
-        REFERENCES indirizzo (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
-        NOT VALID,
-    CONSTRAINT ordine_customer_fkey FOREIGN KEY (customer)
-        REFERENCES customers (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
-);
-*/
+    // Recupera gli indirizzi registrati dal Customer
+    risultato1 = recuperaIndirizzi(clientSocket);
+    RIGHE_INDIRIZZI = risultato1.first;
+    INDIRIZZI = risultato1.second;
+    if (RIGHE_INDIRIZZI == -1) return false;
+    else if (RIGHE_INDIRIZZI == 0)
+    {
+        std::string vuoto = "Non ci sono indirizzi registrati. Operazione interrotta\n\n";
+	    send(clientSocket, vuoto.c_str(), vuoto.length(), 0); // Invia il messaggio pre-impostato all'utente
+        return false;
+    }
 
-    return false;
+    // Recupera i metodi di pagamento registrati dal Customer
+    risultato2 = recuperaMetodi(clientSocket);
+    RIGHE_METODI = risultato2.first;
+    METODI = risultato2.second;
+    if (RIGHE_METODI == -1) return false;
+    else if (RIGHE_METODI == 0)
+    {
+        std::string vuoto = "Non ci sono metodi di pagamento registrati. Operazione interrotta\n\n";
+	    send(clientSocket, vuoto.c_str(), vuoto.length(), 0); // Invia il messaggio pre-impostato all'utente
+        return false;
+    }
+
+    int indIndirizzo = -1;
+    int indMetodo = -1;
+    while(datiRicevuti < datiRichiesti)
+    {
+		std::string request = FRASI[datiRicevuti]; // Seleziona la frase del turno
+		send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+		int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0); // Riceve la risposta dall'utente e la memorizza nello stream
+		if (bytesRead > 0)
+		{
+            switch (datiRicevuti)
+            {
+                case 0:
+                    mostraIndirizzi(clientSocket, RIGHE_INDIRIZZI, INDIRIZZI);
+                    indIndirizzo = riceviIndice(clientSocket, RIGHE_INDIRIZZI);
+                    datiRicevuti++;
+                    break;
+                case 1:
+                    mostraMetodi(clientSocket, RIGHE_METODI, METODI);
+                    indMetodo= riceviIndice(clientSocket, RIGHE_METODI);
+                    datiRicevuti++;
+                    break;
+            }
+        } else {
+            std::string errore = "Input non valido, riprova.\n";
+            send(clientSocket, errore.c_str(), errore.length(), 0);
+        }
+    }
+    
+    try
+    {
+        //Inserisce l'ordine nel database
+        sprintf(comando, "INSERT INTO ordine(customer, datarich, pagamento, indirizzo) VALUES (%d, NOW, '%s', %d) RETURNING id",
+        customerID, METODI[indMetodo].tipo, INDIRIZZI[indIndirizzo].ID);
+        res = db.ExecSQLtuples(res);
+        if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
+	    int idOrd = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'ordine appena creato
+        PQclear(res);
+
+        // Ogni prodotto viene inserito nell'ordine
+        for (int i = 0; i < RIGHE_CARRELLO; i++)
+        {
+            sprint(comando, "INSERT INTO prodinord(prodotto, ordine, quantita) VALUES (%d, %d, %d)",
+            CARRELLO[i].ID, idOrd, CARRELLO[i].quantita);
+            res = db.ExecSQLcmd(comando);
+            PQclear(res);
+        }
+        std::string successo = "Ordine effettuato correttamente!\n\n";
+	    send(clientSocket, vuoto.c_str(), vuoto.length(), 0); // Invia il messaggio pre-impostato all'utente
+        delete[] risultato1.second;
+        delete[] risultato2.second;
+        return true;
+
+    }
+    catch(...)
+    {
+        std::string errore = "C'è stato un problema nel database\n\n";
+	    send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+        delete[] risultato1.second;
+        delete[] risultato2.second;
+        return false;
+    }
 }

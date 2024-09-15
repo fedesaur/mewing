@@ -4,13 +4,18 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <utility> //Importa pair
 #include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../metodi/recuperaCarrello.h"
-#include "../metodi/ricercaProdotti.h"
 #include "../../../lib/funzioniAusiliarie.h"
 #include "../../../entities/Prodotto.h"
+#include "../../../entities/Indirizzo.h"
+#include "../../../entities/Metodo.h"
+#include "../metodi/recuperaCarrello.h"
+#include "../metodi/ricercaProdotti.h"
+#include "../metodi/recuperaIndirizzi.h"
+#include "../metodi/gestisciMetodi.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -32,7 +37,7 @@
 #define DB_NAME "mewingdb"
 
 bool gestisciCarrello(int clientSocket);
-bool effettuaOrdine(int clientSocket, int customerID);
+bool effettuaOrdine(int clientSocket, int customerID, int RIGHE_CARRELLO, Prodotto* CARRELLO);
 
 
 #endif //AUTENTICAZIONE_H

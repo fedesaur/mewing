@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <utility> //Importa pair
 #include <sstream>
 #include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
