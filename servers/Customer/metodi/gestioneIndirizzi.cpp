@@ -125,6 +125,7 @@ bool aggiungiIndirizzo(int clientSocket, int customerID)
 	char comando[1000];
     char buffer[1024] = {0};
     PGresult *res;
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
 
 	std::string via;
 	int civico;
@@ -233,6 +234,7 @@ bool aggiungiIndirizzo(int clientSocket, int customerID)
     {
         std::string errore = "C'è stato un errore nel database\n\n";
 		send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente    
+        PQclear(res);
         return false;
     }
 }

@@ -3,13 +3,16 @@
 bool gestisciCarrello(int clientSocket)
 {
     int CUSTOMER_ID;
-    int RIGHE;
+    int RIGHE_CARRELLO;
+    int RIGHE_PRODOTTI;
+    Prodotto* CARRELLO;
+    Prodotto* PRODOTTI;
     char buffer[1024] = {0};
     char comando[1000];
     int OPERAZIONI_DISPONIBILI = 5;
-    std::pair <int, Prodotto*> risultato;
+    std::pair <int, Prodotto*> risultato1;
+    std::pair <int, Prodotto*> risultato2;
     std::string OPERAZIONI[] = {"1) Aggiungi prodotto (normale)\n", "2) Aggiungi prodotto (per nome)\n", "3) Rimuovi prodotto dal carrello \n", "4) Ordina prodotti nel carrello \n" , "Altrimenti digita Q per terminare\n"};
-    Prodotto* CARRELLO;
     PGresult *res;
     redisContext *c2r; // c2r contiene le info sul contesto
 	redisReply *reply; // reply contiene le risposte da Redis
@@ -26,17 +29,21 @@ bool gestisciCarrello(int clientSocket)
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     CUSTOMER_ID = stoi(id); // ID Trasportatore
     // Usa una funzione ausiliaria per recuperare il carrello dell'utente
-    risultato = recuperaCarrello(clientSocket);
-    if (risultato.first == -1) return false;  // C'è stato un errore nella query
+    risultato1 = recuperaCarrello(clientSocket);
+    if (risultato1.first == -1) return false;  // C'è stato un errore nella query
+    RIGHE_CARRELLO = risultato1.first;
+    CARRELLO = risultato1.second;
+
+    risultato2 = recuperaProdotti(clientSocket); // Recupera tutti i prodotti disponibili
+    if (risultato2.first == -1) return false;
+    RIGHE_PRODOTTI = risultato2.first;
+    PRODOTTI = risultato2.second;
     
-    RIGHE = risultato.first;
-    CARRELLO = risultato.second;
     bool terminaConnessione = false;
-    
     while(!terminaConnessione)
     {
         // Mostra all'utente gli elementi nel carrello tramite una funzione ausiliaria
-        mostraCarrello(clientSocket, CARRELLO, RIGHE);
+        mostraCarrello(clientSocket, CARRELLO, RIGHE_CARRELLO);
         std::string request = "\nQuale operazione vuoi svolgere?\n";
 	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
         for (int i = 0; i < OPERAZIONI_DISPONIBILI; i++) send(clientSocket, OPERAZIONI[i].c_str(), OPERAZIONI[i].length(), 0);
@@ -47,6 +54,7 @@ bool gestisciCarrello(int clientSocket)
             int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
             if (bytesRead > 0) 
             {
+                std::pair <int, Prodotto*> temp;
                 std::string messaggio(buffer, bytesRead);
                 messaggio.erase(std::remove(messaggio.begin(), messaggio.end(), '\n'), messaggio.end()); // Rimuove eventuali newline
                 if (messaggio == "q" || messaggio == "Q") 
@@ -59,20 +67,33 @@ bool gestisciCarrello(int clientSocket)
                     switch (opzione)
                     {
                         case 0:
-                            // Permette ad un Customer di cercare un prodotto e aggiungerlo al carrello
-                            esito = ricercaProdotti(clientSocket);
+                            // Recupera i prodotti disponibili e permette all'utente di aggiungerli al proprio carrello
+                            esito = aggiungiCarrello(clientSocket, CUSTOMER_ID, RIGHE_PRODOTTI, PRODOTTI);
                             attendiInput = false;
                             break;
                         case 1:
-                            // Ancora da implementare la ricerca dei prodotti
+                            // Recupera i prodotti disponibili con nome simile a quello richiesto
+                            std::string request = "Quale è il nome del prodotto che stai cercando?\n";
+	                        send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
                             attendiInput = false;
+                            bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+                            if (bytesRead > 0) 
+                            {
+                                std::string nome(buffer, bytesRead);
+                                nome.erase(std::remove(nome.begin(), nome.end(), '\n'), nome.end()); // Rimuove eventuali newline
+                                temp = recuperaProdottiPerNome(clientSocket, nome);
+                                esito = aggiungiCarrello(clientSocket, CUSTOMER_ID, temp.first, temp.second);
+                            } else {
+                                std::string errore = "Input non valido\n";
+                                send(clientSocket, errore.c_str(), errore.length(), 0);
+                            }
                             break;
                         case 2:
-                            if (RIGHE > 0)
+                            if (RIGHE_CARRELLO > 0)
                             {
                                 std::string request = "Quale prodotto vuoi rimuovere? (Digita il numero)\n";
 	                            send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-                                int indice = riceviIndice(clientSocket, RIGHE);
+                                int indice = riceviIndice(clientSocket, RIGHE_CARRELLO);
                                 sprintf(comando, "DELETE FROM prodincart WHERE prodotto = %d AND carrello = %d", CARRELLO[indice].ID, CUSTOMER_ID);
                                 try
                                 {
@@ -95,7 +116,7 @@ bool gestisciCarrello(int clientSocket)
                             attendiInput = false;
                             break;
                         case 3:
-                            esito = effettuaOrdine(clientSocket, CUSTOMER_ID, RIGHE, CARRELLO);
+                            esito = effettuaOrdine(clientSocket, CUSTOMER_ID, RIGHE_CARRELLO, CARRELLO);
                             attendiInput = false;
                             break;
                         default:
@@ -113,14 +134,15 @@ bool gestisciCarrello(int clientSocket)
             }
             if (esito)
             {
-                delete[] risultato.second;
-                risultato = recuperaCarrello(clientSocket);
-                RIGHE = risultato.first;
-                CARRELLO = risultato.second;
+                delete[] risultato1.second;
+                risultato1 = recuperaCarrello(clientSocket);
+                RIGHE_CARRELLO = risultato1.first;
+                CARRELLO = risultato1.second;
             }
         }   
     }
-    delete[] risultato.second; // Libera la memoria occupata dal carrello
+    delete[] risultato1.second; // Libera la memoria occupata dal carrello
+    delete[] risultato2.second;
     return true;
 }
 
