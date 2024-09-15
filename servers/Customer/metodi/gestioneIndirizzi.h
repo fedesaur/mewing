@@ -9,7 +9,6 @@
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../metodi/recuperaIndirizzi.h"
-#include "../metodi/aggiungiIndirizzo.h"
 #include "../../../entities/Indirizzo.h"
 #include "../../../lib/funzioniAusiliarie.h"
 #include <netinet/in.h>
@@ -33,5 +32,6 @@
 #define DB_NAME "mewingdb"
 
 bool gestisciIndirizzi(int clientSocket);
+bool aggiungiIndirizzo(int clientSocket, int customerID);
 
 #endif //AUTENTICAZIONE_H
