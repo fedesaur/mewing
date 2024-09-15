@@ -110,24 +110,20 @@ std::pair<int, Prodotto*> recuperaProdottiPerNome(int clientSocket, std::string 
     return risultato; 
 }
 
-void mostraProdotti(int clientSocket, Prodotto* prodotti, int righe)
-{
-    if (righe > 0)
-    {
-        std::string request = "\nPRODOTTI DISPONIBILI:\n"; //... e lo stampa
-	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-        for (int i = 0; i < righe; i++) // Mostra i prodotti disponibili all'utente
-        {
-            std::string prodotto = std::to_string(i+1) + ") ID Prodotto: " + std::to_string(prodotti[i].ID) + 
-            " Nome Prodotto: " + prodotti[i].nome + 
-            " Descrizione: " + prodotti[i].descrizione + 
-            " Fornitore: " + prodotti[i].fornitore + 
-            " Prezzo Prodotto: " + std::to_string(prodotti[i].prezzo) + "\n";
-	        send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
+ void mostraProdotti(int clientSocket, Prodotto* prodotti, int righe) {
+        if (righe > 0) {
+            std::string request = "\nPRODOTTI DISPONIBILI:\n";
+            send(clientSocket, request.c_str(), request.length(), 0);
+            for (int i = 0; i < righe; i++) {
+                std::string prodotto = std::to_string(i+1) + ") ID Prodotto: " + std::to_string(prodotti[i].ID) + 
+                                       " Nome Prodotto: " + prodotti[i].nome + 
+                                       " Descrizione: " + prodotti[i].descrizione + 
+                                       " Fornitore: " + prodotti[i].fornitore + 
+                                       " Prezzo Prodotto: " + std::to_string(prodotti[i].prezzo) + "\n";
+                send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
+            }
+        } else {
+            std::string request = "Non ci sono prodotti disponibili!\n";
+            send(clientSocket, request.c_str(), request.length(), 0);
         }
-    } else {
-        std::string request = "Non ci sono prodotti disponibili!\n"; //... e lo stampa
-	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
     }
-    return;
-}
