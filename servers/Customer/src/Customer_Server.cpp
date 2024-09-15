@@ -221,7 +221,8 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                         break;
                     case 1:
                         attendiInput = false; // Input valido ricevuto
-                        esito = ricercaProdotti(clientSocket);
+                        recuperaProdotti(clientSocket);
+                        esito=true;
                         break;
                     case 2:
                         attendiInput = false; // Input valido ricevuto, esce dal loop

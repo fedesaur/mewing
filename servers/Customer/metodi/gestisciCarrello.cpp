@@ -72,9 +72,9 @@ bool gestisciCarrello(int clientSocket)
                             attendiInput = false;
                             break;
                         case 1:
-                            // Recupera i prodotti disponibili con nome simile a quello richiesto
+                            {// Recupera i prodotti disponibili con nome simile a quello richiesto
                             std::string request = "Quale è il nome del prodotto che stai cercando?\n";
-	                        send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+	                    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
                             attendiInput = false;
                             bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
                             if (bytesRead > 0) 
@@ -87,8 +87,10 @@ bool gestisciCarrello(int clientSocket)
                                 std::string errore = "Input non valido\n";
                                 send(clientSocket, errore.c_str(), errore.length(), 0);
                             }
-                            break;
+                            break; 
+                            }
                         case 2:
+                            {
                             if (RIGHE_CARRELLO > 0)
                             {
                                 std::string request = "Quale prodotto vuoi rimuovere? (Digita il numero)\n";
@@ -115,14 +117,19 @@ bool gestisciCarrello(int clientSocket)
                             }
                             attendiInput = false;
                             break;
+                            }
                         case 3:
+                        {
                             esito = effettuaOrdine(clientSocket, CUSTOMER_ID, RIGHE_CARRELLO, CARRELLO);
                             attendiInput = false;
                             break;
+                            }
                         default:
+                        {
                             std::string errore = "Opzione non valida, riprova.\n";
                             send(clientSocket, errore.c_str(), errore.length(), 0);
-                            break;                               
+                            break;          
+                            
                     }
                 } else {
                     std::string errore = "Input non valido, riprova.\n";

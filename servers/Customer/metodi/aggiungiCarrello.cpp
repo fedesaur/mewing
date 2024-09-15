@@ -3,7 +3,6 @@
 bool aggiungiCarrello(int clientSocket, int customerID, Prodotto* prodotti, int RIGHE)
 {
     char buffer[1024] = {0};
-    ProdottiManager prodottiManager;
     
     if (RIGHE <= 0) {
         std::string request = "Nessun prodotto disponibile!\n";
