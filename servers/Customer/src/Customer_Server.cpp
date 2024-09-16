@@ -38,10 +38,10 @@ Customer_Server::Customer_Server() {
 }
 
 void Customer_Server::defineRoutes() {
-    router.get("/", [this](const Rest::Request& req, Http::ResponseWriter res) {
-        this->handleOptions(req, std::move(res));
-    });
+    // Bind the member function `handleOptions` to the instance of `Customer_Server`
+    router.get("/", Pistache::Rest::Routes::bind(&Customer_Server::handleOptions, this));
 }
+
 
 
 void Customer_Server::handleOptions(const Rest::Request& request, Http::ResponseWriter response) {
