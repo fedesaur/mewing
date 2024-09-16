@@ -2,7 +2,7 @@
 #define MODIFICA_NOME_H
 
 #include <string>
-#include <utility> //Importa pair
+#include <utility> // Importa pair
 #include <iostream>
 #include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
@@ -13,7 +13,7 @@
 #include <cstring>
 #include <cassert>
 #include <pistache/http.h>
-#include <pistache/endpoint.h>
+#include <pistache/router.h>
 
 #define WRITE_STREAM "CustomerW"
 #define READ_STREAM "CustomerR"
@@ -29,6 +29,6 @@
 #define PASSWORD_CUST "customer"
 #define DB_NAME "mewingdb"
 
-bool modificaNomeHttp(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter response);
+bool modificaNomeHttp(const Pistache::Http::Request& req, Pistache::Http::ResponseWriter response);
 
-#endif
+#endif // MODIFICA_NOME_H
