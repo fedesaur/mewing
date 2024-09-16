@@ -6,11 +6,10 @@ std::pair<int, Prodotto*> recuperaProdotti(int clientSocket)
     char comando[1000];
     std::pair<int, Prodotto*> risultato;
     PGresult *res;
-    Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
     try
     {
-        sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF "
-        "FROM prodotto pr, fornitore fr WHERE pr.fornitore = fr.id");
+        sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, fr.nome AS nomeF, pr.prezzo FROM prodotto pr, fornitore fr WHERE pr.fornitore = fr.id");
         res = db.ExecSQLtuples(comando);
         int RIGHE = PQntuples(res);
         if (RIGHE > 0)
@@ -61,7 +60,7 @@ std::pair<int, Prodotto*> recuperaProdottiPerNome(int clientSocket, std::string 
     char comando[1000];
     std::pair<int, Prodotto*> risultato;
     PGresult *res;
-    Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME);  // Effettua la connessione al database
     try
     {
         std::string searched = "%" + nome + "%";
