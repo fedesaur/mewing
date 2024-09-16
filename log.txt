@@ -10,21 +10,20 @@ ExecSQLtuples(): PGRES_FATAL_ERROR
 
 
 
-
-Customer_Server.cpp: In member function ‘void Customer_Server::defineRoutes()’:
-Customer_Server.cpp:41:21: error: cannot convert ‘Customer_Server::defineRoutes()::<lambda(const Pistache::Rest::Request&, Pistache::Http::ResponseWriter)>’ to ‘Pistache::Rest::Route::Handler’ {aka ‘std::function<Pistache::Rest::Route::Result(Pistache::Rest::Request, Pistache::Http::ResponseWriter)>’}
-   41 |     router.get("/", [this](const Rest::Request& req, Http::ResponseWriter res) {
-      |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                     |
-      |                     Customer_Server::defineRoutes()::<lambda(const Pistache::Rest::Request&, Pistache::Http::ResponseWriter)>
-   42 |         this->handleOptions(req, std::move(res));
-      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   43 |     });
-      |     ~                
-In file included from Customer_Server.h:9,
-                 from Customer_Server.cpp:1:
-/usr/include/pistache/router.h:243:62: note:   initializing argument 2 of ‘void Pistache::Rest::Router::get(const std::string&, Pistache::Rest::Route::Handler)’
-  243 |         void get(const std::string& resource, Route::Handler handler);
-      |                                               ~~~~~~~~~~~~~~~^~~~~~~
-make: *** [Makefile:38: customer_server] Errore 1
+routes.cpp: In function ‘void defineRoutes(Pistache::Rest::Router&)’:
+routes.cpp:10:38: error: invalid initialization of reference of type ‘Pistache::Rest::Router&’ from expression of type ‘const char [11]’
+   10 |         Pistache::Rest::Routes::Post("/autentica", authenticateUser)
+      |                                      ^~~~~~~~~~~~
+In file included from routes.h:2,
+                 from routes.cpp:1:
+/usr/include/pistache/router.h:343:27: note: in passing argument 1 of ‘void Pistache::Rest::Routes::Post(Pistache::Rest::Router&, const std::string&, Pistache::Rest::Route::Handler)’
+  343 |         void Post(Router& router, const std::string& resource, Route::Handler handler);
+      |                   ~~~~~~~~^~~~~~
+routes.cpp:15:38: error: invalid initialization of reference of type ‘Pistache::Rest::Router&’ from expression of type ‘const char [14]’
+   15 |         Pistache::Rest::Routes::Post("/modificaNome", modificaNomeHttp)
+      |                                      ^~~~~~~~~~~~~~~
+/usr/include/pistache/router.h:343:27: note: in passing argument 1 of ‘void Pistache::Rest::Routes::Post(Pistache::Rest::Router&, const std::string&, Pistache::Rest::Route::Handler)’
+  343 |         void Post(Router& router, const std::string& resource, Route::Handler handler);
+      |                   ~~~~~~~~^~~~~~
+make: *** [Makefile:39: ../obj/routes.o] Errore 1
 
