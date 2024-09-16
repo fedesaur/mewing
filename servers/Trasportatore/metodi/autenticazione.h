@@ -28,9 +28,9 @@
 
 bool autentica(int clientSocket);
 
-bool recuperaCourier(Con2DB db, int clientSocket, const char* piva);
+bool recuperaTrasportatore(Con2DB db, int clientSocket, const char* piva);
 
-bool creaCourier(Con2DB db, int clientSocket, const char* piva);
+bool creaTrasportatore(Con2DB db, int clientSocket, const char* piva);
 
 bool inviaDati(int ID, const char* nome, const char* piva, int sede); // Per leggibilità, l'invio dati viene gestito da un'unica funzione
 
