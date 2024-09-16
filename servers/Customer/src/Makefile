@@ -1,15 +1,14 @@
 IDIR=.
 ODIR=../obj
 BDIR=../bin
-SRCDIR=src
 
 CC=g++
 # Include Pistache libraries and other includes
 CFLAGS=-std=c++20 -I. -I$(IDIR) -I/usr/include/postgresql -I/usr/local/include/pistache -lpq -lm -lhiredis
 LDFLAGS=-L/usr/local/lib -lpistache -lhiredis -lpq -lm
 
-DEPS = $(wildcard $(IDIR)/*.h) $(wildcard $(SRCDIR)/*.h)
-SRC = $(wildcard *.cpp) $(wildcard $(SRCDIR)/*.cpp)
+DEPS = $(wildcard *.h) $(wildcard ../*.h)
+SRC = $(wildcard *.cpp)
 OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(notdir $(SRC)))
 
 con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
@@ -35,16 +34,8 @@ aux: ../../../lib/funzioniAusiliarie.cpp ../../../lib/funzioniAusiliarie.h
 metodi:
 	$(MAKE) -C ../metodi # Calls the makefile for metodi
 
-# Rule to compile Customer_Server.cpp into $(ODIR)/Customer_Server.o
-$(ODIR)/Customer_Server.o: Customer_Server.cpp Customer_Server.h
-	$(CC) -c -o $@ $< $(CFLAGS)
-
-# Rule to compile routes.cpp into $(ODIR)/routes.o
-$(ODIR)/routes.o: $(SRCDIR)/routes.cpp $(SRCDIR)/routes.h
-	$(CC) -c -o $@ $< $(CFLAGS)
-
-# Rule to compile all .cpp files from src into .o files in $(ODIR)
-$(ODIR)/%.o: $(SRCDIR)/%.cpp $(DEPS)
+# Rule to compile *.cpp files from src into $(ODIR)/*.o
+$(ODIR)/%.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 # Rule to build the final executable
