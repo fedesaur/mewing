@@ -35,7 +35,8 @@ bool modificaNomeHttp(const Pistache::Http::Request& req, Pistache::Http::Respon
     cognome = PQgetvalue(resDb, 0, PQfnumber(resDb, "cognome"));
 
     // Supponiamo che il corpo della richiesta contenga l'azione e i nuovi dati
-    std::string action = req.query().get("action").get_or_else("");
+    auto actionOpt = req.query().get("action");
+    std::string action = actionOpt ? actionOpt.value() : "";
     std::string newValue = req.body();
 
     if (action == "cambia_nome") {
