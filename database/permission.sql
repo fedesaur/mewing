@@ -29,10 +29,11 @@ GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO :customer;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO :producer;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO :courier;
 
-
-GRANT SELECT ON ordine TO :courier;
+GRANT SELECT on customer to :courier;
+GRANT SELECT, UPDATE on ordine to :courier;
 GRANT INSERT, UPDATE, SELECT on ordineconse to :courier;
 GRANT INSERT, UPDATE, SELECT on indirizzo to :courier;
+GRANT INSERT, UPDATE, SELECT, DELETE on corriere to :courier;
 
 GRANT INSERT, UPDATE, SELECT, DELETE on prodotto to :producer;
 GRANT INSERT, UPDATE, SELECT, DELETE on fornitore to :producer;
