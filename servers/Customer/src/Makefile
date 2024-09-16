@@ -3,12 +3,9 @@ ODIR=../obj
 BDIR=../bin
 
 CC=g++
-# use this when connecting to Postgresql (library lpq)
-#CFLAGS=-std=c++11 -I. -I$(IDIR) -I/usr/include/postgresql -lpq -lm 
-CFLAGS=-std=c++20 -I. -I$(IDIR) -I/usr/include/postgresql -lpq -lm -lhiredis
-
-# use this when no connection to Postgresql (library lpq) is needed
-#CFLAGS=-std=c++11 -I. -I$(IDIR) -lm 
+# Includere le librerie di Pistache
+CFLAGS=-std=c++20 -I. -I$(IDIR) -I/usr/include/postgresql -lpq -lm -lhiredis -I/usr/local/include/pistache
+LDFLAGS=-L/usr/local/lib -lpistache -lhiredis -lpq -lm
 
 DEPS = $(wildcard $(IDIR)/*.h)
 SRC = $(wildcard *.cpp)
@@ -19,8 +16,7 @@ con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
 metodi_OBJ = $(wildcard ../metodi/*.o)
 aux_OBJ = $(wildcard ../../../lib/*.o)
 
-
-all:	create_dirs con2db con2redis aux metodi customer_server $(BDIR)/main
+all: create_dirs con2db con2redis aux metodi customer_server $(BDIR)/main
 
 create_dirs:
 	mkdir -p $(BDIR)
@@ -42,7 +38,7 @@ customer_server: Customer_Server.cpp Customer_Server.h
 	$(CC) -c -o $(ODIR)/Customer_Server.o $< $(CFLAGS)
 
 $(BDIR)/main: $(OBJ) $(DEPS)
-	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(aux_OBJ) $(metodi_OBJ) $(CFLAGS)
+	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(aux_OBJ) $(metodi_OBJ) $(LDFLAGS)
 
 .PHONY: clean
 
