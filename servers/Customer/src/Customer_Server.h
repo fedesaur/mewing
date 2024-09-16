@@ -19,6 +19,9 @@
 #include <thread>
 #include <mutex>
 
+#include "crow.h"
+#include "routes.h
+
 #define WRITE_STREAM "CustomerW"
 #define READ_STREAM "CustomerR"
 #define REDIS_IP "localhost"
@@ -37,6 +40,11 @@ class Customer_Server
         int NUMERO_OPZIONI = 5;
         std::string OPZIONI[5]; // Opzioni dell'utente
         std::mutex id_mutex;
+        crow::SimpleApp app;
+        std::thread crowThread; // Thread per il server Crow
+
+        // Funzione per eseguire Crow in un thread separato
+        void startCrow();
         bool handshake(int clientSocket);
         void gestisciConnessioneCliente(int clientSocket, int connectionID);
         bool gestisciAutenticazione(int clientSocket);
