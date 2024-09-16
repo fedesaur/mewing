@@ -25,7 +25,7 @@
 #define READ_STREAM "CustomerR"
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
-#define SERVER_PORT 5000
+#define SERVER_PORT 8000
 #define MAX_CONNECTIONS 100 // Numero di connessioni massime accettabili
 
 class Customer_Server
@@ -37,7 +37,9 @@ private:
     int NUMERO_OPZIONI = 5;
     std::string OPZIONI[5]; // Opzioni dell'utente
     std::mutex id_mutex;
-    
+    std::thread pistacheThread; // Thread per Pistache server
+    Pistache::Rest::Router router; // Router per Pistache
+
     // Funzioni per la gestione delle richieste HTTP con Pistache
     void defineRoutes();
     void handleOptions(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
