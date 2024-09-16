@@ -9,10 +9,10 @@ LDFLAGS=-L/usr/local/lib -lpistache -lhiredis -lpq -lm
 
 DEPS = $(wildcard $(IDIR)/*.h)
 SRC = $(wildcard *.cpp)
-OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(SRC))
+OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(notdir $(SRC)))
 
 con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
-con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
+con2redis_OBJ=$(wildcard ../../../lib/con2redis/src/*.o)
 metodi_OBJ = $(wildcard ../metodi/*.o)
 aux_OBJ = $(wildcard ../../../lib/*.o)
 
@@ -34,8 +34,11 @@ aux: ../../../lib/funzioniAusiliarie.cpp ../../../lib/funzioniAusiliarie.h
 metodi:
 	$(MAKE) -C ../metodi #Chiama il makefile dei metodi
 
-customer_server: Customer_Server.cpp Customer_Server.h
-	$(CC) -c -o $(ODIR)/Customer_Server.o $< $(CFLAGS)
+customer_server: $(ODIR)/Customer_Server.o
+	$(CC) -o $(BDIR)/customer_server $(ODIR)/Customer_Server.o $(con2db_OBJ) $(con2redis_OBJ) $(aux_OBJ) $(metodi_OBJ) $(LDFLAGS)
+
+$(ODIR)/%.o: %.cpp $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(BDIR)/main: $(OBJ) $(DEPS)
 	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(aux_OBJ) $(metodi_OBJ) $(LDFLAGS)
@@ -43,4 +46,4 @@ $(BDIR)/main: $(OBJ) $(DEPS)
 .PHONY: clean
 
 clean:
-	rm -r $(ODIR) $(BDIR) ../metodi/*.o
+	rm -rf $(ODIR) $(BDIR) ../metodi/*.o
