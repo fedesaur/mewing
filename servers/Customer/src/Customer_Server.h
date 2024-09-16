@@ -3,7 +3,6 @@
 
 #include <string>
 #include <iostream>
-#include <algorithm>
 #include <thread>
 #include <mutex>
 #include <pistache/endpoint.h>
@@ -16,9 +15,6 @@
 #include "../metodi/gestioneIndirizzi.h"
 #include "../metodi/gestisciMetodi.h"
 #include <vector>
-#include <unistd.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <cassert>
 
 #define WRITE_STREAM "CustomerW"
@@ -41,7 +37,8 @@ private:
     Pistache::Rest::Router router; // Router per Pistache
 
     // Funzioni per la gestione delle richieste HTTP con Pistache
-    
+    void defineRoutes();
+    void handleOptions(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response); // Non statico
 
     // Funzioni per la connessione a Redis e gestione dei clienti
     bool handshake(int clientSocket);
@@ -52,8 +49,6 @@ private:
 public:
     Customer_Server(); // Costruttore di Customer
     ~Customer_Server(); // Distruttore di Customer
-    void defineRoutes();
-    static void handleOptions(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
     void startPistache(); // Avvia il server Pistache
 };
 
