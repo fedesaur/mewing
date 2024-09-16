@@ -10,20 +10,11 @@ ExecSQLtuples(): PGRES_FATAL_ERROR
 
 
 
-routes.cpp: In function ‘void defineRoutes(Pistache::Rest::Router&)’:
-routes.cpp:10:38: error: invalid initialization of reference of type ‘Pistache::Rest::Router&’ from expression of type ‘const char [11]’
-   10 |         Pistache::Rest::Routes::Post("/autentica", authenticateUser)
-      |                                      ^~~~~~~~~~~~
-In file included from routes.h:2,
-                 from routes.cpp:1:
-/usr/include/pistache/router.h:343:27: note: in passing argument 1 of ‘void Pistache::Rest::Routes::Post(Pistache::Rest::Router&, const std::string&, Pistache::Rest::Route::Handler)’
-  343 |         void Post(Router& router, const std::string& resource, Route::Handler handler);
-      |                   ~~~~~~~~^~~~~~
-routes.cpp:15:38: error: invalid initialization of reference of type ‘Pistache::Rest::Router&’ from expression of type ‘const char [14]’
-   15 |         Pistache::Rest::Routes::Post("/modificaNome", modificaNomeHttp)
-      |                                      ^~~~~~~~~~~~~~~
-/usr/include/pistache/router.h:343:27: note: in passing argument 1 of ‘void Pistache::Rest::Routes::Post(Pistache::Rest::Router&, const std::string&, Pistache::Rest::Route::Handler)’
-  343 |         void Post(Router& router, const std::string& resource, Route::Handler handler);
-      |                   ~~~~~~~~^~~~~~
-make: *** [Makefile:39: ../obj/routes.o] Errore 1
+usr/bin/ld: ../obj/Customer_Server.o: in function `Customer_Server::Customer_Server()':
+Customer_Server.cpp:(.text+0x1df): undefined reference to `assertReply(redisContext*, redisReply*)'
+/usr/bin/ld: Customer_Server.cpp:(.text+0x208): undefined reference to `initStreams(redisContext*, char const*)'
+/usr/bin/ld: Customer_Server.cpp:(.text+0x289): undefined reference to `assertReply(redisContext*, redisReply*)'
+/usr/bin/ld: Customer_Server.cpp:(.text+0x2b2): undefined reference to `initStreams(redisContext*, char const*)'
+collect2: error: ld returned 1 exit status
+
 
