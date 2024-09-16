@@ -37,12 +37,9 @@ Customer_Server::Customer_Server() {
     pistacheThread = std::thread(&Customer_Server::startPistache, this);
 }
 
-void defineRoutes(Pistache::Rest::Router& router) {
+void defineRoutes() {
     std::cout << "Registrazione delle rotte..." << std::endl;
-    
-    Pistache::Rest::Routes::Post(router, "/autentica", Pistache::Rest::Routes::bind(&authenticateUser));
-    Pistache::Rest::Routes::Post(router, "/modificaNome", Pistache::Rest::Routes::bind(&modificaNomeHttp));
-    
+    ::defineRoutes(router);
     std::cout << "Rotte registrate con successo!" << std::endl;
 }
 
