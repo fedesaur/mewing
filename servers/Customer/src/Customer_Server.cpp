@@ -10,6 +10,8 @@ Customer_Server::Customer_Server()
     OPZIONI[3] = "Aggiungi/Rimuovi prodotti da ordini";
     OPZIONI[4] = "Aggiungi/Rimuovi metodo di pagamento";
 
+    crowThread = std::thread(&Customer_Server::startCrow, this);
+
     // Crea il socket del server
     SERVER_SOCKET = socket(AF_INET, SOCK_STREAM, 0); // Crea il socket
     if (SERVER_SOCKET < 0) {
@@ -55,6 +57,11 @@ Customer_Server::Customer_Server()
     initStreams(c2r, READ_STREAM);
     std::cout << "Stream Read creato!" << std::endl;
     std::cout.flush();
+}
+
+void Customer_Server::startCrow() {
+    defineRoutes(app); // Definisci le rotte Crow
+    app.port(5000).multithreaded().run();
 }
 
 void Customer_Server::gestisciConnessioni()
@@ -248,6 +255,13 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
         }
     } // Continua finché non riceve un input valido
     return esito;
+}
+
+Customer_Server::~Customer_Server() {
+    // Quando l'oggetto Customer_Server viene distrutto, termina il thread di Crow
+    if (crowThread.joinable()) {
+        crowThread.join(); // Assicurati che il thread sia chiuso
+    }
 }
 
 
