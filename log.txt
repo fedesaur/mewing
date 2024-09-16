@@ -11,36 +11,23 @@ gestisci corrieri trasportatore:
 ExecSQLtuples(): SQL command failed: SELECT id, nome, cognome FROM corriere WHERE azienda = 1
 ExecSQLtuples(): PGRES_FATAL_ERROR
 
-
 Customer_Server.cpp: In constructor ‘Customer_Server::Customer_Server()’:
-Customer_Server.cpp:15:5: error: ‘pistacheThread’ was not declared in this scope
-   15 |     pistacheThread = std::thread(&Customer_Server::startPistache, this);
+Customer_Server.cpp:37:5: error: ‘pistacheThread’ was not declared in this scope
+   37 |     pistacheThread = std::thread(&Customer_Server::startPistache, this);
       |     ^~~~~~~~~~~~~~
 Customer_Server.cpp: In member function ‘void Customer_Server::defineRoutes()’:
 Customer_Server.cpp:41:5: error: ‘router’ was not declared in this scope
-   41 |     router.get("/", handleOptions);
+   41 |     router.get("/", [this](const Rest::Request& req, Http::ResponseWriter res) {
       |     ^~~~~~
-Customer_Server.cpp: In static member function ‘static void Customer_Server::handleOptions(const Pistache::Rest::Request&, Pistache::Http::ResponseWriter)’:
-Customer_Server.cpp:46:25: error: invalid use of member ‘Customer_Server::NUMERO_OPZIONI’ in static member function
-   46 |     for (int i = 0; i < NUMERO_OPZIONI; i++) {
-      |                         ^~~~~~~~~~~~~~
-In file included from Customer_Server.cpp:1:
-Customer_Server.h:41:9: note: declared here
-   41 |     int NUMERO_OPZIONI = 5;
-      |         ^~~~~~~~~~~~~~
-Customer_Server.cpp:47:59: error: invalid use of member ‘Customer_Server::OPZIONI’ in static member function
-   47 |         responseMessage += std::to_string(i + 1) + ") " + OPZIONI[i] + "\n";
-      |                                                           ^~~~~~~
-Customer_Server.h:42:17: note: declared here
-   42 |     std::string OPZIONI[5]; // Opzioni dell'utente
-      |                 ^~~~~~~
 Customer_Server.cpp: In member function ‘void Customer_Server::startPistache()’:
-Customer_Server.cpp:57:23: error: ‘router’ was not declared in this scope
-   57 |     server.setHandler(router.handler());
+Customer_Server.cpp:59:23: error: ‘router’ was not declared in this scope
+   59 |     server.setHandler(router.handler());
       |                       ^~~~~~
 Customer_Server.cpp: In destructor ‘Customer_Server::~Customer_Server()’:
-Customer_Server.cpp:62:9: error: ‘pistacheThread’ was not declared in this scope
-   62 |     if (pistacheThread.joinable()) {
+Customer_Server.cpp:64:9: error: ‘pistacheThread’ was not declared in this scope
+   64 |     if (pistacheThread.joinable()) {
       |         ^~~~~~~~~~~~~~
+make: *** [Makefile:38: customer_server] Errore 1
+
 
 
