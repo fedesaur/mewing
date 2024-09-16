@@ -1,6 +1,6 @@
 #include "modificaNome.h"
 
-bool modificaNomeHttp(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter response) {
+bool modificaNomeHttp(const Pistache::Http::Request& req, Pistache::Http::ResponseWriter response) {
     int USER_ID;
     PGresult *resDb;
     redisContext *c2r;
