@@ -5,16 +5,8 @@
 #include <iostream>
 
 void defineRoutes(Pistache::Rest::Router& router) {
-    // Rotta per l'autenticazione
-    router.addRoute(
-        Pistache::Rest::Routes::Post("/autentica", authenticateUser)
-    );
-
-    // Rotta per la modifica del nome
-    router.addRoute(
-        Pistache::Rest::Routes::Post("/modificaNome", modificaNomeHttp)
-    );
-}
+   Pistache::Rest::Routes::Post(router, "/autentica", Pistache::Rest::Routes::bind(&authenticateUser));
+   Pistache::Rest::Routes::Post(router, "/modificaNome", Pistache::Rest::Routes::bind(&modificaNomeHttp));
 
 void authenticateUser(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
     // Implementa l'autenticazione utente qui
