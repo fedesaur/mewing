@@ -28,7 +28,6 @@
 #define PASSWORD_CUST "customer"
 #define DB_NAME "mewingdb"
 
-bool modificaNome(int clientSocket);
-std::pair<std::string,bool> cambiaNome(Con2DB db, PGresult *res, int clientSocket, int USER_ID);
-std::pair<std::string,bool> cambiaCognome(Con2DB db, PGresult *res, int clientSocket, int USER_ID);
+bool modificaNomeHttp(const crow::request& req, crow::response& res)
+
 #endif
