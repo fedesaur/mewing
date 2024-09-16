@@ -34,8 +34,7 @@ private:
     int NUMERO_OPZIONI = 5;
     std::string OPZIONI[5]; // Opzioni dell'utente
     std::mutex id_mutex;
-    std::thread pistacheThread; // Thread per Pistache server
-    Pistache::Rest::Router router; // Router per Pistache
+    
 
     // Funzioni per la gestione delle richieste HTTP con Pistache
     void defineRoutes();
@@ -50,6 +49,8 @@ private:
 public:
     Customer_Server(); // Costruttore di Customer
     ~Customer_Server(); // Distruttore di Customer
+    std::thread pistacheThread; // Thread per Pistache server
+    Pistache::Rest::Router router; // Router per Pistache
     void startPistache(); // Avvia il server Pistache
 };
 

@@ -10,7 +10,7 @@ Customer_Server::Customer_Server() {
     OPZIONI[2] = "Gestisci gli indirizzi registrati";
     OPZIONI[3] = "Aggiungi/Rimuovi prodotti da ordini";
     OPZIONI[4] = "Aggiungi/Rimuovi metodo di pagamento";
-
+    
     // Effettua la connessione a Redis
     c2r = redisConnect(REDIS_IP, REDIS_PORT);
     if (c2r == nullptr || c2r->err) {
@@ -37,7 +37,7 @@ Customer_Server::Customer_Server() {
     pistacheThread = std::thread(&Customer_Server::startPistache, this);
 }
 
-void defineRoutes() {
+void Customer_Server::defineRoutes() {
     std::cout << "Registrazione delle rotte..." << std::endl;
     ::defineRoutes(router);
     std::cout << "Rotte registrate con successo!" << std::endl;
@@ -55,7 +55,7 @@ void Customer_Server::handleOptions(const Rest::Request& request, Http::Response
 }
 
 void Customer_Server::startPistache() {
-    Http::Endpoint server(Address("localhost", SERVER_PORT));
+    Http::Endpoint server(Address("localhost", 5001));
     server.init(Http::Endpoint::options().threads(1).flags(Tcp::Options::ReuseAddr));
     defineRoutes();
     server.setHandler(router.handler());
