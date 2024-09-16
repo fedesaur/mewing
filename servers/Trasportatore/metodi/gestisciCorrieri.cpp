@@ -6,8 +6,8 @@ bool gestisciCorrieri(int clientSocket)
     int RIGHE;
     char buffer[1024] = {0};
     char comando[1000];
-    int OPERAZIONI_DISPONIBILI = 4;
-    std::string OPERAZIONI[] = {"1) Modifica un corriere\n", "2) Aggiungi un corriere\n", "3) Rimuovi un corriere\n", "Altrimenti digita Q per terminare\n"};
+    int OPERAZIONI_DISPONIBILI = 3;
+    std::string OPERAZIONI[] = {"1) Aggiungi un corriere\n", "2) Rimuovi un corriere\n", "Altrimenti digita Q per terminare\n"};
     Corriere* CORRIERI;
     PGresult *res;
     redisContext *c2r; // c2r contiene le info sul contesto
@@ -50,22 +50,14 @@ bool gestisciCorrieri(int clientSocket)
 
                 if (messaggio == "q" || messaggio == "Q") 
                 {
-                    delete[] risultato.second;
                     attendiInput = false;
                     terminaConnessione = true;
-                } else if (isNumber(messaggio)){ //isNumber è una funzione ausiliaria in lib
+                } else if (isNumber(messaggio)) { //isNumber è una funzione ausiliaria in lib
                     int opzione = std::stoi(messaggio) - 1;
                     bool esito = false;
                     switch (opzione)
                     {
                         case 0:
-                            {
-                            std::string implement = "Funzione ancora da implementare!\n";
-                            send(clientSocket, implement.c_str(), implement.length(), 0);
-                            attendiInput = false;
-                            break;
-                            }
-                        case 1:
                             esito = registraCorriere(clientSocket);
                             if (esito) 
                             {
@@ -76,31 +68,11 @@ bool gestisciCorrieri(int clientSocket)
                             }
                             attendiInput = false;
                             break;
-                        case 2:
+                        case 1:
                         {
-                            int indice = -1;
-                            while (indice == -1 && indice < RIGHE)
-                            {
-                                std::string request = "Quale corriere vuoi rimuovere?\n";
-	                            send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-                                int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
-                                if (bytesRead > 0)
-                                {
-                                    std::string messaggio(buffer, bytesRead);
-                                    messaggio.erase(std::remove(messaggio.begin(), messaggio.end(), '\n'), messaggio.end()); // Rimuove eventuali newline
-                                    if (isNumber(messaggio)) indice = std::stoi(messaggio)-1;
-                                    else
-                                    {
-                                        std::string errore = "Input non valido, riprova.\n";
-                                        send(clientSocket, errore.c_str(), errore.length(), 0);
-                                    }
-                                }
-                                else
-                                {
-                                    std::string errore = "Input non valido, riprova.\n";
-                                    send(clientSocket, errore.c_str(), errore.length(), 0);
-                                }
-                            }
+                            std::string request = "Quale corriere vuoi rimuovere?\n";
+	                        send(clientSocket, request.c_str(), request.length(), 0); 
+                            int indice = riceviIndice(clientSocket, RIGHE);
                             int idC = CORRIERI[indice].ID;
                             esito = rimuoviCorriere(clientSocket, idC);
                             if (esito) 

@@ -41,8 +41,6 @@ std::pair<int, Corriere*> recuperaCorrieri(int clientSocket)
             risultato.first = RIGHE;
             risultato.second = corrieriRegistrati;
         } else {
-            std::string vuoto = "Non ci sono corrieri registrati!\n";
-		    send(clientSocket, vuoto.c_str(), vuoto.length(), 0); // Invia il messaggio pre-impostato all'utente
             risultato.first = 0;
             risultato.second = nullptr;
         }

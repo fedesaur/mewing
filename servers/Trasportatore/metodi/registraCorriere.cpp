@@ -50,7 +50,6 @@ bool registraCorriere(int clientSocket)
                         nome = temp;
                         datiRicevuti++;
                     }
-					nome.pop_back();
 					break;
 				case 1:
                     temp = buffer;
