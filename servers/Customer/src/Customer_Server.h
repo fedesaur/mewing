@@ -41,8 +41,7 @@ private:
     Pistache::Rest::Router router; // Router per Pistache
 
     // Funzioni per la gestione delle richieste HTTP con Pistache
-    void defineRoutes();
-    void handleOptions(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+    
 
     // Funzioni per la connessione a Redis e gestione dei clienti
     bool handshake(int clientSocket);
@@ -53,6 +52,8 @@ private:
 public:
     Customer_Server(); // Costruttore di Customer
     ~Customer_Server(); // Distruttore di Customer
+    void defineRoutes();
+    static void handleOptions(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
     void startPistache(); // Avvia il server Pistache
 };
 
