@@ -4,6 +4,10 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <thread>
+#include <mutex>
+#include <pistache/endpoint.h>
+#include <pistache/router.h>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../metodi/autenticazione.h"
@@ -11,14 +15,7 @@
 #include "../metodi/modificaNome.h"
 #include "../metodi/gestioneIndirizzi.h"
 #include "../metodi/gestisciMetodi.h"
-#include <thread>
-#include <mutex>
-#include <pistache/endpoint.h>
-#include <pistache/router.h>
-#include <iostream>
-#include <thread>
 #include <vector>
-#include <string>
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -34,7 +31,6 @@
 class Customer_Server
 {
 private:
-    // I parametri del Customer teniamoli privati per sicurezza
     redisContext *c2r; // c2r contiene le info sul contesto
     redisReply *reply; // reply contiene le risposte da Redis
     int ID_CONNESSIONE = 0;
@@ -44,7 +40,7 @@ private:
     
     // Funzioni per la gestione delle richieste HTTP con Pistache
     void defineRoutes();
-    static void handleOptions(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+    void handleOptions(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
     // Funzioni per la connessione a Redis e gestione dei clienti
     bool handshake(int clientSocket);
