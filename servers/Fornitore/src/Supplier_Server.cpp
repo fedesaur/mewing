@@ -177,7 +177,7 @@ bool Supplier_Server::gestisciAutenticazione(int clientSocket)
 bool Supplier_Server::gestisciOperazioni(int clientSocket, int PRODUCER_ID)
 {
     char buffer[1024] = {0};
-    std::string request = "Ecco le operazioni disponibili:\n";
+    std::string request = "\nEcco le operazioni disponibili:\n";
     send(clientSocket, request.c_str(), request.length(), 0);
 
     // Legge le opzioni all'utente
