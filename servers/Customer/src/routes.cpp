@@ -1,8 +1,4 @@
-#include "crow.h"
-#include "customer.h"  // Include la logica del cliente
-#include "cart.h"      // Include la logica del carrello
-#include "payment.h"   // Include la logica dei pagamenti
-
+#include "routes.h"
 void defineRoutes(crow::SimpleApp& app) {
     // Rotta per l'autenticazione
     CROW_ROUTE(app, "/autentica").methods("POST"_method)
