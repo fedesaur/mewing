@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <cassert>
+#include "crow.h"
 
 #define WRITE_STREAM "CustomerW"
 #define READ_STREAM "CustomerR"
