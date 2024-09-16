@@ -5,7 +5,7 @@ Customer_Server::Customer_Server()
 {
     // Definisce le opzioni del Customer nel database
     OPZIONI[0] = "Modifica nome e cognome";
-    OPZIONI[1] = "Aggiungi/Rimuovi prodotti dal carrello";
+    OPZIONI[1] = "Gestisci prodotti nel carrello";
     OPZIONI[2] = "Gestisci gli indirizzi registrati";
     OPZIONI[3] = "Aggiungi/Rimuovi prodotti da ordini";
     OPZIONI[4] = "Aggiungi/Rimuovi metodo di pagamento";
@@ -192,7 +192,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
     
     bool attendiInput = true; // Continua la richiesta finché non riceve un input adatto
     bool esito = true;
-    do
+    while (attendiInput)
     {
         int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
         if (bytesRead > 0) {
@@ -221,8 +221,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                         break;
                     case 1:
                         attendiInput = false; // Input valido ricevuto
-                        recuperaProdotti(clientSocket);
-                        esito=true;
+                        esito = gestisciCarrello(clientSocket);
                         break;
                     case 2:
                         attendiInput = false; // Input valido ricevuto, esce dal loop
@@ -247,8 +246,7 @@ bool Customer_Server::gestisciOperazioni(int clientSocket)
                 send(clientSocket, errore.c_str(), errore.length(), 0);
             }
         }
-    } while (attendiInput); // Continua finché non riceve un input valido
-    
+    } // Continua finché non riceve un input valido
     return esito;
 }
 

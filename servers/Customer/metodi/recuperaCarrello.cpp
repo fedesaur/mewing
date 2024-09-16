@@ -25,22 +25,17 @@ std::pair<int, Prodotto*> recuperaCarrello(int clientSocket)
     sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF, cr.totale, pc.quantita "
     "FROM prodotto pr, carrello cr, prodincart pc, fornitore fr WHERE pc.prodotto = pr.id "
     "AND pc.carrello = cr.customer AND pr.fornitore = fr.id AND cr.customer = %d", USER_ID);
-    res = db.ExecSQLtuples(comando);
-    if (PQresultStatus(res) != PGRES_TUPLES_OK) // Controlla che la query sia andata a buon fine
-    {
-        risultato.first = -1;
-        risultato.second = nullptr;
-        return risultato; 
-    }
-    rows = PQntuples(res);
-    if (rows > 0)
-    {
 
-        // Mostriamo all'utente i prodotti nel suo carrello
-        Prodotto* carrello = new Prodotto[rows];
-        // Recupera i prodotti e li memorizza in carrello
-        for (int i = 0; i < rows; i++)
+    try
+    {
+        res = db.ExecSQLtuples(comando);
+        rows = PQntuples(res);
+        if (rows > 0)
         {
+            Prodotto* carrello = new Prodotto[rows];
+            // Recupera i prodotti e li memorizza in carrello
+            for (int i = 0; i < rows; i++)
+            {
             // Recupera gli attributi dei prodotti dalla query sopra svolta...
             int ID = atoi(PQgetvalue(res, i, PQfnumber(res, "id")));
             const char* descrizione = PQgetvalue(res, i, PQfnumber(res, "descrizione"));
@@ -56,13 +51,21 @@ std::pair<int, Prodotto*> recuperaCarrello(int clientSocket)
             carrello[i].nome = nome;
             carrello[i].fornitore = fornitore;
             carrello[i].quantita = quantita;
-        }
-        risultato.first = rows; // Ritorna il numero di righe dei prodottiDisponibili
-        risultato.second = carrello; // Ritorna l'array di prodotti disponibili
-    } else {     // Se non ci sono oggetti
+            }
+            risultato.first = rows; // Ritorna il numero di righe dei prodottiDisponibili
+            risultato.second = carrello; // Ritorna l'array di prodotti disponibili
+        } else {     // Se non ci sono oggetti
         risultato.first = 0;
         risultato.second = nullptr;
+        }
     }
+    catch(...)
+    {
+        std::string errore = "C'è stato un errore nel database!\n"; // Seleziona la frase del turno
+	    send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+        risultato.first = -1;
+        risultato.second = nullptr;
+    }    
     PQclear(res);
     return risultato;
 }
