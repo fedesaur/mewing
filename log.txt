@@ -11,3 +11,33 @@ gestisci corrieri trasportatore:
 ExecSQLtuples(): SQL command failed: SELECT id, nome, cognome FROM corriere WHERE azienda = 1
 ExecSQLtuples(): PGRES_FATAL_ERROR
 
+
+odificaNome.h:32:39: error: ‘Rest’ in namespace ‘Pistache’ does not name a type
+   32 | bool modificaNomeHttp(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter response);
+      |                                       ^~~~
+modificaNome.h:32:52: error: expected unqualified-id before ‘&’ token
+   32 | bool modificaNomeHttp(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter response);
+      |                                                    ^
+modificaNome.h:32:52: error: expected ‘)’ before ‘&’ token
+   32 | bool modificaNomeHttp(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter response);
+      |                      ~                             ^
+      |                                                    )
+modificaNome.h:32:54: error: expected initializer before ‘req’
+   32 | bool modificaNomeHttp(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter response);
+      |                                                      ^~~
+modificaNome.cpp:3:39: error: ‘Rest’ in namespace ‘Pistache’ does not name a type
+    3 | bool modificaNomeHttp(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter response) {
+      |                                       ^~~~
+modificaNome.cpp:3:52: error: expected unqualified-id before ‘&’ token
+    3 | bool modificaNomeHttp(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter response) {
+      |                                                    ^
+modificaNome.cpp:3:52: error: expected ‘)’ before ‘&’ token
+    3 | bool modificaNomeHttp(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter response) {
+      |                      ~                             ^
+      |                                                    )
+modificaNome.cpp:3:54: error: expected initializer before ‘req’
+    3 | bool modificaNomeHttp(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter response) {
+      |                                                      ^~~
+make[1]: *** [Makefile:24: modificaNome] Errore 1
+
+
