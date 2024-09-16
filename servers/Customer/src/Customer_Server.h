@@ -15,6 +15,14 @@
 #include <mutex>
 #include <pistache/endpoint.h>
 #include <pistache/router.h>
+#include <iostream>
+#include <thread>
+#include <vector>
+#include <string>
+#include <unistd.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <cassert>
 
 #define WRITE_STREAM "CustomerW"
 #define READ_STREAM "CustomerR"
