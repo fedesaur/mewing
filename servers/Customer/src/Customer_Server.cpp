@@ -11,9 +11,6 @@ Customer_Server::Customer_Server() {
     OPZIONI[3] = "Aggiungi/Rimuovi prodotti da ordini";
     OPZIONI[4] = "Aggiungi/Rimuovi metodo di pagamento";
 
-    // Inizializza Pistache
-    pistacheThread = std::thread(&Customer_Server::startPistache, this);
-
     // Effettua la connessione a Redis
     c2r = redisConnect(REDIS_IP, REDIS_PORT);
     if (c2r == nullptr || c2r->err) {
@@ -35,10 +32,15 @@ Customer_Server::Customer_Server() {
     initStreams(c2r, READ_STREAM);
     std::cout << "Stream Read creato!" << std::endl;
     std::cout.flush();
+
+    // Inizializza Pistache in un thread separato
+    pistacheThread = std::thread(&Customer_Server::startPistache, this);
 }
 
 void Customer_Server::defineRoutes() {
-    router.get("/", handleOptions);
+    router.get("/", [this](const Rest::Request& req, Http::ResponseWriter res) {
+        handleOptions(req, std::move(res));
+    });
 }
 
 void Customer_Server::handleOptions(const Rest::Request& request, Http::ResponseWriter response) {
