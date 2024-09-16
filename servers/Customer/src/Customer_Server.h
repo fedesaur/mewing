@@ -14,6 +14,7 @@
 #include "../metodi/modificaNome.h"
 #include "../metodi/gestioneIndirizzi.h"
 #include "../metodi/gestisciMetodi.h"
+#include "routes.h"
 #include <vector>
 #include <cassert>
 

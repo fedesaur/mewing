@@ -10,11 +10,40 @@ ExecSQLtuples(): PGRES_FATAL_ERROR
 
 
 
-usr/bin/ld: ../obj/Customer_Server.o: in function `Customer_Server::Customer_Server()':
-Customer_Server.cpp:(.text+0x1df): undefined reference to `assertReply(redisContext*, redisReply*)'
-/usr/bin/ld: Customer_Server.cpp:(.text+0x208): undefined reference to `initStreams(redisContext*, char const*)'
-/usr/bin/ld: Customer_Server.cpp:(.text+0x289): undefined reference to `assertReply(redisContext*, redisReply*)'
-/usr/bin/ld: Customer_Server.cpp:(.text+0x2b2): undefined reference to `initStreams(redisContext*, char const*)'
-collect2: error: ld returned 1 exit status
+Customer_Server.cpp: In function ‘void defineRoutes(Pistache::Rest::Router&)’:
+Customer_Server.cpp:44:87: error: no matching function for call to ‘bind(<unresolved overloaded function type>)’
+   44 | ::Post(router, "/modificaNome", Pistache::Rest::Routes::bind(&modificaNomeHttp));
+      |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~
+
+In file included from Customer_Server.h:9,
+                 from Customer_Server.cpp:1:
+/usr/include/pistache/router.h:408:24: note: candidate: ‘template<class Result, class Cls, class ... Args, class Obj> Pistache::Rest::Route::Handler Pistache::Rest::Routes::bind(Result (Cls::*)(Args ...), Obj)’
+  408 |         Route::Handler bind(Result (Cls::*func)(Args...), Obj obj)
+      |                        ^~~~
+/usr/include/pistache/router.h:408:24: note:   template argument deduction/substitution failed:
+Customer_Server.cpp:44:87: note:   mismatched types ‘Result (Cls::*)(Args ...)’ and ‘void (*)(const Pistache::Rest::Request&, Pistache::Http::ResponseWriter)’
+   44 | ::Post(router, "/modificaNome", Pistache::Rest::Routes::bind(&modificaNomeHttp));
+      |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~
+
+Customer_Server.cpp:44:87: note:   mismatched types ‘Result (Cls::*)(Args ...)’ and ‘bool (*)(const Pistache::Http::Request&, Pistache::Http::ResponseWriter)’
+Customer_Server.cpp:44:87: note:   candidate expects 2 arguments, 1 provided
+/usr/include/pistache/router.h:420:24: note: candidate: ‘template<class Result, class Cls, class ... Args, class Obj> Pistache::Rest::Route::Handler Pistache::Rest::Routes::bind(Result (Cls::*)(Args ...), std::shared_ptr<Obj>)’
+  420 |         Route::Handler bind(Result (Cls::*func)(Args...), std::shared_ptr<Obj> objPtr)
+      |                        ^~~~
+/usr/include/pistache/router.h:420:24: note:   template argument deduction/substitution failed:
+Customer_Server.cpp:44:87: note:   mismatched types ‘Result (Cls::*)(Args ...)’ and ‘void (*)(const Pistache::Rest::Request&, Pistache::Http::ResponseWriter)’
+   44 | ::Post(router, "/modificaNome", Pistache::Rest::Routes::bind(&modificaNomeHttp));
+      |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~
+
+Customer_Server.cpp:44:87: note:   mismatched types ‘Result (Cls::*)(Args ...)’ and ‘bool (*)(const Pistache::Http::Request&, Pistache::Http::ResponseWriter)’
+Customer_Server.cpp:44:87: note:   candidate expects 2 arguments, 1 provided
+/usr/include/pistache/router.h:432:24: note: candidate: ‘template<class Result, class ... Args> Pistache::Rest::Route::Handler Pistache::Rest::Routes::bind(Result (*)(Args ...))’
+  432 |         Route::Handler bind(Result (*func)(Args...))
+      |                        ^~~~
+/usr/include/pistache/router.h:432:24: note:   template argument deduction/substitution failed:
+Customer_Server.cpp:44:87: note:   couldn’t deduce template parameter ‘Result’
+   44 | ::Post(router, "/modificaNome", Pistache::Rest::Routes::bind(&modificaNomeHttp));
+      |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~
+
 
 
