@@ -12,7 +12,8 @@
 #include <unistd.h>
 #include <cstring>
 #include <cassert>
-#include "crow.h"
+#include <pistache/http.h>
+#include <pistache/endpoint.h>
 
 #define WRITE_STREAM "CustomerW"
 #define READ_STREAM "CustomerR"
@@ -28,6 +29,6 @@
 #define PASSWORD_CUST "customer"
 #define DB_NAME "mewingdb"
 
-bool modificaNomeHttp(const crow::request& req, crow::response& res)
+bool modificaNomeHttp(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter response);
 
 #endif
