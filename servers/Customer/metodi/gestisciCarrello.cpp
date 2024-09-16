@@ -68,13 +68,13 @@ bool gestisciCarrello(int clientSocket)
                     {
                         case 0:
                             // Recupera i prodotti disponibili e permette all'utente di aggiungerli al proprio carrello
-                            esito = aggiungiCarrello(clientSocket, CUSTOMER_ID, RIGHE_PRODOTTI, PRODOTTI);
+                            esito = aggiungiCarrello(clientSocket, CUSTOMER_ID, PRODOTTI, RIGHE_PRODOTTI);
                             attendiInput = false;
                             break;
                         case 1:
                             {// Recupera i prodotti disponibili con nome simile a quello richiesto
                             std::string request = "Quale è il nome del prodotto che stai cercando?\n";
-	                    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+	                        send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
                             attendiInput = false;
                             bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
                             if (bytesRead > 0) 
@@ -82,7 +82,7 @@ bool gestisciCarrello(int clientSocket)
                                 std::string nome(buffer, bytesRead);
                                 nome.erase(std::remove(nome.begin(), nome.end(), '\n'), nome.end()); // Rimuove eventuali newline
                                 temp = recuperaProdottiPerNome(clientSocket, nome);
-                                esito = aggiungiCarrello(clientSocket, CUSTOMER_ID, temp.first, temp.second);
+                                esito = aggiungiCarrello(clientSocket, CUSTOMER_ID, temp.second, temp.first);
                             } else {
                                 std::string errore = "Input non valido\n";
                                 send(clientSocket, errore.c_str(), errore.length(), 0);
@@ -91,45 +91,45 @@ bool gestisciCarrello(int clientSocket)
                             }
                         case 2:
                             {
-                            if (RIGHE_CARRELLO > 0)
-                            {
-                                std::string request = "Quale prodotto vuoi rimuovere? (Digita il numero)\n";
-	                            send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-                                int indice = riceviIndice(clientSocket, RIGHE_CARRELLO);
-                                sprintf(comando, "DELETE FROM prodincart WHERE prodotto = %d AND carrello = %d", CARRELLO[indice].ID, CUSTOMER_ID);
-                                try
+                                if (RIGHE_CARRELLO > 0)
                                 {
-                                    res = db.ExecSQLcmd(comando);
-                                    PQclear(res);
-                                    std::string successo = "Prodotto rimosso correttamente dal carrello!\n";
-	                                send(clientSocket, successo.c_str(), successo.length(), 0); // Invia il messaggio pre-impostato all'utente
-                                    esito = true;
+                                    std::string request = "Quale prodotto vuoi rimuovere? (Digita il numero)\n";
+	                                send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+                                    int indice = riceviIndice(clientSocket, RIGHE_CARRELLO);
+                                    sprintf(comando, "DELETE FROM prodincart WHERE prodotto = %d AND carrello = %d", CARRELLO[indice].ID, CUSTOMER_ID);
+                                    try
+                                    {
+                                        res = db.ExecSQLcmd(comando);
+                                        PQclear(res);
+                                        std::string successo = "Prodotto rimosso correttamente dal carrello!\n";
+	                                    send(clientSocket, successo.c_str(), successo.length(), 0); // Invia il messaggio pre-impostato all'utente
+                                        esito = true;
+                                    }
+                                    catch(...)
+                                    {
+                                        std::string errore = "C'è stato un errore nel database!\n";
+	                                    send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+                                        // Se ci sono errori nella query, vengono catturati da catch
+                                    }
+                                } else {
+                                    std::string request = "\nNessun prodotto nel carrello da rimuovere!\n";
+                                    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
                                 }
-                                catch(...)
-                                {
-                                    std::string errore = "C'è stato un errore nel database!\n";
-	                                send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
-                                    // Se ci sono errori nella query, vengono catturati da catch
-                                }
-                            } else {
-                                std::string request = "\nNessun prodotto nel carrello da rimuovere!\n";
-                                send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-                            }
-                            attendiInput = false;
-                            break;
+                                attendiInput = false;
+                                break;
                             }
                         case 3:
-                        {
-                            esito = effettuaOrdine(clientSocket, CUSTOMER_ID, RIGHE_CARRELLO, CARRELLO);
-                            attendiInput = false;
-                            break;
+                            {
+                                esito = effettuaOrdine(clientSocket, CUSTOMER_ID, RIGHE_CARRELLO, CARRELLO);
+                                attendiInput = false;
+                                break;
                             }
                         default:
-                        {
-                            std::string errore = "Opzione non valida, riprova.\n";
-                            send(clientSocket, errore.c_str(), errore.length(), 0);
-                            break;          
-                            
+                            {
+                                std::string errore = "Opzione non valida, riprova.\n";
+                                send(clientSocket, errore.c_str(), errore.length(), 0);
+                                break;          
+                            }
                     }
                 } else {
                     std::string errore = "Input non valido, riprova.\n";

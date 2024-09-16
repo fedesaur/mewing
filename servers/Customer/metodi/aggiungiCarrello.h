@@ -34,6 +34,6 @@
 
 bool aggiungiCarrelloDB(int idProdotto, int userID, int quantita);
 int richiediQuantita(int clientSocket);
-bool aggiungiCarrello(int clientSocket, int customerID, int RIGHE, Prodotto* PRODOTTI);
+bool aggiungiCarrello(int clientSocket, int customerID, Prodotto* prodotti, int RIGHE);
 
 #endif
