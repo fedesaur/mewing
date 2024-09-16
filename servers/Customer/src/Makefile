@@ -1,14 +1,15 @@
 IDIR=.
 ODIR=../obj
 BDIR=../bin
+SRCDIR=src
 
 CC=g++
-# Includere le librerie di Pistache
-CFLAGS=-std=c++20 -I. -I$(IDIR) -I/usr/include/postgresql -lpq -lm -lhiredis -I/usr/local/include/pistache
+# Include Pistache libraries and other includes
+CFLAGS=-std=c++20 -I. -I$(IDIR) -I/usr/include/postgresql -I/usr/local/include/pistache -lpq -lm -lhiredis
 LDFLAGS=-L/usr/local/lib -lpistache -lhiredis -lpq -lm
 
-DEPS = $(wildcard $(IDIR)/*.h)
-SRC = $(wildcard *.cpp)
+DEPS = $(wildcard $(IDIR)/*.h) $(wildcard $(SRCDIR)/*.h)
+SRC = $(wildcard *.cpp) $(wildcard $(SRCDIR)/*.cpp)
 OBJ = $(patsubst %.cpp, $(ODIR)/%.o, $(notdir $(SRC)))
 
 con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
@@ -16,7 +17,7 @@ con2redis_OBJ=$(wildcard ../../../lib/con2redis/src/*.o)
 metodi_OBJ = $(wildcard ../metodi/*.o)
 aux_OBJ = $(wildcard ../../../lib/*.o)
 
-all: create_dirs con2db con2redis aux metodi customer_server $(BDIR)/main
+all: create_dirs con2db con2redis aux metodi $(BDIR)/customer_server
 
 create_dirs:
 	mkdir -p $(BDIR)
@@ -32,18 +33,25 @@ aux: ../../../lib/funzioniAusiliarie.cpp ../../../lib/funzioniAusiliarie.h
 	$(CC) -c -o ../../../lib/funzioniAusiliarie.o $< $(CFLAGS)
 
 metodi:
-	$(MAKE) -C ../metodi #Chiama il makefile dei metodi
+	$(MAKE) -C ../metodi # Calls the makefile for metodi
 
-customer_server: $(ODIR)/Customer_Server.o
-	$(CC) -o $(BDIR)/customer_server $(ODIR)/Customer_Server.o $(con2db_OBJ) $(con2redis_OBJ) $(aux_OBJ) $(metodi_OBJ) $(LDFLAGS)
-
-$(ODIR)/%.o: %.cpp $(DEPS)
+# Rule to compile Customer_Server.cpp into $(ODIR)/Customer_Server.o
+$(ODIR)/Customer_Server.o: Customer_Server.cpp Customer_Server.h
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-$(BDIR)/main: $(OBJ) $(DEPS)
+# Rule to compile routes.cpp into $(ODIR)/routes.o
+$(ODIR)/routes.o: $(SRCDIR)/routes.cpp $(SRCDIR)/routes.h
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+# Rule to compile all .cpp files from src into .o files in $(ODIR)
+$(ODIR)/%.o: $(SRCDIR)/%.cpp $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+# Rule to build the final executable
+$(BDIR)/customer_server: $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(aux_OBJ) $(metodi_OBJ)
 	$(CC) -o $@ $(OBJ) $(con2db_OBJ) $(con2redis_OBJ) $(aux_OBJ) $(metodi_OBJ) $(LDFLAGS)
 
 .PHONY: clean
 
 clean:
-	rm -rf $(ODIR) $(BDIR) ../metodi/*.o
+	rm -rf $(ODIR) $(BDIR) ../../../lib/*.o ../metodi/*.o
