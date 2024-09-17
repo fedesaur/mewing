@@ -57,8 +57,51 @@ void authenticateUser(const Pistache::Rest::Request& request, Pistache::Http::Re
 
 
 
-void modificaNomeHttp(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
-    // Implementa la logica di modifica del nome qui
-    response.send(Pistache::Http::Code::Ok, "Name updated");
-}
+// Funzione unica per gestire la modifica del nome
+void modificaNomeHttp(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter response) {
+    std::string email, nome;
+    redisContext *c2r;
+    redisReply *reply;
 
+    // Leggi i parametri dalla query string
+    auto emailOpt = req.query().get("email");
+    auto nomeOpt = req.query().get("nome");
+
+    // Verifica se i parametri sono stati forniti
+    if (!emailOpt || !nomeOpt) {
+        response.send(Pistache::Http::Code::Bad_Request, "Parametri email o nome mancanti");
+        return;
+    }
+
+    email = emailOpt.value();
+    nome = nomeOpt.value();
+
+    // Valida il nome
+    if (nome.length() > 20 || nome.length() == 0) {
+        response.send(Pistache::Http::Code::Bad_Request, "Il nome deve avere massimo 20 caratteri e minimo 1");
+        return;
+    }
+
+    // Connessione a Redis
+    c2r = redisConnect(REDIS_IP, REDIS_PORT);
+    if (c2r == nullptr || c2r->err) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nella connessione a Redis");
+        return;
+    }
+
+    // Scrivi nello stream Redis
+    reply = (redisReply*)redisCommand(c2r, "XADD %s * email %s nome %s", 
+                                      WRITE_STREAM, email.c_str(), nome.c_str());
+    if (reply == nullptr) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel comando Redis");
+        redisFree(c2r);
+        return;
+    }
+
+    // Liberiamo la memoria del comando Redis
+    freeReplyObject(reply);
+    redisFree(c2r);
+
+    // Rispondi al client
+    response.send(Pistache::Http::Code::Ok, "Dati inviati per la modifica");
+}
