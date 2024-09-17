@@ -22,11 +22,11 @@ std::pair<int, Ordine*> ricercaOrdini(int clientSocket)
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     COURIER_ID = atoi(id.c_str()); // ID Customer
     sprintf(comando, "SELECT ord.id, cst.nome, ord.datarich, ord.stato, ord.pagamento, ord.indirizzo, ord.totale "
-    "FROM ordine ord, customers cst WHERE cst.id = ord.customer AND ord.id NOT IN (SELECT id FROM ordineconse) AND ord.id NOT IN (SELECT ordine FROM consegna) "
+    "FROM ordine ord, customers cst WHERE cst.id = ord.customer "
     "ORDER BY ord.datarich");
     try
     {
-        //Recupera tutti gli ordini disponibili (non ancora cons)
+        //Recupera tutti gli ordini disponibili (non ancora consegnati o presi in carico da altri trasportatori)
         res = db.ExecSQLtuples(comando);
         rows = PQntuples(res);
         if (rows > 0)
