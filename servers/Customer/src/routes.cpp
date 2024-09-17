@@ -11,6 +11,8 @@ void defineRoutes(Pistache::Rest::Router& router) {
     Pistache::Rest::Routes::Post(router, "/autentica/:email", Pistache::Rest::Routes::bind(&authenticateUser));
     Pistache::Rest::Routes::Post(router, "/modificaNome", Pistache::Rest::Routes::bind(&modificaNomeHttp));
     Pistache::Rest::Routes::Get(router, "/prodotti", Pistache::Rest::Routes::bind(&getProdotti));
+    Pistache::Rest::Routes::Post(router, "/addProdotto/:email/:prodotto/:quantita", Pistache::Rest::Routes::bind(&addProdottoToCarrello));
+
 }
 
 
@@ -93,4 +95,39 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
         delete[] risultato.second;
     }
 }
+
+void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
+    // Recupera i parametri dalla richiesta
+    auto email = request.param(":email").as<std::string>();
+    auto prodottoID = request.param(":prodotto").as<int>();  // Supponendo che l'ID del prodotto sia un intero
+    auto quantita = request.param(":quantita").as<int>();    // Quantità come intero
+
+    // Recupera l'ID del cliente basato sull'email
+    int customerID = recuperaCustomerID(email);
+    if (customerID <= 0) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente");
+        return;
+    }
+
+    // Simula un clientSocket (nel tuo caso potresti aver bisogno di un vero clientSocket o usarne uno fittizio)
+    int clientSocket = 0;
+
+    // Recupera i prodotti (o il prodotto specifico)
+    std::pair<int, Prodotto*> risultatoProdotti = recuperaProdotti(clientSocket);
+    int numeroProdotti = risultatoProdotti.first;
+    Prodotto* prodotti = risultatoProdotti.second;
+
+    // Aggiungi il prodotto al carrello
+    bool esito = aggiungiCarrello(clientSocket, customerID, prodotti, numeroProdotti);
+
+    if (esito) {
+        response.send(Pistache::Http::Code::Ok, "Prodotto aggiunto al carrello con successo");
+    } else {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore durante l'aggiunta del prodotto al carrello");
+    }
+
+    // Libera la memoria dei prodotti recuperati, se necessario
+    delete[] prodotti;
+}
+
 
