@@ -22,8 +22,7 @@ std::pair<int, Ordine*> ricercaOrdini(int clientSocket)
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     COURIER_ID = atoi(id.c_str()); // ID Customer
     sprintf(comando, "SELECT ord.id, cst.nome, ord.datarich, ord.stato, ord.pagamento, ord.indirizzo, ord.totale "
-    "FROM ordine ord, customers cst WHERE cst.id = ord.customer "
-    "ORDER BY ord.datarich");
+    "FROM ordine ord, customers cst WHERE cst.id = ord.customer ORDER BY ord.datarich");
     try
     {
         //Recupera tutti gli ordini disponibili (non ancora consegnati o presi in carico da altri trasportatori)
@@ -94,7 +93,7 @@ void mostraOrdini(int clientSocket, int RIGHE, Ordine* ORDINI)
 	        send(clientSocket, ordine.c_str(), ordine.length(), 0);
         }
     } else {
-        std::string vuoto = "Non ci sono ordini disponibili!\n";
+        std::string vuoto = "\nNon ci sono ordini disponibili!\n";
         send(clientSocket, vuoto.c_str(), vuoto.length(), 0); // Invia la frase all'utente
     }
     return;
