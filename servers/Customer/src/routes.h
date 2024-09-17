@@ -3,6 +3,8 @@
 
 #pragma once
 #include <pistache/router.h>
+#include "../../../lib/con2db/pgsql.h"
+#include "../../../lib/con2redis/src/con2redis.h"
 
 void defineRoutes(Pistache::Rest::Router& router);
 
