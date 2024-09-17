@@ -1,5 +1,5 @@
-#ifndef RICERCAORDINI_H
-#define RICERCAORDINI_H
+#ifndef RICERCA_ORDINI_H
+#define RICERCA_ORDINI_H
 
 #include <string> // Importa std::string
 #include <utility> //Importa pair
@@ -8,8 +8,8 @@
 #include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../../../entities/Ordine.h"
 #include "../../../lib/funzioniAusiliarie.h"
+#include "../../../entities/Ordine.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -27,14 +27,11 @@
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
-#define USERNAMEC "courier"
-#define PASSWORDC "courier"
+#define USERNAME_TRAS "courier"
+#define PASSWORD_TRAS "courier"
 #define DB_NAME "mewingdb"
 
-bool ricercaOrdini(int clientSocket);
-std::pair<int, Prodotto*> recuperaProdottiDisponibili(int userID, Con2DB db, PGresult *res, int clientSocket);
-bool aggiungiAlCarrello(Con2DB db, PGresult *res, int USER_ID, std::pair<int, Prodotto*> carrello, std::pair<int, Prodotto*> disponibili, int clientSocket);
-bool aggiungiCarrelloDB(int idProdotto, int userID, int quantita, Con2DB db, PGresult *res);
-
+std::pair<int, Ordine*> ricercaOrdini(int clientSocket);
+void mostraOrdini(int clientSocket, int RIGHE, Ordine* ORDINI);
 
 #endif

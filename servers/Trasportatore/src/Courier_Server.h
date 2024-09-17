@@ -2,6 +2,7 @@
 #define COURIER_SERVER_H
 
 #include <string>
+#include <utility> //Importa std::pair
 #include <iostream>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"

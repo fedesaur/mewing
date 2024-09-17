@@ -28,12 +28,10 @@
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
-#define USERNAMEC "courier"
-#define PASSWORDC "courier"
+#define USERNAME_TRAS "courier"
+#define PASSWORD_TRAS "courier"
 #define DB_NAME "mewingdb"
 
 std::optional<std::tuple<int, Ordine*, Indirizzo*>> registroOrdini(int clientSocket);
-int ordinaOrdini(int RIGHE, Ordine* ORDINI, Indirizzo* INDIRIZZI);
-void mostraOrdini(int RIGHE, Ordine* ORDINI, Indirizzo* INDIRIZZI);
 
 #endif

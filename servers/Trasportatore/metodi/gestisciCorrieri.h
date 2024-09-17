@@ -29,8 +29,8 @@
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
-#define USERNAMEC "courier"
-#define PASSWORDC "courier"
+#define USERNAME_TRAS "courier"
+#define PASSWORD_TRAS "courier"
 #define DB_NAME "mewingdb"
 
 bool gestisciCorrieri(int clientSocket);

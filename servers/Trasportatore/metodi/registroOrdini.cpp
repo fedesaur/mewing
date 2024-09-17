@@ -11,7 +11,7 @@ std::optional<std::tuple<int, Ordine*, Indirizzo*>> registroOrdini(int clientSoc
 	redisReply *reply; // reply contiene le risposte da Redis
 
 	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
-	Con2DB db(HOSTNAME, DB_PORT, USERNAMEC, PASSWORDC, DB_NAME); // Effettua la connessione al database
+	Con2DB db(HOSTNAME, DB_PORT, USERNAME_TRAS, PASSWORD_TRAS, DB_NAME); // Effettua la connessione al database
 
     reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
@@ -81,21 +81,4 @@ std::optional<std::tuple<int, Ordine*, Indirizzo*>> registroOrdini(int clientSoc
         std::tuple<int, Ordine*, Indirizzo*> ritorno(-1, nullptr, nullptr);
         return ritorno;
     }
-}
-
-int ordinaOrdini(int RIGHE, Ordine* ORDINI, Indirizzo* INDIRIZZI)
-{
-    // Gli ordini vengono ordinati in modo che i primi siano quelli accettati e gli ultimi quelli consegnati
-    int a = 0;
-    int b = RIGHE-1;
-    while (a < b)
-    {
-        //if (ORDINI[a].Stato)
-    }
-    return 0;
-}
-
-void mostraOrdini(int RIGHE, Ordine* ORDINI, Indirizzo* INDIRIZZI)
-{
-
 }

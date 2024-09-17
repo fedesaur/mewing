@@ -125,24 +125,11 @@ void Courier_Server::gestisciConnessioneCliente(int clientSocket, int connection
             } else {
               std::string response = "Benvenuto " + nome + "\n";// Saluta il customer appena autenticato
               send(clientSocket, response.c_str(), response.length(), 0);
-              
-              /*
-              CUSTOMER.ID = atoi(ID.c_str());
-              CUSTOMER.nome = nome.c_str();
-              CUSTOMER.cognome = cognome.c_str();
-              CUSTOMER.mail = mail.c_str();
-              CUSTOMER.abita = atoi(abita.c_str());
-              */
-              
+
               continuaConnessione = true;
             }
-
             // Andata a buon fine l'autenticazione, si rendono disponibile all'utente le varie funzionalità tramite una funzione ausiliaria
-            do{
-                continuaConnessione = gestisciOperazioni(clientSocket);
-            }
-            while (continuaConnessione);
-            
+            while (continuaConnessione) {continuaConnessione = gestisciOperazioni(clientSocket);}
         }
 
         close(clientSocket); // Chiudi la connessione con il client dopo averla gestita
@@ -202,7 +189,7 @@ bool Courier_Server::gestisciOperazioni(int clientSocket)
     
     bool attendiInput = true; // Continua la richiesta finché non riceve un input adatto
 
-    do
+    while (attendiInput)
     {
         int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
         if (bytesRead > 0) {
@@ -212,12 +199,11 @@ bool Courier_Server::gestisciOperazioni(int clientSocket)
 
             if (messaggio == "q" || messaggio == "Q") {
                 return false; // Termina la connessione
-            }
-            
-            if (std::isdigit(messaggio[0])) {
+            } else if (std::isdigit(messaggio[0])) {
                 int opzione = std::stoi(messaggio) - 1;
                 
-                if (opzione >= 0 && opzione < NUMERO_OPZIONI) {
+                if (opzione >= 0 && opzione < NUMERO_OPZIONI) 
+                {
                     switch(opzione)
                     {
                         case 0:
@@ -225,7 +211,8 @@ bool Courier_Server::gestisciOperazioni(int clientSocket)
                             send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
                             break;
                         case 1:
-                            ricercaOrdini(clientSocket);
+                            std::pair<int, Ordine*> risultato = ricercaOrdini(clientSocket);
+                            mostraOrdini(clientSocket, risultato.first, risultato.second);
                             break;
                         case 2:
                             std::cout << "Funzione Ordina prodotti non implementata\n";
@@ -245,7 +232,7 @@ bool Courier_Server::gestisciOperazioni(int clientSocket)
                 send(clientSocket, errore.c_str(), errore.length(), 0);
             }
         }
-    } while (attendiInput); // Continua finché non riceve un input valido
+    } // Continua finché non riceve un input valido
     
     return true;
 }
