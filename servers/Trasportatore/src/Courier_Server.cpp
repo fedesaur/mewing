@@ -175,7 +175,7 @@ bool Courier_Server::gestisciAutenticazione(int clientSocket)
 bool Courier_Server::gestisciOperazioni(int clientSocket)
 {
     char buffer[1024] = {0};
-    std::string request = "Ecco le operazioni disponibili:\n";
+    std::string request = "\nEcco le operazioni disponibili:\n";
     send(clientSocket, request.c_str(), request.length(), 0);
 
     // Legge le opzioni all'utente
@@ -201,6 +201,7 @@ bool Courier_Server::gestisciOperazioni(int clientSocket)
                 return false; // Termina la connessione
             } else if (std::isdigit(messaggio[0])) {
                 int opzione = std::stoi(messaggio) - 1;
+                std::pair<int, Ordine*> risultato;
                 
                 if (opzione >= 0 && opzione < NUMERO_OPZIONI) 
                 {
@@ -211,8 +212,9 @@ bool Courier_Server::gestisciOperazioni(int clientSocket)
                             send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
                             break;
                         case 1:
-                            std::pair<int, Ordine*> risultato = ricercaOrdini(clientSocket);
+                            risultato = ricercaOrdini(clientSocket);
                             mostraOrdini(clientSocket, risultato.first, risultato.second);
+                            delete[] risultato.second;
                             break;
                         case 2:
                             std::cout << "Funzione Ordina prodotti non implementata\n";

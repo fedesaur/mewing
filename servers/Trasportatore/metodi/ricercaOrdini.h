@@ -8,7 +8,6 @@
 #include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../../../lib/funzioniAusiliarie.h"
 #include "../../../entities/Ordine.h"
 #include <netinet/in.h>
 #include <sys/socket.h>

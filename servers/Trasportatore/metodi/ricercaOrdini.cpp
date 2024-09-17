@@ -79,16 +79,16 @@ void mostraOrdini(int clientSocket, int RIGHE, Ordine* ORDINI)
         for (int i = 0; i < RIGHE; i++)
         {
             // Recupera gli attributi degli ordini disponibili...
-            int ID = ordiniDisponibili[i].ID;
-            const char* mail = ordiniDisponibili[i].MailCustomer;
-            time_t data = ordiniDisponibili[i].DataRichiesta;
-            const char* paga = ordiniDisponibili[i].Pagamento;
-            int indirizzo = ordiniDisponibili[i].Indirizzo;
-            double totale = ordiniDisponibili[i].Totale;
+            int ID = ORDINI[i].ID;
+            const char* mail = ORDINI[i].MailCustomer;
+            time_t data = ORDINI[i].DataRichiesta;
+            const char* paga = ORDINI[i].Pagamento;
+            int indirizzo =ORDINI[i].Indirizzo;
+            double totale = ORDINI[i].Totale;
             // ...e li invia all'utente così che possa visualizzarli ed effettuarci operazioni
             std::string ordine = std::to_string(i+1) + ") ID Ordine: " + std::to_string(ID) +
              " Mail Customer: " + mail + 
-             " Data Richiesta: " + data + 
+             " Data Richiesta: " + std::to_string(data) + 
              " Metodo Pagamento: " + paga +
              " Totale Ordine: " + std::to_string(totale) + "\n";
 	        send(clientSocket, ordine.c_str(), ordine.length(), 0);
