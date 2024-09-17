@@ -1,6 +1,6 @@
 #include "registroOrdini.h"
 
-std::optional<std::tuple<int, Ordine*, Indirizzo*>> registroOrdini(int clientSocket)  
+std::tuple<int, Ordine*, Indirizzo*> registroOrdini(int clientSocket)  
 //per il momento metto optional per ritornare una tupla vuota
 {
     int COURIER_ID;
@@ -20,9 +20,10 @@ std::optional<std::tuple<int, Ordine*, Indirizzo*>> registroOrdini(int clientSoc
     }
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     COURIER_ID = atoi(id.c_str()); // ID Corriere
-    sprintf(comando, "SELECT ord.id,  ord.datarich, ord.stato, ord.pagamento, ind.via, ind.civico, ind.cap, ind.città, ind.stato AS statoIND, ord.totale"
-    "FROM ordine ord, transord tr, indirizzo ind, customers cst "
-    "WHERE ord.id = tr.ordine AND ind.id = ord.indirizzo AND ord.customer = cst.id AND tr.trasportatore = %d", COURIER_ID);
+    sprintf(comando, "SELECT ord.id, ord.datarich, ord.stato, ord.pagamento, ind.via, ind.civico, ind.cap, ind.città, ind.stato AS statoIND, ord.totale"
+    "FROM indirizzo ind, customers cst, ordine ord LEFT JOIN transord tr ON ord.id = tr.ordine"
+    "WHERE ind.id = ord.indirizzo AND ord.customer = cst.id AND tr.trasportatore = %d "
+    "ORDER BY ord.datarich", COURIER_ID);
     try
     {
         //Recupera tutti gli ordini disponibili (non ancora cons)
@@ -70,8 +71,8 @@ std::optional<std::tuple<int, Ordine*, Indirizzo*>> registroOrdini(int clientSoc
         {
             std::string vuoto = "Nessun ordine registrato!\n";
             send(clientSocket, vuoto.c_str(), vuoto.length(), 0);
-            //std::tuple<int, Ordine*, Indirizzo*> vuoto(0,nullptr, nullptr);
-            return std::nullopt;
+            std::tuple<int, Ordine*, Indirizzo*> vuoto(0,nullptr, nullptr);
+            return vuoto;
         }
     }
     catch(...)
@@ -81,4 +82,40 @@ std::optional<std::tuple<int, Ordine*, Indirizzo*>> registroOrdini(int clientSoc
         std::tuple<int, Ordine*, Indirizzo*> ritorno(-1, nullptr, nullptr);
         return ritorno;
     }
+}
+
+void mostraRegistro(int clientSocket, int RIGHE, Ordine* ORDINI, Indirizzo* INDIRIZZI)
+{
+    if (RIGHE > 0)
+    {
+        std::string request = "\nORDINI REGISTRATI:\n"; //... e lo stampa
+	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+        for (int i = 0; i < RIGHE; i++)
+        {
+            // Recupera gli attributi degli ordini registrati...
+            int ID = ORDINI[i].ID;
+                ordiniDisponibili[i].MailCustomer = mail;
+                ordiniDisponibili[i].DataRichiesta = time;
+                ordiniDisponibili[i].Stato = statoOrd;
+                ordiniDisponibili[i].Pagamento = paga;
+                ordiniDisponibili[i].Totale = totale;
+
+                indirizzoOrdini[i].via = via;
+                indirizzoOrdini[i].civico = civico;
+                indirizzoOrdini[i].CAP = CAP;
+                indirizzoOrdini[i].citta = city;
+                indirizzoOrdini[i].stato = stato;
+            // ...e li invia all'utente così che possa visualizzarli ed effettuarci operazioni
+            std::string ordine = std::to_string(i+1) + ") ID Ordine: " + std::to_string(ID) +
+             " Mail Customer: " + mail + 
+             " Data Richiesta: " + std::to_string(data) + 
+             " Metodo Pagamento: " + paga +
+             " Totale Ordine: " + std::to_string(totale) + "\n";
+	        send(clientSocket, ordine.c_str(), ordine.length(), 0);
+        }
+    } else {
+        std::string vuoto = "Non ci sono ordini registrati!\n";
+        send(clientSocket, vuoto.c_str(), vuoto.length(), 0); // Invia la frase all'utente
+    }
+    return;
 }
