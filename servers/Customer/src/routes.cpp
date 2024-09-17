@@ -131,7 +131,7 @@ void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Htt
 }
 
 int recuperaCustomerID(const std::string& email) {
-    PGconn *conn = PQconnectdb("host=HOSTNAME port=PORT dbname=DB_NAME user=USERNAME password=PASSWORD");
+    PGconn *conn = PQconnectdb("host=localhost port=5432 dbname=mewingdb user=admin password=admin");
 
     if (PQstatus(conn) != CONNECTION_OK) {
         std::cerr << "Errore di connessione al database: " << PQerrorMessage(conn) << std::endl;
@@ -140,7 +140,7 @@ int recuperaCustomerID(const std::string& email) {
     }
 
     // Prepara la query per cercare l'ID cliente tramite l'email
-    const char *query = "SELECT id FROM Clienti WHERE email = $1";
+    const char *query = "SELECT id FROM customers WHERE mail = $1";
     const char *paramValues[1] = { email.c_str() };
 
     PGresult *res = PQexecParams(conn, query, 1, NULL, paramValues, NULL, NULL, 0);
