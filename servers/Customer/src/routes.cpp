@@ -130,4 +130,41 @@ void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Htt
     delete[] prodotti;
 }
 
+int recuperaCustomerID(const std::string& email) {
+    PGconn *conn = PQconnectdb("host=HOSTNAME port=PORT dbname=DB_NAME user=USERNAME password=PASSWORD");
+
+    if (PQstatus(conn) != CONNECTION_OK) {
+        std::cerr << "Errore di connessione al database: " << PQerrorMessage(conn) << std::endl;
+        PQfinish(conn);
+        return -1; // Restituisci un ID non valido in caso di errore
+    }
+
+    // Prepara la query per cercare l'ID cliente tramite l'email
+    const char *query = "SELECT id FROM Clienti WHERE email = $1";
+    const char *paramValues[1] = { email.c_str() };
+
+    PGresult *res = PQexecParams(conn, query, 1, NULL, paramValues, NULL, NULL, 0);
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        std::cerr << "Errore nell'esecuzione della query: " << PQerrorMessage(conn) << std::endl;
+        PQclear(res);
+        PQfinish(conn);
+        return -1;
+    }
+
+    // Controlla se è stato trovato un cliente
+    int customerID = -1;
+    if (PQntuples(res) == 1) {
+        customerID = atoi(PQgetvalue(res, 0, 0)); // Restituisci l'ID cliente
+    } else {
+        std::cerr << "Cliente non trovato o più di un risultato" << std::endl;
+    }
+
+    // Libera la memoria e chiudi la connessione
+    PQclear(res);
+    PQfinish(conn);
+
+    return customerID;
+}
+
 
