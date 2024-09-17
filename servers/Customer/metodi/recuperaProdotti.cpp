@@ -16,7 +16,7 @@ std::pair<int, Prodotto*> recuperaProdotti(int clientSocket)
         {
             // Prima mostriamo all'utente i prodotti disponibili..
             std::string request = "PRODOTTI DISPONIBILI:\n"; //... e lo stampa
-	        send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
             Prodotto* prodottiDisponibili = new Prodotto[RIGHE];
 
             for (int i = 0; i < RIGHE; i++)
