@@ -239,7 +239,6 @@ bool Courier_Server::gestisciOperazioni(int clientSocket)
     return true;
 }
 
-
 int main()
 {
     /*
