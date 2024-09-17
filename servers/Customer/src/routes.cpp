@@ -11,8 +11,11 @@ void defineRoutes(Pistache::Rest::Router& router) {
     Pistache::Rest::Routes::Post(router, "/modificaNome", Pistache::Rest::Routes::bind(&modificaNomeHttp));
 }
 
+#include <hiredis/hiredis.h>
+#include "autenticazione.h"
+
 void authenticateUser(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
-    // Recupera l'email dal percorso (parte dell'URL)
+    // Recupera l'email dal percorso
     auto email = request.param(":email").as<std::string>();
 
     if (email.empty()) {
@@ -20,18 +23,40 @@ void authenticateUser(const Pistache::Rest::Request& request, Pistache::Http::Re
         return;
     }
 
-    // Simulazione del socket client, da sostituire con un sistema reale
+    // Connetti a Redis
+    redisContext *c2r = redisConnect(REDIS_IP, REDIS_PORT);
+    if (c2r == nullptr || c2r->err) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Unable to connect to Redis");
+        return;
+    }
+
+    // Prepara il comando per aggiungere l'email allo stream
+    redisReply* reply = static_cast<redisReply*>(redisCommand(c2r, "XADD %s * email %s", WRITE_STREAM, email.c_str()));
+
+    // Controlla l'esito del comando Redis
+    if (reply == nullptr || reply->type != REDIS_REPLY_STRING) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Error writing email to Redis stream");
+        redisFree(c2r);
+        return;
+    }
+
+    // Pulisci la risposta di Redis
+    freeReplyObject(reply);
+    redisFree(c2r);
+
+    // Simulazione del socket client
     int clientSocket = 0;
 
-    // Logica di autenticazione usando l'email dal percorso
-    bool autenticato = autentica(clientSocket); // Puoi adattare questa funzione per utilizzare l'email
-    
+    // Ora chiama la funzione autentica
+    bool autenticato = autentica(clientSocket);
+
     if (autenticato) {
         response.send(Pistache::Http::Code::Ok, "User authenticated");
     } else {
         response.send(Pistache::Http::Code::Unauthorized, "Authentication failed");
     }
 }
+
 
 
 void modificaNomeHttp(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
