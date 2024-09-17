@@ -6,33 +6,24 @@
 
 void defineRoutes(Pistache::Rest::Router& router) {
     // Registrazione delle rotte con funzioni globali
-    Pistache::Rest::Routes::Post(router, "/autentica", Pistache::Rest::Routes::bind(&authenticateUser));
+    Pistache::Rest::Routes::Post(router, "/autentica/:email", Pistache::Rest::Routes::bind(&authenticateUser));
     Pistache::Rest::Routes::Post(router, "/modificaNome", Pistache::Rest::Routes::bind(&modificaNomeHttp));
 }
 
 void authenticateUser(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
-    // Simulazione del socket client, sostituibile con un sistema reale
-    int clientSocket = 0; // In una reale applicazione, questo dovrebbe essere l'ID del socket
+    // Recupera l'email dal percorso (parte dell'URL)
+    auto email = request.param(":email").as<std::string>();
 
-    // Recupera i dati dalla richiesta HTTP (ad esempio il body contiene email)
-    auto body = request.body();
-    if (body.empty()) {
-        response.send(Pistache::Http::Code::Bad_Request, "Missing authentication data");
+    if (email.empty()) {
+        response.send(Pistache::Http::Code::Bad_Request, "Email not provided");
         return;
     }
 
-    // Qui ci aspettiamo un JSON con l'email
-    std::string email;
-    try {
-        auto json = nlohmann::json::parse(body); // Usa una libreria per gestire il parsing JSON
-        email = json.at("email").get<std::string>();
-    } catch (const std::exception& e) {
-        response.send(Pistache::Http::Code::Bad_Request, "Invalid JSON format");
-        return;
-    }
+    // Simulazione del socket client, da sostituire con un sistema reale
+    int clientSocket = 0;
 
-    // Simula la chiamata alla funzione di autenticazione passando il clientSocket
-    bool autenticato = autentica(clientSocket);
+    // Logica di autenticazione usando l'email dal percorso
+    bool autenticato = autentica(clientSocket); // Puoi adattare questa funzione per utilizzare l'email
     
     if (autenticato) {
         response.send(Pistache::Http::Code::Ok, "User authenticated");
