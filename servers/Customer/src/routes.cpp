@@ -1,4 +1,5 @@
 #include "routes.h"
+#include "../metodi/autenticazione.h"
 #include <pistache/http.h>
 #include <pistache/endpoint.h>
 #include <pistache/router.h>
