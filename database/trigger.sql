@@ -117,7 +117,7 @@ CREATE or REPLACE FUNCTION check_meth() RETURNS trigger as $same_meth$
          if EXISTS(
                         select * 
                             From ordine o, prodmet pm
-				where pm.prod=NEW.prodotto
+				where pr.prod=NEW.prodotto
 				and o.id=NEW.ordine and o.pagamento=pm.metodo
                     ) THEN return NEW;
 
