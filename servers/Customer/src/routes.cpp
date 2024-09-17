@@ -64,10 +64,33 @@ void modificaNomeHttp(const Pistache::Rest::Request& request, Pistache::Http::Re
 }
 
 void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
-    int clientSocket = 0;
+    // Recupera tutti i prodotti disponibili
+    std::pair<int, Prodotto*> risultato = recuperaProdotti(0); // Ignoriamo il clientSocket
 
-    // Ora chiama la funzione autentica
-    recuperaProdotti(clientSocket);
-    response.send(Pistache::Http::Code::Ok, "Fine prodotti");
+    // Costruisci la risposta
+    if (risultato.first > 0 && risultato.second != nullptr) {
+        std::stringstream ss;
+        ss << "PRODOTTI DISPONIBILI:\n";
+
+        // Itera sui prodotti e li inserisce nella stringa di risposta
+        for (int i = 0; i < risultato.first; ++i) {
+            ss << i + 1 << ") ID Prodotto: " << risultato.second[i].ID
+               << " Nome: " << risultato.second[i].nome
+               << " Descrizione: " << risultato.second[i].descrizione
+               << " Fornitore: " << risultato.second[i].fornitore
+               << " Prezzo: " << risultato.second[i].prezzo << "\n";
+        }
+
+        response.send(Pistache::Http::Code::Ok, ss.str());
+    } else if (risultato.first == 0) {
+        response.send(Pistache::Http::Code::Ok, "Nessun prodotto disponibile");
+    } else {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dei prodotti");
+    }
+
+    // Pulisci la memoria allocata dinamicamente per i prodotti
+    if (risultato.second != nullptr) {
+        delete[] risultato.second;
+    }
 }
 
