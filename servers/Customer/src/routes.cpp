@@ -11,8 +11,6 @@ void defineRoutes(Pistache::Rest::Router& router) {
     Pistache::Rest::Routes::Post(router, "/modificaNome", Pistache::Rest::Routes::bind(&modificaNomeHttp));
 }
 
-#include <hiredis/hiredis.h>
-#include "autenticazione.h"
 
 void authenticateUser(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
     // Recupera l'email dal percorso
