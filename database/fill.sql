@@ -50,5 +50,6 @@ insert into prodmet(prodotto, metodo) values (6, 'bancomat');
 insert into prodmet(prodotto, metodo) values (7, 'bancomat');
 insert into prodmet(prodotto, metodo) values (7, 'carta di credito');
 
+insert into ordine(customer, datarich, pagamento, indirizzo) values (1, NOW, 'carta di credito', 2);
 
-
+insert into prodinord(prodotto, ordine, quantita) values (1, 1, 10);
