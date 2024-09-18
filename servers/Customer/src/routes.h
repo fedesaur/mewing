@@ -14,5 +14,6 @@ void modificaNomeHttp(const Pistache::Rest::Request& request, Pistache::Http::Re
 void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 int recuperaCustomerID(const std::string& email);
+void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response):
 
 #endif // ROUTES_H

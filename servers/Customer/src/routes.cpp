@@ -11,7 +11,8 @@ void defineRoutes(Pistache::Rest::Router& router) {
     Pistache::Rest::Routes::Post(router, "/autentica/:email", Pistache::Rest::Routes::bind(&authenticateUser));
     Pistache::Rest::Routes::Post(router, "/modificaNome", Pistache::Rest::Routes::bind(&modificaNomeHttp));
     Pistache::Rest::Routes::Get(router, "/prodotti", Pistache::Rest::Routes::bind(&getProdotti));
-    Pistache::Rest::Routes::Post(router, "/addProdotto/:email/:prodotto/:quantita", Pistache::Rest::Routes::bind(&addProdottoToCarrello));
+    Pistache::Rest::Routes::Post(router, "/addToCarrello/:email/:prodotto/:quantita", Pistache::Rest::Routes::bind(&addProdottoToCarrello));
+    Pistache::Rest::Routes::Get(router, "/carrello/:email", Pistache::Rest::Routes::bind(&getProdotti));
 
 }
 
