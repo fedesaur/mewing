@@ -2,6 +2,7 @@
 #include "../metodi/autenticazione.h"
 #include "../metodi/recuperaProdotti.h"
 #include "../metodi/recuperaCarrello.h"
+#include "../metodi/gestisciCarrello.h"
 #include <pistache/http.h>
 #include <pistache/endpoint.h>
 #include <pistache/router.h>
@@ -14,6 +15,7 @@ void defineRoutes(Pistache::Rest::Router& router) {
     Pistache::Rest::Routes::Get(router, "/prodotti", Pistache::Rest::Routes::bind(&getProdotti));
     Pistache::Rest::Routes::Post(router, "/addToCarrello/:email/:prodotto/:quantita", Pistache::Rest::Routes::bind(&addProdottoToCarrello));
     Pistache::Rest::Routes::Get(router, "/carrello/:email", Pistache::Rest::Routes::bind(&getCarrello));
+    Pistache::Rest::Routes::Post(router, "/ordina/:email", Pistache::Rest::Routes::bind(&ordina));
 
 }
 
@@ -217,4 +219,34 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
 
     // Libera la memoria del carrello
     delete[] carrello;
+}
+
+
+void ordina(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
+    int righe;
+    Prodotto* prodotti;
+    // Recupera i parametri dalla richiesta
+    auto email = request.param(":email").as<std::string>();
+
+    // Recupera l'ID del cliente basato sull'email
+    int customerID = recuperaCustomerID(email);
+    if (customerID <= 0) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente");
+        return;
+    }
+
+    // Simula un clientSocket 
+    int clientSocket = 0;
+    std::pair<int, Prodotto*> risultatoCarrello = recuperaCarrello(clientSocket);
+    risultatoCarrello.first = righe;
+    risultatoCarrello.second = prodotti;
+    bool esito=effettuaOrdine(clientSocket, customerID, righe, prodotti);
+    if (esito) {
+        response.send(Pistache::Http::Code::Ok, "Ordine fatto");
+    } else {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore durante l'ordine");
+    }
+
+    
+    
 }
