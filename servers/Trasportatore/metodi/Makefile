@@ -26,7 +26,7 @@ autenticazione: autenticazione.cpp autenticazione.h ../../../lib/funzioniAusilia
 ricerca:  ricercaOrdini.cpp ricercaOrdini.h 
 	$(CC) -c -o ricercaOrdini.o $< $(CFLAGS) # Crea il file ricercaOrdini.o
 
-gestioneOrd: gestioneOrdini.cpp gestioneOrdini.h
+gestioneOrd: gestioneOrdini.cpp gestioneOrdini.h ../../../lib/funzioniAusiliarie.h
 	$(CC) -c -o gestioneOrdini.o $< $(CFLAGS) # Crea il file gestioneOrdini.o
 
 ordiniCorrenti: ordiniCorrenti.cpp ordiniCorrenti.h
@@ -43,6 +43,7 @@ recuperaCorr: recuperaCorrieri.cpp recuperaCorrieri.h
 
 gestioneCorr: gestisciCorrieri.cpp gestisciCorrieri.h ../../../lib/funzioniAusiliarie.h
 	$(CC) -c -o gestisciCorrieri.o $< $(CFLAGS) # Crea il file gestisciCorrieri.o
+
 .PHONY: clean
 
 clean:
