@@ -1,23 +1,33 @@
 #include "funzioniAusiliarie.h"
+#include <algorithm>
+#include <cctype>
+#include <cstring>
+#include <string>
+#include <sys/socket.h>
+#include <unistd.h> // for close()
 
-bool isNumber(std::string s)
+bool isNumber(const std::string& s)
 {
-    std::string::const_iterator it = s.begin();
-    while (it != s.end() && std::isdigit(*it)) ++it;
-    return !s.empty() && it == s.end();
+    return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
 }
 
-void rimuoviProdotto(int idP, Prodotto* insieme, int righe)
+void rimuoviProdotto(int idP, Prodotto* insieme, int& righe)
 {
     int index = 0;
     while (index < righe)
     {
-        if (insieme[index].ID == idP) break; //Rimuove dal carrello il prodotto con quell'ID
+        if (insieme[index].ID == idP) break; // Trova il prodotto con l'ID specificato
         index++;
     }
     
-    while (index < righe) insieme[index] = insieme[index+1]; //Sposta tutti gli elementi di una posizione a sinistra
-    return;
+    if (index < righe)
+    {
+        for (int i = index; i < righe - 1; i++) 
+        {
+            insieme[i] = insieme[i + 1]; // Sposta gli elementi a sinistra
+        }
+        righe--; // Riduce il numero di elementi
+    }
 }
 
 int riceviIndice(int clientSocket, int righe)
@@ -27,64 +37,76 @@ int riceviIndice(int clientSocket, int righe)
     while (indice == -1)
     {
         int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
-        if (bytesRead > 0) 
+        if (bytesRead > 0)
         {
             std::string messaggio(buffer, bytesRead);
             messaggio.erase(std::remove(messaggio.begin(), messaggio.end(), '\n'), messaggio.end()); // Rimuove eventuali newline
-            if (isNumber(messaggio)) //isNumber è una funzione ausiliaria in lib
+            if (isNumber(messaggio))
             {
-                int numero = std::stoi(messaggio) - 1;
-                if (numero >= 0 && numero < righe) return numero;
+                int numero = std::stoi(messaggio) - 1; // L'utente potrebbe inserire numeri a partire da 1
+                if (numero >= 0 && numero < righe) 
+                    return numero;
                 else 
                 {
                     std::string errore = "Input non valido\n";
-	                send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+                    send(clientSocket, errore.c_str(), errore.length(), 0); // Invia l'errore al client
                 }
-            } else {
+            } 
+            else 
+            {
                 std::string errore = "Input non valido\n";
-	            send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+                send(clientSocket, errore.c_str(), errore.length(), 0); // Invia l'errore al client
             }
-        } else {
+        }
+        else 
+        {
             std::string errore = "Input non valido, riprova.\n";
             send(clientSocket, errore.c_str(), errore.length(), 0);
+            close(clientSocket); // Eventuale chiusura del socket in caso di errore persistente
+            break;
         }
     }
     return indice;
 }
 
-
 void mostraOrdini(int clientSocket, int RIGHE, Ordine* ORDINI, Indirizzo* INDIRIZZI)
 {
     if (RIGHE > 0)
     {
-        std::string request = "\nORDINI REGISTRATI:\n"; //... e lo stampa
-	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+        std::string request = "\nORDINI REGISTRATI:\n";
+        send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+
         for (int i = 0; i < RIGHE; i++)
         {
-            // Recupera gli attributi degli ordini registrati...
+            // Recupera gli attributi degli ordini registrati
             int ID = ORDINI[i].ID;
-                ordiniDisponibili[i].MailCustomer = mail;
-                ordiniDisponibili[i].DataRichiesta = time;
-                ordiniDisponibili[i].Stato = statoOrd;
-                ordiniDisponibili[i].Pagamento = paga;
-                ordiniDisponibili[i].Totale = totale;
+            std::string mail = ORDINI[i].MailCustomer;
+            std::string data = ORDINI[i].DataRichiesta;
+            std::string statoOrd = ORDINI[i].Stato;
+            std::string paga = ORDINI[i].Pagamento;
+            double totale = ORDINI[i].Totale;
 
-                indirizzoOrdini[i].via = via;
-                indirizzoOrdini[i].civico = civico;
-                indirizzoOrdini[i].CAP = CAP;
-                indirizzoOrdini[i].citta = city;
-                indirizzoOrdini[i].stato = stato;
-            // ...e li invia all'utente così che possa visualizzarli ed effettuarci operazioni
-            std::string ordine = std::to_string(i+1) + ") ID Ordine: " + std::to_string(ID) +
+            std::string via = INDIRIZZI[i].via;
+            std::string civico = INDIRIZZI[i].civico;
+            std::string CAP = INDIRIZZI[i].CAP;
+            std::string citta = INDIRIZZI[i].citta;
+            std::string stato = INDIRIZZI[i].stato;
+
+            // Componi il messaggio dell'ordine
+            std::string ordine = std::to_string(i + 1) + ") ID Ordine: " + std::to_string(ID) +
              " Mail Customer: " + mail + 
-             " Data Richiesta: " + std::to_string(data) + 
+             " Data Richiesta: " + data + 
+             " Stato Ordine: " + statoOrd +
              " Metodo Pagamento: " + paga +
-             " Totale Ordine: " + std::to_string(totale) + "\n";
-	        send(clientSocket, ordine.c_str(), ordine.length(), 0);
+             " Totale Ordine: " + std::to_string(totale) + 
+             " Indirizzo: " + via + " " + civico + ", " + CAP + " " + citta + ", " + stato + "\n";
+
+            send(clientSocket, ordine.c_str(), ordine.length(), 0); // Invia l'ordine al client
         }
-    } else {
+    }
+    else
+    {
         std::string vuoto = "Non ci sono ordini registrati!\n";
         send(clientSocket, vuoto.c_str(), vuoto.length(), 0); // Invia la frase all'utente
     }
-    return;
 }
