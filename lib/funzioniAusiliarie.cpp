@@ -51,3 +51,40 @@ int riceviIndice(int clientSocket, int righe)
     }
     return indice;
 }
+
+
+void mostraOrdini(int clientSocket, int RIGHE, Ordine* ORDINI, Indirizzo* INDIRIZZI)
+{
+    if (RIGHE > 0)
+    {
+        std::string request = "\nORDINI REGISTRATI:\n"; //... e lo stampa
+	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+        for (int i = 0; i < RIGHE; i++)
+        {
+            // Recupera gli attributi degli ordini registrati...
+            int ID = ORDINI[i].ID;
+                ordiniDisponibili[i].MailCustomer = mail;
+                ordiniDisponibili[i].DataRichiesta = time;
+                ordiniDisponibili[i].Stato = statoOrd;
+                ordiniDisponibili[i].Pagamento = paga;
+                ordiniDisponibili[i].Totale = totale;
+
+                indirizzoOrdini[i].via = via;
+                indirizzoOrdini[i].civico = civico;
+                indirizzoOrdini[i].CAP = CAP;
+                indirizzoOrdini[i].citta = city;
+                indirizzoOrdini[i].stato = stato;
+            // ...e li invia all'utente così che possa visualizzarli ed effettuarci operazioni
+            std::string ordine = std::to_string(i+1) + ") ID Ordine: " + std::to_string(ID) +
+             " Mail Customer: " + mail + 
+             " Data Richiesta: " + std::to_string(data) + 
+             " Metodo Pagamento: " + paga +
+             " Totale Ordine: " + std::to_string(totale) + "\n";
+	        send(clientSocket, ordine.c_str(), ordine.length(), 0);
+        }
+    } else {
+        std::string vuoto = "Non ci sono ordini registrati!\n";
+        send(clientSocket, vuoto.c_str(), vuoto.length(), 0); // Invia la frase all'utente
+    }
+    return;
+}
