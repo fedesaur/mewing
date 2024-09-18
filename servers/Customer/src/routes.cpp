@@ -187,7 +187,7 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
     }
 
     // Prepara il comando per aggiungere l'email allo stream
-    redisReply* reply = static_cast<redisReply*>(redisCommand(c2r, "XADD %s * id %s", WRITE_STREAM, customerID));
+    redisReply* reply = static_cast<redisReply*>(redisCommand(c2r, "XADD %s * id %s", READ_STREAM, customerID));
 
     // Controlla l'esito del comando Redis
     if (reply == nullptr || reply->type != REDIS_REPLY_STRING) {
