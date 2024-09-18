@@ -127,7 +127,7 @@ void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Htt
     }
 
     // Libera la memoria dei prodotti recuperati, se necessario
-    delete[] prodotti;
+    //delete[] prodotti;
 }
 
 int recuperaCustomerID(const std::string& email) {

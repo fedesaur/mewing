@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <unistd.h> // for close()
 
-bool isNumber(const std::string& s)
+bool isNumber(std::string s)
 {
     return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
 }
