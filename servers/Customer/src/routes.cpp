@@ -1,6 +1,7 @@
 #include "routes.h"
 #include "../metodi/autenticazione.h"
 #include "../metodi/recuperaProdotti.h"
+#include "../metodi/recuperaCarrello.h"
 #include <pistache/http.h>
 #include <pistache/endpoint.h>
 #include <pistache/router.h>
@@ -12,7 +13,7 @@ void defineRoutes(Pistache::Rest::Router& router) {
     Pistache::Rest::Routes::Post(router, "/modificaNome", Pistache::Rest::Routes::bind(&modificaNomeHttp));
     Pistache::Rest::Routes::Get(router, "/prodotti", Pistache::Rest::Routes::bind(&getProdotti));
     Pistache::Rest::Routes::Post(router, "/addToCarrello/:email/:prodotto/:quantita", Pistache::Rest::Routes::bind(&addProdottoToCarrello));
-    Pistache::Rest::Routes::Get(router, "/carrello/:email", Pistache::Rest::Routes::bind(&getProdotti));
+    Pistache::Rest::Routes::Get(router, "/carrello/:email", Pistache::Rest::Routes::bind(&getCarrello));
 
 }
 
@@ -169,3 +170,73 @@ int recuperaCustomerID(const std::string& email) {
 }
 
 
+void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
+    // Recupera l'email dai parametri della richiesta HTTP
+    auto email = request.param(":email").as<std::string>();  
+
+    redisContext *c2r = redisConnect(REDIS_IP, REDIS_PORT);
+    if (c2r == nullptr || c2r->err) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Unable to connect to Redis");
+        return;
+    }
+
+    int customerID = recuperaCustomerID(email);
+    if (customerID <= 0) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente");
+        return;
+    }
+
+    // Prepara il comando per aggiungere l'email allo stream
+    redisReply* reply = static_cast<redisReply*>(redisCommand(c2r, "XADD %s * id %s", WRITE_STREAM, customerID.c_str()));
+
+    // Controlla l'esito del comando Redis
+    if (reply == nullptr || reply->type != REDIS_REPLY_STRING) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Error writing email to Redis stream");
+        redisFree(c2r);
+        return;
+    }
+
+    
+    int clientSocket = 0;  // In questa applicazione, simuliamo la logica del socket del client.
+
+    // Recupera il carrello utilizzando l'email
+    std::pair<int, Prodotto*> risultatoCarrello = recuperaCarrello(clientSocket);
+
+    // Verifica se il carrello è stato trovato
+    if (risultatoCarrello.first == -1) {
+        response.send(Pistache::Http::Code::Not_Found, "Carrello non trovato per questo utente.");
+        return;
+    }
+
+    // Numero di righe/prodotti nel carrello
+    int righeCarrello = risultatoCarrello.first;
+    Prodotto* carrello = risultatoCarrello.second;
+
+    // Costruisce la risposta testuale con i dettagli del carrello
+    std::ostringstream oss;
+    oss << "Carrello per l'utente: " << email << "\n";
+    oss << "----------------------------------------\n";
+    
+    // Se il carrello è vuoto
+    if (righeCarrello == 0) {
+        oss << "Il carrello è vuoto.\n";
+    } 
+    // Se ci sono prodotti nel carrello
+    else {
+        for (int i = 0; i < righeCarrello; ++i) {
+            oss << "Prodotto " << (i + 1) << ":\n";
+            oss << " - ID: " << carrello[i].ID << "\n";
+            oss << " - Nome: " << carrello[i].nome << "\n";
+            oss << " - Quantità: " << carrello[i].quantita << "\n";
+            oss << " - Prezzo: " << carrello[i].prezzo << " EUR\n";
+            oss << "----------------------------------------\n";
+        }
+    }
+
+    // Imposta l'header e invia la risposta
+    response.headers().add<Pistache::Http::Header::ContentType>(MIME(Text, Plain));
+    response.send(Pistache::Http::Code::Ok, oss.str());
+
+    // Libera la memoria del carrello
+    delete[] carrello;
+}
