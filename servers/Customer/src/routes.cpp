@@ -109,16 +109,16 @@ void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Htt
         return;
     }
 
-    // Simula un clientSocket (nel tuo caso potresti aver bisogno di un vero clientSocket o usarne uno fittizio)
+    // Simula un clientSocket 
     int clientSocket = 0;
 
     // Recupera i prodotti (o il prodotto specifico)
-    std::pair<int, Prodotto*> risultatoProdotti = recuperaProdotti(clientSocket);
-    int numeroProdotti = risultatoProdotti.first;
-    Prodotto* prodotti = risultatoProdotti.second;
+    //std::pair<int, Prodotto*> risultatoProdotti = recuperaProdotti(clientSocket);
+    //int numeroProdotti = risultatoProdotti.first;
+    //Prodotto* prodotti = risultatoProdotti.second;
 
     // Aggiungi il prodotto al carrello
-    bool esito = aggiungiCarrello(clientSocket, customerID, prodotti, numeroProdotti);
+    bool esito = aggiungiCarrelloDB(prodottoID, customerID, quantita);
 
     if (esito) {
         response.send(Pistache::Http::Code::Ok, "Prodotto aggiunto al carrello con successo");
