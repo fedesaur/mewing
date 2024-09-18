@@ -40,7 +40,7 @@ std::tuple<int, Ordine*, Indirizzo*> registroOrdini(int clientSocket)
                 const char* mail = PQgetvalue(res, i, PQfnumber(res, "nome"));
                 unsigned char* data = (unsigned char*) PQgetvalue(res, i, PQfnumber(res, "datarich"));
                 time_t time = static_cast<time_t>(std::stoll(reinterpret_cast<char*>(data))); // Converte il timestamp in time_t
-                double statoOrd = atof(PQgetvalue(res, i, PQfnumber(res, "stato")));
+                const char* statoOrd = atof(PQgetvalue(res, i, PQfnumber(res, "stato")));
                 const char* paga = PQgetvalue(res, i, PQfnumber(res, "pagamento"));
                 const char* via = PQgetvalue(res, i, PQfnumber(res, "via"));
                 int civico = atoi(PQgetvalue(res, i, PQfnumber(res, "civico")));
