@@ -187,7 +187,7 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
     }
 
     // Prepara il comando per aggiungere l'email allo stream
-    redisReply* reply = static_cast<redisReply*>(redisCommand(c2r, "XADD %s * id %s", WRITE_STREAM, customerID.c_str()));
+    redisReply* reply = static_cast<redisReply*>(redisCommand(c2r, "XADD %s * id %s", WRITE_STREAM, customerID));
 
     // Controlla l'esito del comando Redis
     if (reply == nullptr || reply->type != REDIS_REPLY_STRING) {
@@ -211,31 +211,9 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
     // Numero di righe/prodotti nel carrello
     int righeCarrello = risultatoCarrello.first;
     Prodotto* carrello = risultatoCarrello.second;
-
-    // Costruisce la risposta testuale con i dettagli del carrello
-    std::ostringstream oss;
-    oss << "Carrello per l'utente: " << email << "\n";
-    oss << "----------------------------------------\n";
+    mostraCarrello(clientSocket, carrello, righeCarrello);
     
-    // Se il carrello è vuoto
-    if (righeCarrello == 0) {
-        oss << "Il carrello è vuoto.\n";
-    } 
-    // Se ci sono prodotti nel carrello
-    else {
-        for (int i = 0; i < righeCarrello; ++i) {
-            oss << "Prodotto " << (i + 1) << ":\n";
-            oss << " - ID: " << carrello[i].ID << "\n";
-            oss << " - Nome: " << carrello[i].nome << "\n";
-            oss << " - Quantità: " << carrello[i].quantita << "\n";
-            oss << " - Prezzo: " << carrello[i].prezzo << " EUR\n";
-            oss << "----------------------------------------\n";
-        }
-    }
-
-    // Imposta l'header e invia la risposta
-    response.headers().add<Pistache::Http::Header::ContentType>(MIME(Text, Plain));
-    response.send(Pistache::Http::Code::Ok, oss.str());
+    response.send(Pistache::Http::Code::Ok, "carrello visualizzato");
 
     // Libera la memoria del carrello
     delete[] carrello;
