@@ -23,7 +23,7 @@ std::tuple<int, Ordine*, Indirizzo*> ordiniCorrenti(int clientSocket)
     // Seleziona tutti i corrieri e gli ordini da loro presi in carico
     sprintf(comando, "SELECT ord.id, cst.mail, ord.datarich, ord.stato, ord.pagamento, ord.totale, cor.id AS CorID, cor.nome, cor.cognome"
     "FROM customers cst, ordine ord, consegna cons, corriere cor, WHERE ord.id = cons.ordine "
-    "AND cor.id = cons.corriere AND ord.customer = cst.id AND cor.azienda = %d "
+    "AND cor.id = cons.corriere AND ord.customer = cst.id AND cor.azienda = %d AND ord.id NOT IN (SELECT id FROM ordineconse) "
     "ORDER BY cor.id", COURIER_ID);
     try
     {
@@ -48,7 +48,7 @@ std::tuple<int, Ordine*, Indirizzo*> ordiniCorrenti(int clientSocket)
                 const char* nome = PQgetvalue(res, i, PQfnumber(res, "nome"));
                 const char* cognome = PQgetvalue(res, i, PQfnumber(res, "cognome"));
 
-                //...e li assegna all'i-esimo Ordine e all'i-esimo Corriere (ci saranno duplicati)
+                //...e li assegna all'i-esimo Ordine...
                 ORDINI[i].ID = ID;
                 ORDINI[i].MailCustomer = mail;
                 ORDINI[i].DataRichiesta = time;
@@ -56,6 +56,7 @@ std::tuple<int, Ordine*, Indirizzo*> ordiniCorrenti(int clientSocket)
                 ORDINI[i].Pagamento = paga;
                 ORDINI[i].Totale = totale;
 
+                //...e all'i-esimo Corriere (ci saranno duplicati)
                 CORRIERI[i].ID = IDCor;
                 CORRIERI[i].nome = nome;
                 CORRIERI[i].cognome = cognome;
@@ -86,6 +87,7 @@ void mostraCorrenti(int clientSocket, int RIGHE, Corriere* CORRIERI, Ordine* ORD
         std::string request = "\nORDINI PRESI IN CARICO:\n";  // Invia il messaggio pre-impostato all'utente
 	    send(clientSocket, request.c_str(), request.length(), 0);
         int index = 0;
+        int corrNow = 0;
         while (index < RIGHE)
         {
             // Recupera le informazioni dei vari corrieri...
@@ -93,7 +95,7 @@ void mostraCorrenti(int clientSocket, int RIGHE, Corriere* CORRIERI, Ordine* ORD
             const char* nome = CORRIERI[index].nome;
             const char* cognome = CORRIERI[index].cognome;
             // ... e le stampa
-            std::string corr = std::to_string(index+1) + ") ID Corriere: " + std::to_string(IDCor) +
+            std::string corr = std::to_string(corrNow+1) + ") ID Corriere: " + std::to_string(IDCor) +
              " Nome Corriere: " + nome + 
              " Cognome Corriere: " + cognome + "\n" + "Ha in carico:\n";
 	        send(clientSocket, corr.c_str(), corr.length(), 0);
@@ -112,7 +114,7 @@ void mostraCorrenti(int clientSocket, int RIGHE, Corriere* CORRIERI, Ordine* ORD
                 const char* paga = ORDINI[index].Pagamento;
                 double totale = ORDINI[index].Totale;
                 
-                std::string ordine = "\t *ID Ordine: " + std::to_string(ID) +
+                std::string ordine = "\t" + std::to_string(index+1) + ") ID Ordine: " + std::to_string(ID) +
                 " Mail Customer: " + mail + 
                 " Data Richiesta: " + std::to_string(data) + 
                 " Metodo Pagamento: " + paga +
@@ -120,6 +122,7 @@ void mostraCorrenti(int clientSocket, int RIGHE, Corriere* CORRIERI, Ordine* ORD
                 send(clientSocket, ordine.c_str(), ordine.length(), 0);
                 index++;
             }
+            corrNow++;
         }
     } else {
         std::string vuoto = "Non ci sono ordini presi in carico!\n";
