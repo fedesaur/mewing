@@ -14,9 +14,20 @@ std::pair<int, Prodotto*> recuperaCarrello(int clientSocket)
 	Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
 
     reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
-    if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
-    {
+   if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0) {
         std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
+        redisFree(c2r);
+        risultato.first = -1;
+        risultato.second = nullptr;
+        return risultato;
+    }
+
+    if (reply->elements < 1 || reply->element[0]->elements < 2) {
+        std::cerr << "Struttura della risposta Redis non valida" << std::endl;
+        redisFree(c2r);
+        risultato.first = -1;
+        risultato.second = nullptr;
+        return risultato;
     }
 
     std::string id = reply->element[0]->element[1]->element[1]->str; 
