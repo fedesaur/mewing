@@ -234,6 +234,22 @@ void ordina(const Pistache::Rest::Request& request, Pistache::Http::ResponseWrit
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente");
         return;
     }
+    
+    redisContext *c2r = redisConnect(REDIS_IP, REDIS_PORT);
+    if (c2r == nullptr || c2r->err) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Unable to connect to Redis");
+        return;
+    }
+
+    // Prepara il comando per aggiungere l'email allo stream
+    redisReply* reply = static_cast<redisReply*>(redisCommand(c2r, "XADD %s * id %s", READ_STREAM, customerID));
+
+    // Controlla l'esito del comando Redis
+    if (reply == nullptr || reply->type != REDIS_REPLY_STRING) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Error writing email to Redis stream");
+        redisFree(c2r);
+        return;
+    }
 
     // Simula un clientSocket 
     int clientSocket = 0;
