@@ -33,7 +33,6 @@ bool gestioneOrdini(int clientSocket)
         ORDINI = std::get<1>(risultato);
         CORRIERI = std::get<2>(risultato);
         
-        
         // Mostra i corrieri e i loro ordini
         mostraCorrenti(clientSocket,RIGHE,CORRIERI,ORDINI);
         std::string request = "\nQuale operazione vuoi svolgere?\n";
@@ -41,7 +40,7 @@ bool gestioneOrdini(int clientSocket)
         
         // Mostra le operazioni disponibili
         for (int i = 0; i < OPERAZIONI_DISPONIBILI; i++) send(clientSocket, OPERAZIONI[i].c_str(), OPERAZIONI[i].length(), 0);
-        
+        std::tuple<int, Ordine*, Indirizzo*> temp;
         bool attendiInput = true;
         while (attendiInput)
         {
@@ -74,8 +73,8 @@ bool gestioneOrdini(int clientSocket)
                             attendiInput = false;
                             break;
                         case 1:
-                            std::cout << "Funzione Ricerca Ordini non implementata\n";
-                            send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                            
+                            esito = prendiOrdine(clientSocket, TRASPORTER_ID);
                             attendiInput = false;
                             break;
                         case 2:
@@ -214,4 +213,84 @@ void dettagliOrdine(int clientSocket, int ordineID)
     }
     PQclear(res); // Libera lo spazio occupato dai risultati della query
     return;
+}
+
+bool prendiOrdine(int clientSocket, int trasporterID)
+{
+    int rows;
+    char comando[1000];
+    int RIGHE_CORRIERI;
+    int RIGHE_ORDINI;
+    Ordine* ORDINI;
+    Indirizzo* INDIRIZZI;
+    Corriere* CORRIERI;
+    PGresult *res;
+	Con2DB db(HOSTNAME, DB_PORT, USERNAME_TRAS, PASSWORD_TRAS, DB_NAME); // Effettua la connessione al database
+
+    std::pair<int, Corriere*> risultato1 = recuperaCorrieri(clientSocket);
+    if (risultato1.first == -1) return false;
+    else if (risultato1.first == 0)
+    {
+        std::string errore = "Non ci sono corrieri disponibili per effettuare gli ordini\n";
+        send(clientSocket, errore.c_str(), errore.length(), 0);
+        return false;
+    }
+    RIGHE_CORRIERI = risultato1.first;
+    CORRIERI = risultato1.second;
+
+    std::tuple<int, Ordine*, Indirizzo*> risultato2 = ricercaOrdini(clientSocket);  
+    if (std::get<0>(risultato2) == -1) return false;
+    else if (std::get<0>(risultato2) == 0)
+    {
+        std::string vuoto = "Non ci sono ordini disponibili da prendere in carico!\n";
+        send(clientSocket, vuoto.c_str(), vuoto.length(), 0);
+        delete[] CORRIERI;
+        return false;
+    }
+
+    int RIGHE_ORDINI = std::get<0>(risultato2);
+    Ordine* ORDINI = std::get<1>(risultato2);
+    Indirizzo* INDIRIZZI = std::get<2>(risultato2);
+    // Mostra all'utente gli ordini disponibili per le consegne
+    mostraOrdini(clientSocket, RIGHE_ORDINI, ORDINI, INDIRIZZI);
+    
+    std::string request = "Quale ordine vuoi prendere in carico?\n";
+	send(clientSocket, request.c_str(), request.length(), 0); 
+    int indiceOrd = riceviIndice(clientSocket, RIGHE_ORDINI);
+    int idOrd = ORDINI[indiceOrd].ID;
+
+    mostraCorrieri(clientSocket, RIGHE_CORRIERI, CORRIERI);
+    int indiceCor = riceviIndice(clientSocket, RIGHE_CORRIERI);
+    int idCor = CORRIERI[indiceCor].ID
+
+    try
+    {
+        // Prende in carico l'ordine
+        sprintf(comando, "INSERT INTO transord(ordine, trasportatore) VALUES(%d, %d)", idOrd, trasporterID);
+        res = db.ExecSQLcmd(comando);
+        PQclear(res);
+        // Assegna l'ordine ad un corriere
+        sprintf(comando, "INSERT INTO consegna(ordine, corriere) VALUES (%d, %d)", idOrd, idCor);
+        res = db.ExecSQLcmd(comando);
+        PQclear(res);
+        // Aggiorna l'ordine indicando che è stato preso in carico
+        sprintf(comando, "UPDATE ordine SET stato = 'accettato' WHERE id = %d", idOrd);
+        res = db.ExecSQLcmd(comando);
+        PQclear(res);
+        std::string successo = "L'ordine è stato correttamente preso in carico!\n";
+        send(clientSocket, successo.c_str(), successo.length(), 0);
+        delete[] CORRIERI; // Libera lo spazio occupato dai vari array
+        delete[] ORDINI;
+        delete[] INDIRIZZI;
+        return true;
+    }
+    catch(...)
+    {
+        std::string errore = "C'è stato un problema con il database\n";
+        send(clientSocket, errore.c_str(), errore.length(), 0);
+        delete[] CORRIERI; // Libera lo spazio occupato dai vari array
+        delete[] ORDINI;
+        delete[] INDIRIZZI;
+        return false;
+    }
 }

@@ -83,7 +83,8 @@ bool gestisciCorrieri(int clientSocket)
                                     CORRIERI = risultato.second;
                             }
                             attendiInput = false;
-                            break;}
+                            break;
+                        }
 
                         default:
                             std::string errore = "Opzione non valida, riprova.\n";

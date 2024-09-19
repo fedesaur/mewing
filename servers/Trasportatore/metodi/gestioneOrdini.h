@@ -14,6 +14,8 @@
 #include "../../../entities/Indirizzo.h"
 #include "../../../entities/Corriere.h"
 #include "../metodi/ordiniCorrenti.h"
+#include "../metodi/ricercaOrdini.h"
+#include "../metodi/recuperaCorrieri.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
