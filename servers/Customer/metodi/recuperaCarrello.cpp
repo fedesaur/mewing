@@ -8,7 +8,9 @@ std::pair<int, Prodotto*> recuperaCarrello(int clientSocket)
     char comando[1000];
     PGresult *res;
     redisContext *c2r; // c2r contiene le info sul contesto
-	redisReply *reply; // reply contiene le risposte da Redis
+    redisReply *reply; // reply contiene le risposte da Redis
+    
+    std::cout << "sonoqui" << std::endl;
 
 	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
 	Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
