@@ -71,20 +71,27 @@ create or replace TRIGGER buy_price after insert on prodincart
 for each row execute procedure tot_cart();
 
 ------------------------------------------------------------------------
-create or replace function tot_cart_2() returns trigger as $buy_price2$
+create or replace function tot_cart_2() RETURNS TRIGGER AS $buy_price2$
     BEGIN
-    update carrello
-    set totale=(select SUM((p.prezzo * OLD.quantita)) 
-            from  carrello c, prodotto p
-            where c.customer=OLD.carrello 
-            and OLD.prodotto=p.id)
-     where carrello.customer=OLD.carrello;
-        
-        
-        return OLD;
+    	if not exists(select * 
+			from carrello c, prodotto p, prodincart pc
+			where OLD.carrello=pc.carrello
+			) then update carrello set totale=0 where carrello.customer=OLD.carrello;
+		else update carrello
+    		set totale=(select SUM((p.prezzo * OLD.quantita)) 
+            		from  carrello c, prodotto p
+            		where c.customer=OLD.carrello 
+            		and OLD.prodotto=p.id)
+     				where carrello.customer=OLD.carrello;
+		END IF;
+
+     	RETURN OLD;
     END
-    $buy_price2$
-    language plpgsql;
+   $buy_price2$
+   language plpgsql;
+   create or replace TRIGGER buy_price2 after delete on prodincart
+for each row execute procedure tot_cart_2();
+
 ------------------------------------------------------------------------
 
 create or replace TRIGGER buy_price2 after delete on prodincart
