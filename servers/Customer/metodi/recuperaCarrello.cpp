@@ -6,80 +6,103 @@ std::pair<int, Prodotto*> recuperaCarrello(int clientSocket)
     int rows;
     int USER_ID;
     char comando[1000];
-    PGresult *res;
+    PGresult *res = nullptr;
     redisContext *c2r; // c2r contiene le info sul contesto
     redisReply *reply; // reply contiene le risposte da Redis
-    
-    std::cout << "sonoqui" << std::endl;
 
-	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
-	Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
+    // Connessione a Redis
+    c2r = redisConnect(REDIS_IP, REDIS_PORT);
+    if (c2r == nullptr || c2r->err) {
+        std::cerr << "Errore: impossibile connettersi a Redis: " << c2r->errstr << std::endl;
+        risultato.first = -1;
+        risultato.second = nullptr;
+        return risultato;
+    }
 
-    reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
-   if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0) {
+    // Connessione al database
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME);
+
+    // Esegui il comando Redis per ottenere lo USER_ID
+    reply = (redisReply*)redisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
+    if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0) {
         std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
+        if (reply) freeReplyObject(reply);  // Libera la risposta Redis, se allocata
         redisFree(c2r);
         risultato.first = -1;
         risultato.second = nullptr;
         return risultato;
     }
 
-    if (reply->elements < 1 || reply->element[0]->elements < 2) {
-        std::cerr << "Struttura della risposta Redis non valida" << std::endl;
+    if (reply->element[0] == nullptr || reply->element[0]->elements < 2 || reply->element[0]->element[1]->str == nullptr) {
+        std::cerr << "Errore: struttura della risposta Redis non valida" << std::endl;
+        freeReplyObject(reply);
         redisFree(c2r);
         risultato.first = -1;
         risultato.second = nullptr;
         return risultato;
     }
 
-    std::string id = reply->element[0]->element[1]->element[1]->str; 
-    USER_ID = atoi(id.c_str()); // ID Customer
-    
+    // Ottieni lo USER_ID dall'elemento Redis
+    std::string id = reply->element[0]->element[1]->str;
+    USER_ID = atoi(id.c_str()); // Converti USER_ID
+
+    // Libera la memoria della risposta Redis
+    freeReplyObject(reply);
+    redisFree(c2r);
+
+    // Costruisci la query SQL per recuperare il carrello
     sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF, cr.totale, pc.quantita "
-    "FROM prodotto pr, carrello cr, prodincart pc, fornitore fr WHERE pc.prodotto = pr.id "
-    "AND pc.carrello = cr.customer AND pr.fornitore = fr.id AND cr.customer = %d", USER_ID);
+                     "FROM prodotto pr, carrello cr, prodincart pc, fornitore fr WHERE pc.prodotto = pr.id "
+                     "AND pc.carrello = cr.customer AND pr.fornitore = fr.id AND cr.customer = %d", USER_ID);
 
-    try
-    {
+    try {
+        // Esegui la query SQL
         res = db.ExecSQLtuples(comando);
         rows = PQntuples(res);
-        if (rows > 0)
-        {
-            Prodotto* carrello = new Prodotto[rows];
-            // Recupera i prodotti e li memorizza in carrello
-            for (int i = 0; i < rows; i++)
-            {
-            // Recupera gli attributi dei prodotti dalla query sopra svolta...
-            int ID = atoi(PQgetvalue(res, i, PQfnumber(res, "id")));
-            const char* descrizione = PQgetvalue(res, i, PQfnumber(res, "descrizione"));
-            double prezzo = atof(PQgetvalue(res, i, PQfnumber(res, "prezzo")));
-            const char* nome = PQgetvalue(res, i, PQfnumber(res, "nome"));
-            const char* fornitore = PQgetvalue(res, i, PQfnumber(res, "nomeF"));
-            int quantita = atoi(PQgetvalue(res, i, PQfnumber(res, "quantita")));
 
-            // Assegna gli attributi all'i-esimo Prodotto in prodottiDisponibili
-            carrello[i].ID = ID;
-            carrello[i].descrizione = descrizione;
-            carrello[i].prezzo = prezzo;
-            carrello[i].nome = nome;
-            carrello[i].fornitore = fornitore;
-            carrello[i].quantita = quantita;
+        if (rows > 0) {
+            Prodotto* carrello = new Prodotto[rows];
+
+            // Recupera i prodotti e li memorizza in carrello
+            for (int i = 0; i < rows; i++) {
+                // Recupera gli attributi dei prodotti dalla query SQL
+                int ID = atoi(PQgetvalue(res, i, PQfnumber(res, "id")));
+                const char* descrizione = PQgetvalue(res, i, PQfnumber(res, "descrizione"));
+                double prezzo = atof(PQgetvalue(res, i, PQfnumber(res, "prezzo")));
+                const char* nome = PQgetvalue(res, i, PQfnumber(res, "nome"));
+                const char* fornitore = PQgetvalue(res, i, PQfnumber(res, "nomeF"));
+                int quantita = atoi(PQgetvalue(res, i, PQfnumber(res, "quantita")));
+
+                // Crea copie profonde delle stringhe
+                carrello[i].ID = ID;
+                carrello[i].descrizione = std::string(descrizione);
+                carrello[i].prezzo = prezzo;
+                carrello[i].nome = std::string(nome);
+                carrello[i].fornitore = std::string(fornitore);
+                carrello[i].quantita = quantita;
             }
-            risultato.first = rows; // Ritorna il numero di righe dei prodottiDisponibili
-            risultato.second = carrello; // Ritorna l'array di prodotti disponibili
-        } else {     // Se non ci sono oggetti
-        risultato.first = 0;
-        risultato.second = nullptr;
+
+            risultato.first = rows; // Numero di prodotti
+            risultato.second = carrello; // Array di prodotti
+
+        } else { // Nessun prodotto nel carrello
+            risultato.first = 0;
+            risultato.second = nullptr;
         }
-    }
-    catch(...)
-    {
-        std::string errore = "C'è stato un errore nel database!\n"; // Seleziona la frase del turno
-	    send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+
+    } catch (...) {
+        // Gestione dell'errore nel database
+        std::string errore = "C'è stato un errore nel database!\n";
+        send(clientSocket, errore.c_str(), errore.length(), 0);
         risultato.first = -1;
         risultato.second = nullptr;
-    }    
-    PQclear(res);
+    }
+
+    // Liberazione della memoria per res
+    if (res != nullptr) {
+        PQclear(res);
+    }
+
     return risultato;
 }
 
