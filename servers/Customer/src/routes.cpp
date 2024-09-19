@@ -176,7 +176,8 @@ int recuperaCustomerID(const std::string& email) {
 void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
     // Recupera l'email dai parametri della richiesta HTTP
     auto email = request.param(":email").as<std::string>();  
-
+    
+    /*
     redisContext *c2r = redisConnect(REDIS_IP, REDIS_PORT);
     if (c2r == nullptr || c2r->err) {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Unable to connect to Redis");
@@ -198,28 +199,72 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
         redisFree(c2r);
         return;
     }
+    
+    */
 
     
     int clientSocket = 0;  // In questa applicazione, simuliamo la logica del socket del client.
 
     // Recupera il carrello utilizzando l'email
-    std::pair<int, Prodotto*> risultatoCarrello = recuperaCarrello(clientSocket);
-
+    std::pair<int, Prodotto*> risultato = getCarrellos(clientSocket);
+    
+    
     // Verifica se il carrello è stato trovato
-    if (risultatoCarrello.first == -1) {
+    if (risultato.first == -1) {
         response.send(Pistache::Http::Code::Not_Found, "Carrello non trovato per questo utente.");
         return;
     }
 
     // Numero di righe/prodotti nel carrello
-    int righeCarrello = risultatoCarrello.first;
-    Prodotto* carrello = risultatoCarrello.second;
-    mostraCarrello(clientSocket, carrello, righeCarrello);
+    int righeCarrello = risultato.first;
+    Prodotto* carrello = risultato.second;
     
-    response.send(Pistache::Http::Code::Ok, "carrello visualizzato");
+    // Costruisci la risposta
+    if (risultato.first > 0 && risultato.second != nullptr) {
+        std::stringstream ss;
+        ss << "PRODOTTI NEL CARRELLO:\n";
+
+        // Itera sui prodotti e li inserisce nella stringa di risposta
+        for (int i = 0; i < righeCarrello; i++)
+        {
+            // Recupera gli attributi dei prodotti dal carrello...
+            int ID = carrello[i].ID;
+            const char* descrizione = carrello[i].descrizione;
+            double prezzo = carrello[i].prezzo;
+            const char* nomeP = carrello[i].nome;
+            const char* fornitore = carrello[i].fornitore;
+            int quantita = carrello[i].quantita;
+            // ...e li invia all'utente così che possa visualizzarli ed effettuarci operazioni
+            std::string prodotto = std::to_string(i+1) + ") ID Prodotto: " + std::to_string(ID) +
+             " Nome Prodotto: " + nomeP + 
+             " Descrizione: " + descrizione + 
+             " Fornitore: " + fornitore + 
+             " Prezzo Prodotto: " + std::to_string(prezzo) + 
+             " Quantità :" + std::to_string(quantita) + "\n";
+	        send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
+        }
+
+        response.send(Pistache::Http::Code::Ok, ss.str());
+    } else if (risultato.first == 0) {
+        response.send(Pistache::Http::Code::Ok, "Nessun prodotto disponibile");
+    } else {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dei prodotti");
+    }
+
+    // Pulisci la memoria allocata dinamicamente per i prodotti
+    if (risultato.second != nullptr) {
+        delete[] risultato.second;
+    }
+    
+    //mostraCarrello(clientSocket, carrello, righeCarrello);
+    
+    //response.send(Pistache::Http::Code::Ok, "carrello visualizzato");
 
     // Libera la memoria del carrello
-    delete[] carrello;
+    //delete[] carrello;
+    
+    
+    std::cout << "quii" <<std::endl;
 }
 
 

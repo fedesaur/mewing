@@ -31,5 +31,6 @@
 
 std::pair<int, Prodotto*> recuperaCarrello(int clientSocket);
 void mostraCarrello(int clientSocket, Prodotto* carrello, int righe);
+std::pair<int, Prodotto*> getCarrellos(int clientSocket);
 
 #endif
