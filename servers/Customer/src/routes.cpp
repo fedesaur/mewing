@@ -155,7 +155,8 @@ int recuperaCustomerID(const std::string& email) {
         PQfinish(conn);
         return -1;
     }
-
+    
+    std::cout << "sono qui" << std::endl;
     // Controlla se è stato trovato un cliente
     int customerID = -1;
     if (PQntuples(res) == 1) {
