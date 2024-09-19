@@ -16,7 +16,23 @@ BEGIN
 END $$;
 
 -------------------------------------------------------------------------
+create or replace function into_ord() returns trigger as $cart_To_ord$
+	BEGIN
+		insert into prodinord(prodotto, ordine, quantita)
+			select pc.carrello, NEW.id, pc.quantita
+			from prodincart pc
+			where NEW.customer=pc.carrello;
+		update ordine set totale=(select c.totale
+						from carrello c
+						where c.customer=NEW.customer);
+	    RETURN NEW;
+    END
+	$cart_TO_ord$
+	language plpgsql;
 
+
+create or replace TRIGGER cart_To_ord after insert on ordine for each row execute procedure into_ord();
+-------------------------------------------------------------------------
 
 create or replace function take_pkg() returns trigger as $presa_ordine$
     BEGIN
