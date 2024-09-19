@@ -174,6 +174,7 @@ bool effettuaOrdine(int clientSocket, int customerID, int RIGHE_CARRELLO, Prodot
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
 
     // Recupera gli indirizzi registrati dal Customer
+    /*
     risultato1 = recuperaIndirizzi(clientSocket);
     RIGHE_INDIRIZZI = risultato1.first;
     INDIRIZZI = risultato1.second;
@@ -181,7 +182,7 @@ bool effettuaOrdine(int clientSocket, int customerID, int RIGHE_CARRELLO, Prodot
     else if (RIGHE_INDIRIZZI == 0)
     {
         std::string vuoto = "Non ci sono indirizzi registrati. Operazione interrotta\n\n";
-	    send(clientSocket, vuoto.c_str(), vuoto.length(), 0); // Invia il messaggio pre-impostato all'utente
+	send(clientSocket, vuoto.c_str(), vuoto.length(), 0); // Invia il messaggio pre-impostato all'utente
         return false;
     }
 
@@ -196,9 +197,11 @@ bool effettuaOrdine(int clientSocket, int customerID, int RIGHE_CARRELLO, Prodot
 	    send(clientSocket, vuoto.c_str(), vuoto.length(), 0); // Invia il messaggio pre-impostato all'utente
         return false;
     }
+    */
 
-    int indIndirizzo = -1;
-    int indMetodo = -1;
+    int indIndirizzo = 1;
+    int indMetodo = 1;
+    /*
     while(datiRicevuti < datiRichiesti)
     {
 		std::string request = FRASI[datiRicevuti]; // Seleziona la frase del turno
@@ -224,12 +227,12 @@ bool effettuaOrdine(int clientSocket, int customerID, int RIGHE_CARRELLO, Prodot
             send(clientSocket, errore.c_str(), errore.length(), 0);
         }
     }
-    
+    */
     try
     {
         //Inserisce l'ordine nel database
         sprintf(comando, "INSERT INTO ordine(customer, datarich, pagamento, indirizzo) VALUES (%d, NOW, '%s', %d) RETURNING id",
-        customerID, METODI[indMetodo].tipo, INDIRIZZI[indIndirizzo].ID);
+        customerID, "bancomat", 1);
         res = db.ExecSQLtuples(comando);
         if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
 	    int idOrd = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'ordine appena creato
@@ -244,7 +247,7 @@ bool effettuaOrdine(int clientSocket, int customerID, int RIGHE_CARRELLO, Prodot
             PQclear(res);
         }
         std::string successo = "Ordine effettuato correttamente!\n\n";
-	    send(clientSocket, successo.c_str(), successo.length(), 0); // Invia il messaggio pre-impostato all'utente
+	send(clientSocket, successo.c_str(), successo.length(), 0); // Invia il messaggio pre-impostato all'utente
         delete[] risultato1.second;
         delete[] risultato2.second;
         return true;
@@ -253,7 +256,7 @@ bool effettuaOrdine(int clientSocket, int customerID, int RIGHE_CARRELLO, Prodot
     catch(...)
     {
         std::string errore = "C'è stato un problema nel database\n\n";
-	    send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
+	send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
         delete[] risultato1.second;
         delete[] risultato2.second;
         return false;
