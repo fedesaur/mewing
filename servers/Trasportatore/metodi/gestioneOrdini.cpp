@@ -248,9 +248,9 @@ bool prendiOrdine(int clientSocket, int trasporterID)
         return false;
     }
 
-    int RIGHE_ORDINI = std::get<0>(risultato2);
-    Ordine* ORDINI = std::get<1>(risultato2);
-    Indirizzo* INDIRIZZI = std::get<2>(risultato2);
+    RIGHE_ORDINI = std::get<0>(risultato2);
+    ORDINI = std::get<1>(risultato2);
+    INDIRIZZI = std::get<2>(risultato2);
     // Mostra all'utente gli ordini disponibili per le consegne
     mostraOrdini(clientSocket, RIGHE_ORDINI, ORDINI, INDIRIZZI);
     
@@ -261,7 +261,7 @@ bool prendiOrdine(int clientSocket, int trasporterID)
 
     mostraCorrieri(clientSocket, RIGHE_CORRIERI, CORRIERI);
     int indiceCor = riceviIndice(clientSocket, RIGHE_CORRIERI);
-    int idCor = CORRIERI[indiceCor].ID
+    int idCor = CORRIERI[indiceCor].ID;
 
     try
     {

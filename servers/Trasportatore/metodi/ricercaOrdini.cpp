@@ -24,7 +24,7 @@ std::tuple<int, Ordine*, Indirizzo*> ricercaOrdini(int clientSocket)
     try
     {
         //Recupera tutti gli ordini disponibili (non ancora presi in carico da altri trasportatori)
-        sprintf(comando, "SELECT ord.id, cst.mail, ord.datarich, ord.stato, ord.pagamento, ind.via, ind.civico, ind.cap, ind.citta, ind.stato AS statoIND, ord.totale"
+        sprintf(comando, "SELECT ord.id, cst.mail, ord.datarich, ord.stato, ord.pagamento, ind.via, ind.civico, ind.cap, ind.citta, ind.stato AS statoIND, ord.totale "
         "FROM indirizzo ind, customers cst, ordine ord "
         "WHERE ind.id = ord.indirizzo AND ord.customer = cst.id AND ord.id NOT IN (SELECT ordine FROM transord) "
         "AND ord.stato = 'pendente' ORDER BY ord.datarich");
@@ -106,9 +106,9 @@ void mostraOrdini(int clientSocket, int RIGHE, Ordine* ORDINI, Indirizzo* INDIRI
             const char* via = INDIRIZZI[i].via;
             int civico = INDIRIZZI[i].civico;
             const char* CAP = INDIRIZZI[i].CAP;
-            const char* city INDIRIZZI[i].citta;
+            const char* city = INDIRIZZI[i].citta;
             const char* stato = INDIRIZZI[i].stato;
-            std::string ordine = std::to_string(i+1) + ") ID Ordine: " + std::to_string(ordineID) +
+            std::string ordine = std::to_string(i+1) + ") ID Ordine: " + std::to_string(ID) +
              " Mail Customer: " + mail + 
              " Data Richiesta: " + std::to_string(time) + 
              " Metodo Pagamento: " + pagamento +
