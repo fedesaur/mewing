@@ -26,6 +26,7 @@ create or replace function into_ord() returns trigger as $cart_To_ord$
 						from carrello c
 						where c.customer=NEW.customer);
 		delete from prodincart where carrello=NEW.customer;
+		update carrello set totale=0 where customer=NEW.customer
 	    RETURN NEW;
     END
 	$cart_TO_ord$
