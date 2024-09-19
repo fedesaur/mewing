@@ -25,6 +25,7 @@ create or replace function into_ord() returns trigger as $cart_To_ord$
 		update ordine set totale=(select c.totale
 						from carrello c
 						where c.customer=NEW.customer);
+		delete from prodincart where carrello=NEW.customer;
 	    RETURN NEW;
     END
 	$cart_TO_ord$
@@ -65,7 +66,7 @@ create or replace function tot_cart() returns trigger as $buy_price$
     language plpgsql;
 
 
-create or replace TRIGGER buy_price before insert on prodincart
+create or replace TRIGGER buy_price after insert or delete on prodincart
 for each row execute procedure tot_cart();
 
 ------------------------------------------------------------------------
