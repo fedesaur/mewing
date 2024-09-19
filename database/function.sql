@@ -50,7 +50,7 @@ AS $BODY$
          if EXISTS(
                         select * 
                             From ordine o, prodmet pm
-				where pm.prod=NEW.prodotto
+				where pm.prodotto=NEW.prodotto
 				and o.id=NEW.ordine and o.pagamento=pm.metodo
                     ) THEN return NEW;
 
