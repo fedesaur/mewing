@@ -29,7 +29,7 @@ create or replace function cust_setUP() returns trigger as $customer_SetUp$
 		insert into custadd(customer,addr)
 			select c.id,c.abita
 			from customers c
-			where MEW.mail=c.mail;
+			where NEW.mail=c.mail;
 		RETURN NEW;
 	END
 	$customer_SetUp$
