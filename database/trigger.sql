@@ -22,14 +22,14 @@ END $$;
 create or replace function cust_setUP() returns trigger as $customer_SetUp$
 
 	BEGIN 
-		insert into carrello(customer) 
+		insert into carrello(customer) values( 
 		select c.id
 		from customers c
-		where NEW.mail=c.mail;
-		insert into custadd(customer,addr)
+		where NEW.mail=c.mail);
+		insert into custadd(customer,addr)values(
 			select c.id,c.abita
 			from customers c
-			where NEW.mail=c.mail;
+			where NEW.mail=c.mail);
 		RETURN NEW;
 	END
 	$customer_SetUp$
