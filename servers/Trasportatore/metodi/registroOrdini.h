@@ -33,7 +33,7 @@
 #define PASSWORD_TRAS "courier"
 #define DB_NAME "mewingdb"
 
-std::tuple<int, Ordine*, Indirizzo*> registroOrdini(int clientSocket);
+std::tuple<int, Ordine*, Corriere*> registroOrdini(int clientSocket);
 void mostraRegistro(int clientSocket, int RIGHE, Ordine* ORDINI, Corriere* CORRIERI);
 
 #endif

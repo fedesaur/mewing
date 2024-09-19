@@ -1,6 +1,6 @@
 #include "registroOrdini.h"
 
-std::tuple<int, Ordine*, Indirizzo*> registroOrdini(int clientSocket)  
+std::tuple<int, Ordine*, Corriere*> registroOrdini(int clientSocket)  
 {
     int COURIER_ID;
     char comando[1000];
@@ -45,7 +45,7 @@ std::tuple<int, Ordine*, Indirizzo*> registroOrdini(int clientSocket)
                 const char* mail = PQgetvalue(res, i, PQfnumber(res, "mail"));
                 unsigned char* data = (unsigned char*) PQgetvalue(res, i, PQfnumber(res, "datarich"));
                 time_t time = static_cast<time_t>(std::stoll(reinterpret_cast<char*>(data))); // Converte il timestamp in time_t
-                const char* statoOrd = atof(PQgetvalue(res, i, PQfnumber(res, "stato")));
+                const char* statoOrd = PQgetvalue(res, i, PQfnumber(res, "stato"));
                 const char* paga = PQgetvalue(res, i, PQfnumber(res, "pagamento"));
                 double totale = atof(PQgetvalue(res, i, PQfnumber(res, "totale")));
                 int IDCor = atoi(PQgetvalue(res, i, PQfnumber(res, "CorID")));
@@ -107,7 +107,7 @@ std::tuple<int, Ordine*, Indirizzo*> registroOrdini(int clientSocket)
             time_t time = static_cast<time_t>(std::stoll(reinterpret_cast<char*>(data1))); // Converte il timestamp in time_t
             unsigned char* data2 = (unsigned char*) PQgetvalue(res, i, PQfnumber(res, "datarich"));
             time_t timeCons = static_cast<time_t>(std::stoll(reinterpret_cast<char*>(data2))); // Converte il timestamp in time_t
-            const char* statoOrd = atof(PQgetvalue(res, i, PQfnumber(res, "stato")));
+            const char* statoOrd = PQgetvalue(res, i, PQfnumber(res, "stato"));
             const char* paga = PQgetvalue(res, i, PQfnumber(res, "pagamento"));
             double totale = atof(PQgetvalue(res, i, PQfnumber(res, "totale")));
             int IDCor = atoi(PQgetvalue(res, i, PQfnumber(res, "CorID")));
