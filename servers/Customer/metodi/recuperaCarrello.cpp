@@ -64,23 +64,23 @@ std::pair<int, Prodotto*> recuperaCarrello(int clientSocket)
             Prodotto* carrello = new Prodotto[rows];
 
             // Recupera i prodotti e li memorizza in carrello
-            for (int i = 0; i < rows; i++) {
-                // Recupera gli attributi dei prodotti dalla query SQL
-                int ID = atoi(PQgetvalue(res, i, PQfnumber(res, "id")));
-                const char* descrizione = PQgetvalue(res, i, PQfnumber(res, "descrizione"));
-                double prezzo = atof(PQgetvalue(res, i, PQfnumber(res, "prezzo")));
-                const char* nome = PQgetvalue(res, i, PQfnumber(res, "nome"));
-                const char* fornitore = PQgetvalue(res, i, PQfnumber(res, "nomeF"));
-                int quantita = atoi(PQgetvalue(res, i, PQfnumber(res, "quantita")));
+	        for (int i = 0; i < rows; i++) {
+	    	// Recupera gli attributi dei prodotti dalla query SQL
+	    	int ID = atoi(PQgetvalue(res, i, PQfnumber(res, "id")));
+	    	const char* descrizione = PQgetvalue(res, i, PQfnumber(res, "descrizione"));
+	    	double prezzo = atof(PQgetvalue(res, i, PQfnumber(res, "prezzo")));
+	    	const char* nome = PQgetvalue(res, i, PQfnumber(res, "nome"));
+	    	const char* fornitore = PQgetvalue(res, i, PQfnumber(res, "nomeF"));
+	    	int quantita = atoi(PQgetvalue(res, i, PQfnumber(res, "quantita")));
 
-                // Crea copie profonde delle stringhe
-                carrello[i].ID = ID;
-                carrello[i].descrizione = std::string(descrizione);
-                carrello[i].prezzo = prezzo;
-                carrello[i].nome = std::string(nome);
-                carrello[i].fornitore = std::string(fornitore);
-                carrello[i].quantita = quantita;
-            }
+	    	// Assegna direttamente i valori alle stringhe (conversione automatica da const char* a std::string)
+	    	carrello[i].ID = ID;
+	    	carrello[i].descrizione = descrizione;   // std::string converte automaticamente da const char*
+	    	carrello[i].prezzo = prezzo;
+	    	carrello[i].nome = nome;
+	    	carrello[i].fornitore = fornitore;
+	    	carrello[i].quantita = quantita;
+		}
 
             risultato.first = rows; // Numero di prodotti
             risultato.second = carrello; // Array di prodotti
