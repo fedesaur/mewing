@@ -2,13 +2,14 @@
 #define RICERCA_ORDINI_H
 
 #include <string> // Importa std::string
-#include <utility> //Importa pair
+#include <tuple> // Importa std::tuple
 #include <iostream>
 #include <sstream>
 #include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../../../entities/Ordine.h"
+#include "../../../entities/Indirizzo.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -30,7 +31,7 @@
 #define PASSWORD_TRAS "courier"
 #define DB_NAME "mewingdb"
 
-std::pair<int, Ordine*> ricercaOrdini(int clientSocket);
-void mostraOrdini(int clientSocket, int RIGHE, Ordine* ORDINI);
+std::tuple<int, Ordine*, Indirizzo*> ricercaOrdini(int clientSocket);
+void mostraOrdini(int clientSocket, int RIGHE, Ordine* ORDINI, Indirizzo* INDIRIZZI);
 
 #endif
