@@ -28,8 +28,8 @@ std::tuple<int, Ordine*, Corriere*> registroOrdini(int clientSocket)
     try
     {
         // Recupera gli ordini in corso e non ancora consegnati
-        sprintf(comando, "SELECT ord.id, cst.mail, ord.datarich, ord.stato, ord.pagamento, ord.totale, cor.id AS CorID, cor.nome, cor.cognome"
-        "FROM customers cst, ordine ord, consegna cons, corriere cor, WHERE ord.id = cons.ordine "
+        sprintf(comando, "SELECT ord.id, cst.mail, ord.datarich, ord.stato, ord.pagamento, ord.totale, cor.id AS CorID, cor.nome, cor.cognome "
+        "FROM customers cst, ordine ord, consegna cons, corriere cor WHERE ord.id = cons.ordine "
         "AND cor.id = cons.corriere AND ord.customer = cst.id AND cor.azienda = %d AND ord.id NOT IN (SELECT id FROM ordineconse) "
         "ORDER BY ord.datarich", COURIER_ID);
         res = db.ExecSQLtuples(comando);
@@ -68,7 +68,7 @@ std::tuple<int, Ordine*, Corriere*> registroOrdini(int clientSocket)
         }
         PQclear(res);
         // Recupera gli ordini consegnati
-        sprintf(comando, "SELECT ord.id, cst.mail, ord.datarich, orc.datacons, ord.stato, ord.pagamento, ord.totale, cor.id AS CorID, cor.nome, cor.cognome"
+        sprintf(comando, "SELECT ord.id, cst.mail, ord.datarich, orc.datacons, ord.stato, ord.pagamento, ord.totale, cor.id AS CorID, cor.nome, cor.cognome "
         "FROM customers cst, ordine ord, consegna cons, corriere cor, ordineconse orc WHERE ord.id = cons.ordine "
         "AND cor.id = cons.corriere AND ord.customer = cst.id AND cor.azienda = %d AND ord.id = orc.id "
         "ORDER BY orc.datacons", COURIER_ID);
@@ -88,7 +88,7 @@ std::tuple<int, Ordine*, Corriere*> registroOrdini(int clientSocket)
                 ORDINI_TOTALI[i].ID = ORDINI_INCORSO[i].ID;
                 ORDINI_TOTALI[i].MailCustomer = ORDINI_INCORSO[i].MailCustomer;
                 ORDINI_TOTALI[i].DataRichiesta = ORDINI_INCORSO[i].DataRichiesta;
-                ORDINI_TOTALI[i].DataConsegna = NULL;
+                ORDINI_TOTALI[i].DataConsegna = time(nullptr);
                 ORDINI_TOTALI[i].Stato = ORDINI_INCORSO[i].Stato;
                 ORDINI_TOTALI[i].Pagamento = ORDINI_INCORSO[i].Pagamento;
                 ORDINI_TOTALI[i].Totale = ORDINI_INCORSO[i].Totale;
@@ -130,14 +130,14 @@ std::tuple<int, Ordine*, Corriere*> registroOrdini(int clientSocket)
         }
         delete[] ORDINI_INCORSO;
         delete[] CORRIERI_INCORSO;
-        std::tuple<int, Ordine*, Indirizzo*> ritorno(RIGHE_TOTALI, ORDINI_TOTALI, CORRIERI_TOTALI);
+        std::tuple<int, Ordine*, Corriere*> ritorno(RIGHE_TOTALI, ORDINI_TOTALI, CORRIERI_TOTALI);
         return ritorno;
     }
     catch(...)
     {
         std::string errore = "C'è stato un problema con il database\n";
         send(clientSocket, errore.c_str(), errore.length(), 0);
-        std::tuple<int, Ordine*, Indirizzo*> ritorno(-1, nullptr, nullptr);
+        std::tuple<int, Ordine*, Corriere*> ritorno(-1, nullptr, nullptr);
         return ritorno;
     }
 }
@@ -158,7 +158,7 @@ void mostraRegistro(int clientSocket, int RIGHE, Ordine* ORDINI, Corriere* CORRI
              " Metodo Pagamento: " + ORDINI[i].Pagamento +
              " Totale Ordine: " + std::to_string(ORDINI[i].Totale) + "\n" +
              " Preso in carico da " + CORRIERI[i].nome + " " + CORRIERI[i].cognome + " (ID: " + std::to_string(CORRIERI[i].ID) + ")\n";
-            if (ORDINI[i].DataConsegna != NULL) ordine += "Consegnato il " + std::to_string(ORDINI[i].DataConsegna) + "\n";
+            if (ORDINI[i].DataConsegna != time(nullptr)) ordine += "Consegnato il " + std::to_string(ORDINI[i].DataConsegna) + "\n";
 	        send(clientSocket, ordine.c_str(), ordine.length(), 0);
         }
     } else {

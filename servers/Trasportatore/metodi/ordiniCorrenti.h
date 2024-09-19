@@ -31,7 +31,7 @@
 #define PASSWORD_TRAS "courier"
 #define DB_NAME "mewingdb"
 
-std::tuple<int, Corriere*, Ordine*> ordiniCorrenti(int clientSocket);
+std::tuple<int, Ordine*, Corriere*> ordiniCorrenti(int clientSocket);
 void mostraCorrenti(int clientSocket, int RIGHE, Corriere* CORRIERI, Ordine* ORDINI);
 
 #endif

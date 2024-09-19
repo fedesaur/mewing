@@ -6,8 +6,8 @@ bool gestioneOrdini(int clientSocket)
     int RIGHE;
     char buffer[1024] = {0};
     int OPERAZIONI_DISPONIBILI = 4;
-    std::string OPERAZIONI[] = {"1) Recupera dettagli ordine\n", "2) Ricerca nuovo ordine\n", "3) Conferma consegna di un ordine", "Altrimenti digita Q per terminare\n"};
-    std::tuple<int, Corriere*, Ordine*> risultato;
+    std::string OPERAZIONI[] = {"1) Recupera dettagli ordine\n", "2) Ricerca nuovo ordine\n", "3) Conferma consegna di un ordine\n", "Altrimenti digita Q per terminare\n"};
+    std::tuple<int, Ordine*, Corriere*> risultato;
     Corriere* CORRIERI;
     Ordine* ORDINI;
     redisContext *c2r; // c2r contiene le info sul contesto
@@ -30,8 +30,9 @@ bool gestioneOrdini(int clientSocket)
     while(!terminaConnessione)
     {
         RIGHE = std::get<0>(risultato);
-        CORRIERI = std::get<1>(risultato);
-        ORDINI = std::get<2>(risultato);
+        ORDINI = std::get<1>(risultato);
+        CORRIERI = std::get<2>(risultato);
+        
         
         // Mostra i corrieri e i loro ordini
         mostraCorrenti(clientSocket,RIGHE,CORRIERI,ORDINI);
@@ -155,12 +156,12 @@ void dettagliOrdine(int clientSocket, int ordineID)
         "FROM indirizzo ind, customers cst, ordine ord "
         "WHERE ind.id = ord.indirizzo AND ord.customer = cst.id AND ord.id = %d", ordineID);
         res = db.ExecSQLtuples(comando);
-        if (PQntuples(res) == 0) return false;
+        if (PQntuples(res) == 0) return;
         // Recupera gli attributi dell'ordine...
         const char* mail = PQgetvalue(res, 0, PQfnumber(res, "mail"));
         unsigned char* data = (unsigned char*) PQgetvalue(res, 0, PQfnumber(res, "datarich"));
         time_t time = static_cast<time_t>(std::stoll(reinterpret_cast<char*>(data))); // Converte il timestamp in time_t
-        const char* statoOrd = atof(PQgetvalue(res, 0, PQfnumber(res, "stato")));
+        const char* statoOrd = PQgetvalue(res, 0, PQfnumber(res, "stato"));
         const char* paga = PQgetvalue(res, 0, PQfnumber(res, "pagamento"));
         
         //...e dell'indirizzo di consegna
@@ -173,7 +174,7 @@ void dettagliOrdine(int clientSocket, int ordineID)
 
         std::string ordine = "ID Ordine: " + std::to_string(ordineID) +
              " Mail Customer: " + mail + 
-             " Data Richiesta: " + std::to_string(data) + 
+             " Data Richiesta: " + std::to_string(time) + 
              " Metodo Pagamento: " + paga +
              " Totale Ordine: " + std::to_string(totale) + "\n" + 
              " Da consegnare in: " + via + " " + std::to_string(civico) + ", " + city + " (CAP : " + CAP + "), " + stato + "\n";

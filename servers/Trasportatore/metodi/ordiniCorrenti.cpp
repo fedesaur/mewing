@@ -21,8 +21,8 @@ std::tuple<int, Ordine*, Corriere*> ordiniCorrenti(int clientSocket)
     COURIER_ID = atoi(id.c_str()); // ID Corriere
 
     // Seleziona tutti i corrieri e gli ordini da loro presi in carico
-    sprintf(comando, "SELECT ord.id, cst.mail, ord.datarich, ord.stato, ord.pagamento, ord.totale, cor.id AS CorID, cor.nome, cor.cognome"
-    "FROM customers cst, ordine ord, consegna cons, corriere cor, WHERE ord.id = cons.ordine "
+    sprintf(comando, "SELECT ord.id, cst.mail, ord.datarich, ord.stato, ord.pagamento, ord.totale, cor.id AS CorID, cor.nome, cor.cognome "
+    "FROM customers cst, ordine ord, consegna cons, corriere cor WHERE ord.id = cons.ordine "
     "AND cor.id = cons.corriere AND ord.customer = cst.id AND cor.azienda = %d AND ord.id NOT IN (SELECT id FROM ordineconse) "
     "ORDER BY cor.id", COURIER_ID);
     try
@@ -41,7 +41,7 @@ std::tuple<int, Ordine*, Corriere*> ordiniCorrenti(int clientSocket)
                 const char* mail = PQgetvalue(res, i, PQfnumber(res, "mail"));
                 unsigned char* data = (unsigned char*) PQgetvalue(res, i, PQfnumber(res, "datarich"));
                 time_t time = static_cast<time_t>(std::stoll(reinterpret_cast<char*>(data))); // Converte il timestamp in time_t
-                const char* statoOrd = atof(PQgetvalue(res, i, PQfnumber(res, "stato")));
+                const char* statoOrd = PQgetvalue(res, i, PQfnumber(res, "stato"));
                 const char* paga = PQgetvalue(res, i, PQfnumber(res, "pagamento"));
                 double totale = atof(PQgetvalue(res, i, PQfnumber(res, "totale")));
                 int IDCor = atoi(PQgetvalue(res, i, PQfnumber(res, "CorID")));

@@ -187,7 +187,7 @@ bool Courier_Server::gestisciOperazioni(int clientSocket)
     send(clientSocket, termina.c_str(), termina.length(), 0);
     
     bool attendiInput = true; // Continua la richiesta finché non riceve un input adatto
-    std::tuple<int, Ordine*, Indirizzo*> temp;
+    std::tuple<int, Ordine*, Corriere*> temp;
     while (attendiInput)
     {
         int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
