@@ -206,7 +206,7 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
     int clientSocket = 0;  // In questa applicazione, simuliamo la logica del socket del client.
 
     // Recupera il carrello utilizzando l'email
-    std::pair<int, Prodotto*> risultato = getCarrellos(clientSocket);
+    std::pair<int, Prodotto*> risultato = recuperaCarrello(clientSocket);
     
     
     // Verifica se il carrello è stato trovato
@@ -225,23 +225,13 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
         ss << "PRODOTTI NEL CARRELLO:\n";
 
         // Itera sui prodotti e li inserisce nella stringa di risposta
-        for (int i = 0; i < righeCarrello; i++)
-        {
-            // Recupera gli attributi dei prodotti dal carrello...
-            int ID = carrello[i].ID;
-            const char* descrizione = carrello[i].descrizione;
-            double prezzo = carrello[i].prezzo;
-            const char* nomeP = carrello[i].nome;
-            const char* fornitore = carrello[i].fornitore;
-            int quantita = carrello[i].quantita;
-            // ...e li invia all'utente così che possa visualizzarli ed effettuarci operazioni
-            std::string prodotto = std::to_string(i+1) + ") ID Prodotto: " + std::to_string(ID) +
-             " Nome Prodotto: " + nomeP + 
-             " Descrizione: " + descrizione + 
-             " Fornitore: " + fornitore + 
-             " Prezzo Prodotto: " + std::to_string(prezzo) + 
-             " Quantità :" + std::to_string(quantita) + "\n";
-	        send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
+        for (int i = 0; i < risultato.first; ++i) {
+            ss << i + 1 << ") ID Prodotto: " << risultato.second[i].ID
+               << " NomeP: " << risultato.second[i].nome
+               << " Quantita: " << risultato.second[i].quantita
+               << " Descrizione: " << risultato.second[i].descrizione
+               << " Fornitore: " << risultato.second[i].fornitore
+               << " Prezzo: " << risultato.second[i].prezzo << "\n";
         }
 
         response.send(Pistache::Http::Code::Ok, ss.str());
@@ -250,18 +240,8 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
     } else {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dei prodotti");
     }
-
-    // Pulisci la memoria allocata dinamicamente per i prodotti
-    if (risultato.second != nullptr) {
-        delete[] risultato.second;
-    }
     
-    //mostraCarrello(clientSocket, carrello, righeCarrello);
-    
-    //response.send(Pistache::Http::Code::Ok, "carrello visualizzato");
-
-    // Libera la memoria del carrello
-    //delete[] carrello;
+    response.send(Pistache::Http::Code::Ok, "carrello visualizzato");
     
     
     std::cout << "quii" <<std::endl;
@@ -280,22 +260,25 @@ void ordina(const Pistache::Rest::Request& request, Pistache::Http::ResponseWrit
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente");
         return;
     }
-    
+    /*
     redisContext *c2r = redisConnect(REDIS_IP, REDIS_PORT);
     if (c2r == nullptr || c2r->err) {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Unable to connect to Redis");
         return;
     }
-
+    */
+    
     // Prepara il comando per aggiungere l'email allo stream
-    redisReply* reply = static_cast<redisReply*>(redisCommand(c2r, "XADD %s * id %s", READ_STREAM, customerID));
+    //redisReply* reply = static_cast<redisReply*>(redisCommand(c2r, "XADD %s * id %s", READ_STREAM, customerID));
 
     // Controlla l'esito del comando Redis
+    /*
     if (reply == nullptr || reply->type != REDIS_REPLY_STRING) {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Error writing email to Redis stream");
         redisFree(c2r);
         return;
     }
+    */
 
     // Simula un clientSocket 
     int clientSocket = 0;

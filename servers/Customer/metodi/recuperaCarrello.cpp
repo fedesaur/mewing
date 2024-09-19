@@ -15,6 +15,8 @@ std::pair<int, Prodotto*> getCarrellos(int clientSocket){
         // Esegui la query SQL
         res = db.ExecSQLtuples(comando);
         rows = PQntuples(res);
+        
+
 
         if (rows > 0) {
             Prodotto* carrello = new Prodotto[rows];
@@ -125,6 +127,8 @@ std::pair<int, Prodotto*> recuperaCarrello(int clientSocket)
         // Esegui la query SQL
         res = db.ExecSQLtuples(comando);
         rows = PQntuples(res);
+        
+        std::cout << rows << std::endl;
 
         if (rows > 0) {
             Prodotto* carrello = new Prodotto[rows];
@@ -146,6 +150,8 @@ std::pair<int, Prodotto*> recuperaCarrello(int clientSocket)
 	    	carrello[i].nome = nome;
 	    	carrello[i].fornitore = fornitore;
 	    	carrello[i].quantita = quantita;
+	    	
+	    	std::cout << carrello[i].descrizione << std::endl;
 		}
 
             risultato.first = rows; // Numero di prodotti
@@ -177,7 +183,7 @@ void mostraCarrello(int clientSocket, Prodotto* carrello, int righe)
     if (righe > 0)
     {
         std::string request = "\nPRODOTTI NEL CARRELLO:\n"; //... e lo stampa
-	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+	send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
         for (int i = 0; i < righe; i++)
         {
             // Recupera gli attributi dei prodotti dal carrello...
