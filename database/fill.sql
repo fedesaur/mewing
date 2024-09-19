@@ -13,6 +13,13 @@ insert into customers (nome, cognome, mail, abita) values ('edoardo','bughi','ab
 insert into customers (nome, cognome, mail, abita) values ('simone','camagna','bca@bca.it',2);
 insert into customers (nome, cognome, mail, abita) values ('federica','sardo','cab@cab.it',3);
 
+insert into carrello(customer)values(1);
+insert into carrello(customer)values(2);
+insert into carrello(customer)values(3);
+
+insert into custadd(customer, addr)values(1,1);
+insert into custadd(customer, addr)values(2,2);
+insert into custadd(customer, addr)values(3,3);
 
 insert into fornitore (nome, piva, mail,telefono, sede) values('noscam','12345678901','prova1@prova1.it','+393391234567',4);
 insert into fornitore (nome, piva, mail,telefono, sede) values('scam','09876543210','prova2@prova2.it','+393930987654',5);
