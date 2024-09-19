@@ -231,7 +231,7 @@ bool effettuaOrdine(int clientSocket, int customerID, int RIGHE_CARRELLO, Prodot
     try
     {
         //Inserisce l'ordine nel database
-        sprintf(comando, "INSERT INTO ordine(customer, datarich, pagamento, indirizzo) VALUES (%d, NOW, '%s', %d) RETURNING id",
+        sprintf(comando, "INSERT INTO ordine(customer, datarich, pagamento, indirizzo) VALUES (%d, NOW(), '%s', %d) RETURNING id",
         customerID, "bancomat", 1);
         res = db.ExecSQLtuples(comando);
         if (PQresultStatus(res) != PGRES_TUPLES_OK) return false; // Controlla che la query sia andata a buon fine
