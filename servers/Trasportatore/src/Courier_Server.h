@@ -7,8 +7,9 @@
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../metodi/autenticazione.h"
-#include "../metodi/ricercaOrdini.h"
+#include "../metodi/gestioneOrdini.h"
 #include "../metodi/gestisciCorrieri.h"
+#include "../metodi/registroOrdini.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -34,8 +35,8 @@ class Courier_Server
         int ID_CONNESSIONE = 0;
         int SERVER_SOCKET;
         std::mutex id_mutex;
-        std::string OPZIONI[4]; // Opzioni dell'utente
-        int NUMERO_OPZIONI = 4;
+        std::string OPZIONI[3]; // Opzioni dell'utente
+        int NUMERO_OPZIONI = 3;
         bool handshake(int clientSocket);
         bool gestisciAutenticazione(int clientSocket);
         bool gestisciOperazioni(int clientSocket);

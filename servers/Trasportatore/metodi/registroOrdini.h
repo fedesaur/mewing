@@ -11,6 +11,7 @@
 #include "../../../entities/Ordine.h"
 #include "../../../entities/Indirizzo.h"
 #include "../../../lib/funzioniAusiliarie.h"
+#include "../metodi/ordiniCorrenti.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -32,6 +33,7 @@
 #define PASSWORD_TRAS "courier"
 #define DB_NAME "mewingdb"
 
-std::optional<std::tuple<int, Ordine*, Indirizzo*>> registroOrdini(int clientSocket);
+std::tuple<int, Ordine*, Indirizzo*> registroOrdini(int clientSocket);
+void mostraRegistro(int clientSocket, int RIGHE, Ordine* ORDINI, Corriere* CORRIERI);
 
 #endif

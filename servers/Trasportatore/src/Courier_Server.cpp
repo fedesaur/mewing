@@ -4,10 +4,9 @@
 Courier_Server::Courier_Server()
 {
     // Definisce le opzioni del Supplier nel database
-    OPZIONI[0] = "Modifica profilo";
-    OPZIONI[1] = "Ricerca ordini";
-    OPZIONI[2] = "Ordina prodotti";
-    OPZIONI[3] = "Gestisci Corrieri";
+    OPZIONI[0] = "Gestisci ordini";
+    OPZIONI[1] = "Visiona registro degli ordini";
+    OPZIONI[2] = "Gestisci Corrieri";
 
     // Crea il socket del server
     SERVER_SOCKET = socket(AF_INET, SOCK_STREAM, 0); // Crea il socket
@@ -188,7 +187,7 @@ bool Courier_Server::gestisciOperazioni(int clientSocket)
     send(clientSocket, termina.c_str(), termina.length(), 0);
     
     bool attendiInput = true; // Continua la richiesta finché non riceve un input adatto
-
+    std::tuple<int, Ordine*, Indirizzo*> temp;
     while (attendiInput)
     {
         int bytesRead = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
@@ -201,41 +200,39 @@ bool Courier_Server::gestisciOperazioni(int clientSocket)
                 return false; // Termina la connessione
             } else if (std::isdigit(messaggio[0])) {
                 int opzione = std::stoi(messaggio) - 1;
-                std::pair<int, Ordine*> risultato;
-                
-                if (opzione >= 0 && opzione < NUMERO_OPZIONI) 
+                std::pair<int, Ordine*> risultato; 
+                switch(opzione)
                 {
-                    switch(opzione)
-                    {
-                        case 0:
-                            std::cout << "Funzione Modifica profilo non implementata\n";
-                            send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
+                    case 0:
+                            gestioneOrdini(clientSocket);
                             break;
-                        case 1:
-                            risultato = ricercaOrdini(clientSocket);
-                            mostraOrdini(clientSocket, risultato.first, risultato.second);
-                            delete[] risultato.second;
+                    case 1:
+                            temp = registroOrdini(clientSocket);
+                            if (std::get<0>(temp) != -1)
+                            {
+                                mostraRegistro(clientSocket, std::get<0>(temp), std::get<1>(temp), std::get<2>(temp));
+                                delete[] std::get<1>(temp);
+                                delete[] std::get<2>(temp);
+                            }
                             break;
-                        case 2:
-                            std::cout << "Funzione Ordina prodotti non implementata\n";
-                            send(clientSocket, "Funzione non ancora implementata.\n", 35, 0);
-                            break;
-                        case 3:
+                    case 2:
                             gestisciCorrieri(clientSocket);
                             break;
-                    }
-                    attendiInput = false; // Input valido ricevuto, esce dal loop
-                } else {
-                    std::string errore = "Opzione non valida, riprova.\n";
-                    send(clientSocket, errore.c_str(), errore.length(), 0);
+                    default:
+                        std::string errore = "Opzione non valida, riprova.\n";
+                        send(clientSocket, errore.c_str(), errore.length(), 0);
+                        break;
                 }
+                attendiInput = false; // Input valido ricevuto, esce dal loop
             } else {
-                std::string errore = "Input non valido, riprova.\n";
+                std::string errore = "Opzione non valida, riprova.\n";
                 send(clientSocket, errore.c_str(), errore.length(), 0);
             }
+        } else {
+            std::string errore = "Input non valido, riprova.\n";
+            send(clientSocket, errore.c_str(), errore.length(), 0);
         }
     } // Continua finché non riceve un input valido
-    
     return true;
 }
 
