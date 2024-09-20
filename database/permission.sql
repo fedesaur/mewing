@@ -56,5 +56,6 @@ GRANT INSERT, UPDATE, SELECT, DELETE on inwish to :customer;
 GRANT INSERT, UPDATE, SELECT, DELETE on metpag to :customer;
 GRANT SELECT, INSERT, UPDATE, DELETE on ordine to :customer;
 GRANT INSERT, UPDATE, SELECT, DELETE on prodincart to :customer;
+GRNAT INSERT, SELECT on prodinord to :customer;
 GRANT SELECT on prodotto to :customer;
 GRANT SELECT on fornitore to :customer;
