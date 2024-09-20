@@ -59,3 +59,4 @@ GRANT INSERT, UPDATE, SELECT, DELETE on prodincart to :customer;
 GRANT INSERT, SELECT on prodinord to :customer;
 GRANT SELECT on prodotto to :customer;
 GRANT SELECT on fornitore to :customer;
+GRANT SEELECT, INSERT on prodmet to :customer;
