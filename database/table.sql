@@ -167,7 +167,7 @@ CREATE TABLE IF NOT EXISTS ordine
     stato statoordine NOT NULL DEFAULT 'pendente'::statoordine,
     pagamento tipometpag,
     indirizzo integer NOT NULL,
-    totale numeric NOT NULL,
+    totale numeric NOT NULL DEFAULT 0,
     CONSTRAINT ordine_pkey PRIMARY KEY (id),
     CONSTRAINT "indCust" FOREIGN KEY (indirizzo)
         REFERENCES indirizzo (id) MATCH SIMPLE
