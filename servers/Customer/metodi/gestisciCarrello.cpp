@@ -239,26 +239,17 @@ bool effettuaOrdine(int clientSocket, int customerID, int RIGHE_CARRELLO, Prodot
         PQclear(res);
 
         // Ogni prodotto viene inserito nell'ordine
-        for (int i = 0; i < RIGHE_CARRELLO; i++)
-        {
+        std::cout << "Inizio ciclo!\n";
+   
             sprintf(comando, "INSERT INTO prodinord(prodotto, ordine, quantita) VALUES (%d, %d, %d)",
-            CARRELLO[i].ID, idOrd, CARRELLO[i].quantita);
+            1, idOrd, 10);
             res = db.ExecSQLcmd(comando);
-            PQclear(res);
-        }
-        std::string successo = "Ordine effettuato correttamente!\n\n";
-	send(clientSocket, successo.c_str(), successo.length(), 0); // Invia il messaggio pre-impostato all'utente
-        delete[] risultato1.second;
-        delete[] risultato2.second;
+        std::cout << "Fine ciclo!\n";
         return true;
 
     }
     catch(...)
     {
-        std::string errore = "C'è stato un problema nel database\n\n";
-	send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
-        delete[] risultato1.second;
-        delete[] risultato2.second;
         return false;
     }
 }
