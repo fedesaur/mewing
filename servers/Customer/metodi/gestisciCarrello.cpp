@@ -239,12 +239,6 @@ bool effettuaOrdine(int clientSocket, int customerID, int RIGHE_CARRELLO, Prodot
         PQclear(res);
 
         // Ogni prodotto viene inserito nell'ordine
-        std::cout << "Inizio ciclo!\n";
-   
-            sprintf(comando, "INSERT INTO prodinord(prodotto, ordine, quantita) VALUES (%d, %d, %d)",
-            1, idOrd, 10);
-            res = db.ExecSQLcmd(comando);
-        std::cout << "Fine ciclo!\n";
         return true;
 
     }
