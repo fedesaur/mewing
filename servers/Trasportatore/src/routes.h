@@ -11,6 +11,9 @@
 #include "../metodi/gestisciCorrieri.h"
 #include "../metodi/registroOrdini.h"
 #include "../metodi/ricercaOrdini.h"
+#include <pistache/http.h>
+#include <pistache/endpoint.h>
+#include <iostream>
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
@@ -24,7 +27,4 @@ void autenticaTrasportatore(const Pistache::Rest::Request& request, Pistache::Ht
 void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 int recuperaTrasporterID(std::string IVA);
-void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-void ordina(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-
 #endif // ROUTES_H

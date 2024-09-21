@@ -5,7 +5,8 @@ BDIR=../bin
 CC=g++
 # use this when connecting to Postgresql (library lpq)
 #CFLAGS=-std=c++11 -I. -I$(IDIR) -I/usr/include/postgresql -lpq -lm 
-CFLAGS=-std=c++20 -I. -I$(IDIR) -I/usr/include/postgresql -lpq -lm -lhiredis
+CFLAGS=-std=c++20 -I. -I$(IDIR) -I/usr/include/postgresql -lpq -lm -lhiredis -lpistache
+
 
 # use this when no connection to Postgresql (library lpq) is needed
 #CFLAGS=-std=c++11 -I. -I$(IDIR) -lm 
@@ -20,7 +21,7 @@ autentication_OBJ = $(wildcard ../metodi/*.o)
 aux_OBJ = $(wildcard ../../../lib/*.o)
 
 
-all:	create_dirs con2db con2redis aux autenticazione courier_server $(BDIR)/main
+all:	create_dirs con2db con2redis aux autenticazione api courier_server $(BDIR)/main
 
 create_dirs:
 	mkdir -p $(BDIR)
@@ -37,6 +38,9 @@ aux: ../../../lib/funzioniAusiliarie.cpp ../../../lib/funzioniAusiliarie.h
 
 autenticazione:
 	$(MAKE) -C ../metodi #Chiama il makefile di autenticazione
+	
+api: routes.cpp routes.h
+	$(CC) -c -o $(ODIR)/routes.o $< $(CFLAGS)
 
 courier_server: Courier_Server.cpp Courier_Server.h
 	$(CC) -c -o $(ODIR)/Courier_Server.o $< $(CFLAGS)

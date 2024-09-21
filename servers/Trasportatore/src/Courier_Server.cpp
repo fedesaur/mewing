@@ -1,5 +1,7 @@
 #include "Courier_Server.h"
 
+using namespace Pistache;
+
 // Costruttore di Courier
 Courier_Server::Courier_Server()
 {
@@ -43,7 +45,7 @@ void Courier_Server::startPistache() {
     server.serve();
 }
 
-Courier_Server::~Customer_Server() {
+Courier_Server::~Courier_Server() {
     if (pistacheThread.joinable()) {
         pistacheThread.join();
     }

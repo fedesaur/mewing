@@ -238,7 +238,7 @@ bool prendiOrdine(int clientSocket, int trasporterID)
     RIGHE_CORRIERI = risultato1.first;
     CORRIERI = risultato1.second;
 
-    std::tuple<int, Ordine*, Indirizzo*> risultato2 = ricercaOrdini(clientSocket);  
+    std::tuple<int, Ordine*, Indirizzo*> risultato2 = ricercaOrdini();  
     if (std::get<0>(risultato2) == -1) return false;
     else if (std::get<0>(risultato2) == 0)
     {
@@ -252,7 +252,7 @@ bool prendiOrdine(int clientSocket, int trasporterID)
     ORDINI = std::get<1>(risultato2);
     INDIRIZZI = std::get<2>(risultato2);
     // Mostra all'utente gli ordini disponibili per le consegne
-    mostraOrdini(clientSocket, RIGHE_ORDINI, ORDINI, INDIRIZZI);
+    //mostraOrdini(clientSocket, RIGHE_ORDINI, ORDINI, INDIRIZZI);
     
     std::string request = "Quale ordine vuoi prendere in carico?\n";
 	send(clientSocket, request.c_str(), request.length(), 0); 

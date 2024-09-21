@@ -7,6 +7,7 @@
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
 #include <pistache/endpoint.h>
+#include <pistache/http.h>
 #include <pistache/router.h>
 #include <unistd.h>
 #include <cstring>
@@ -39,3 +40,5 @@ class Courier_Server
         Pistache::Rest::Router router; // Router per Pistache
         void startPistache(); // Avvia il server Pistache
 };
+
+#endif // CUSTOMER_SERVER_H
