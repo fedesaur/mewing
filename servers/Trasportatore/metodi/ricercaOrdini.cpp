@@ -1,5 +1,6 @@
 #include "ricercaOrdini.h"
 
+
 std::tuple<int, Ordine*, Indirizzo*> ricercaOrdini()
 {
     int rows;
@@ -17,6 +18,7 @@ std::tuple<int, Ordine*, Indirizzo*> ricercaOrdini()
 
         res = db.ExecSQLtuples(comando);
         rows = PQntuples(res);
+        std::cout << rows << std::endl;
         if (rows > 0)
         {
             Ordine* ORDINI = new Ordine[rows];
@@ -48,8 +50,11 @@ std::tuple<int, Ordine*, Indirizzo*> ricercaOrdini()
                 INDIRIZZI[i].CAP = CAP;
                 INDIRIZZI[i].citta = city;
                 INDIRIZZI[i].stato = stato;
+
             }
-            std::tuple<int, Ordine*, Indirizzo*> risultato(rows, ORDINI, INDIRIZZI);
+           std::get<0>(risultato)=rows;
+           std::get<1>(risultato)=ORDINI;
+           std::get<2>(risultato)=INDIRIZZI;
         }
         else
         {

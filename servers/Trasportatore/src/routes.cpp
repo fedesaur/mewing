@@ -93,6 +93,8 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
     int RIGHE = std::get<0>(risultato);
     Ordine* ORDINI = std::get<1>(risultato);
     Indirizzo* INDIRIZZI =  std::get<2>(risultato);
+    
+
     // Costruisci la risposta
     try
     {
@@ -100,7 +102,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
         {
             std::stringstream ss;
             ss << "ORDINI DISPONIBILI:\n";
-
+            
             // Itera sui prodotti e li inserisce nella stringa di risposta
             for (int i = 0; i < RIGHE; i++) 
             {
@@ -112,7 +114,8 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
                << " Da consegnare in: " << INDIRIZZI[i].via << " " << INDIRIZZI[i].civico
                << ", " << INDIRIZZI[i].citta << " (CAP : " << INDIRIZZI[i].CAP << "), "
                << INDIRIZZI[i].stato << "\n";
-
+               /*
+                
                 sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF, pn.quantita "
                 "FROM prodotto pr, prodinord pn, fornitore fr WHERE pn.prodotto = pr.id "
                 "AND pr.fornitore = fr.id AND pn.ordine = %d", ORDINI[i].ID);
@@ -136,7 +139,9 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
                     << " Quantità :" << std::to_string(quantita) << "\n";
                 }
                 PQclear(res);
-            }
+            
+            */
+        }
         // Pulisci la memoria allocata dinamicamente per gli ordini
         delete[] ORDINI;
         delete[] INDIRIZZI;
