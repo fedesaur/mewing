@@ -60,7 +60,7 @@ bool recuperaTrasportatore(const char* piva)
     	}
     	// Altrimenti crea un nuovo customer tramite funzione ausiliaria
     	PQclear(res);
-    	return creaTrasportatore(piva);
+    	return creaTrasportatore(0, piva);
 	}
 	catch(...)
 	{
@@ -72,7 +72,7 @@ bool recuperaTrasportatore(const char* piva)
     
 }
 
-bool creaTrasportatore(const char* piva) 
+bool creaTrasportatore(int clientSocket, const char* piva) 
 {
 	/* 
 		Sono richiesti 6 dati all'utente:

@@ -8,9 +8,9 @@
 #include "../../../entities/Indirizzo.h"
 #include "../../../entities/Ordine.h"
 #include "../metodi/autenticazione.h"
-#include "../metodi/gestioneOrdini.h"
 #include "../metodi/gestisciCorrieri.h"
 #include "../metodi/registroOrdini.h"
+#include "../metodi/ricercaOrdini.h"
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"

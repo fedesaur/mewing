@@ -26,7 +26,7 @@ Courier_Server::Courier_Server()
     std::cout << "Stream Read creato!" << std::endl;
     std::cout.flush();
 
-    pistacheThread = std::thread(&Customer_Server::startPistache, this);
+    pistacheThread = std::thread(&Courier_Server::startPistache, this);
 }
 
 void Courier_Server::defineRoutes() {

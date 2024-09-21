@@ -19,7 +19,7 @@
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
 
-#define SERVER_PORT 5002
+#define SERVER_PORT 5003
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
@@ -29,7 +29,7 @@
 
 bool autentica();
 bool recuperaTrasportatore(const char* piva);
-bool creaTrasportatore(const char* piva);
+bool creaTrasportatore(int clientSocket, const char* piva);
 
 bool inviaDati(int ID, const char* nome, const char* piva, int sede); // Per leggibilità, l'invio dati viene gestito da un'unica funzione
 
