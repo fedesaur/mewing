@@ -1,21 +1,12 @@
 #include "autenticazione.h"
 
-bool autentica(int clientSocket)
+bool autentica()
 {
 	redisContext *c2r; // c2r contiene le info sul contesto
 	redisReply *reply; // reply contiene le risposte da Redis
 
 	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
-	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
-	/*
-  	 Con2DB(const char *hostname,
-	 const char *port,
-	 const char *username,
-	 const char *password,
-	 const char *dbname);
-	*/
-
-	// Legge l'ultima mail nello stream
+	// Legge l'ultima partita IVA dallo stream
     reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", WRITE_STREAM);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
 	{
@@ -35,47 +26,53 @@ bool autentica(int clientSocket)
 	  return false; 
       }
 
-    std::cout << "P.iva letta dallo stream: " << received_piva << std::endl;
-    std::cout.flush();
     const char* piva = received_piva.c_str();
-
 	/*
 	 	Controlla se esiste un Customer con quella mail; se non esiste, lo crea.
 		Se vi sono problemi od errori, ritorna false
 	*/
-	bool esito = recuperaTrasportatore(db, clientSocket, piva);
+	bool esito = recuperaTrasportatore(piva);
     return esito;
 }
 
-bool recuperaTrasportatore(Con2DB db, int clientSocket, const char* piva)
+bool recuperaTrasportatore(const char* piva)
 {
     PGresult *res;
     char comando[1000];
     int rows;
-    std::cout << "sto recuperando il courier " << std::endl;
-    std::cout.flush();
+	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
     
-    sprintf(comando, "SELECT * FROM trasportatore WHERE piva = '%s' ", piva);
-    res = db.ExecSQLtuples(comando);
-
-    rows = PQntuples(res);
-    if (rows > 0) // Se viene trovato un utente con quella mail...
-    {
-		//...vengono recuperati i suoi dati ed inviati al server tramite Redis
-        int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
-        const char* nome = PQgetvalue(res, 0, PQfnumber(res, "nome"));
-        const char* piva = PQgetvalue(res, 0, PQfnumber(res, "piva"));
-        int sede = atoi(PQgetvalue(res, 0, PQfnumber(res, "indirizzo")));
-		bool esito = inviaDati(ID,nome,piva,sede);
-        PQclear(res); // <- Importante metterlo DOPO InviaDati altrimenti i dati vengono cancellati
-        return esito;
-    }
-    // Altrimenti crea un nuovo customer tramite funzione ausiliaria
-    PQclear(res);
-    return creaTrasportatore(db, clientSocket, piva);
+	try
+	{
+		sprintf(comando, "SELECT * FROM trasportatore WHERE piva = '%s' ", piva);
+    	res = db.ExecSQLtuples(comando);
+		rows = PQntuples(res);
+    	if (rows > 0) // Se viene trovato un utente con quella mail...
+    	{
+			//...vengono recuperati i suoi dati ed inviati al server tramite Redis
+        	int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
+        	const char* nome = PQgetvalue(res, 0, PQfnumber(res, "nome"));
+        	const char* piva = PQgetvalue(res, 0, PQfnumber(res, "piva"));
+        	int sede = atoi(PQgetvalue(res, 0, PQfnumber(res, "indirizzo")));
+			bool esito = inviaDati(ID,nome,piva,sede);
+        	PQclear(res); // <- Importante metterlo DOPO InviaDati altrimenti i dati vengono cancellati
+        	return esito;
+    	}
+    	// Altrimenti crea un nuovo customer tramite funzione ausiliaria
+    	PQclear(res);
+    	return creaTrasportatore(piva);
+	}
+	catch(...)
+	{
+		// C'è stato un problema con la query
+		PQclear(res);
+        return false;
+	}
+	
+    
 }
 
-bool creaTrasportatore(Con2DB db, int clientSocket, const char* piva) 
+bool creaTrasportatore(const char* piva) 
 {
 	/* 
 		Sono richiesti 6 dati all'utente:
@@ -85,6 +82,7 @@ bool creaTrasportatore(Con2DB db, int clientSocket, const char* piva)
 	int datiRichiesti = 6;
 	int datiRicevuti = 0;
 	char comando[1000];
+	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
 
 	std::string nome;
 	std::string via;

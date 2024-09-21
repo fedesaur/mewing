@@ -5,6 +5,8 @@
 #include <pistache/router.h>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
+#include "../../../entities/Indirizzo.h"
+#include "../../../entities/Ordine.h"
 #include "../metodi/autenticazione.h"
 #include "../metodi/gestioneOrdini.h"
 #include "../metodi/gestisciCorrieri.h"
@@ -21,7 +23,7 @@ void defineRoutes(Pistache::Rest::Router& router);
 void autenticaTrasportatore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-int recuperaTrasporterID(const std::string& email);
+int recuperaTrasporterID(std::string IVA);
 void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void ordina(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 

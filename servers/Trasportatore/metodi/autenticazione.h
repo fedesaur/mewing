@@ -27,11 +27,9 @@
 #define PASSWORD "admin"
 #define DB_NAME "mewingdb"
 
-bool autentica(int clientSocket);
-
-bool recuperaTrasportatore(Con2DB db, int clientSocket, const char* piva);
-
-bool creaTrasportatore(Con2DB db, int clientSocket, const char* piva);
+bool autentica();
+bool recuperaTrasportatore(const char* piva);
+bool creaTrasportatore(const char* piva);
 
 bool inviaDati(int ID, const char* nome, const char* piva, int sede); // Per leggibilità, l'invio dati viene gestito da un'unica funzione
 

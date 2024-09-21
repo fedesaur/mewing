@@ -23,7 +23,7 @@
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
 
-#define SERVER_PORT 5002
+#define SERVER_PORT 5003
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
@@ -31,7 +31,5 @@
 #define PASSWORD_TRAS "courier"
 #define DB_NAME "mewingdb"
 
-std::tuple<int, Ordine*, Indirizzo*> ricercaOrdini(int clientSocket);
-void mostraOrdini(int clientSocket, int RIGHE, Ordine* ORDINI, Indirizzo* INDIRIZZI);
-
+std::tuple<int, Ordine*, Indirizzo*> ricercaOrdini();
 #endif
