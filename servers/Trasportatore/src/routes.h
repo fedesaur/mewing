@@ -15,6 +15,10 @@
 #include <pistache/endpoint.h>
 #include <iostream>
 
+#define WRITE_STREAM "CourierW"
+#define READ_STREAM "CourierR"
+#define REDIS_IP "localhost"
+#define REDIS_PORT 6379
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
 #define USERNAME_TRAS "courier"

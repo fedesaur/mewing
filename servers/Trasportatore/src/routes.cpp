@@ -49,9 +49,9 @@ void autenticaTrasportatore(const Pistache::Rest::Request& request, Pistache::Ht
 
     if (autenticato && ID > 0) {
         response.send(Pistache::Http::Code::Ok, "Trasporter authenticated");
-        reply = RedisCommand(c2r, "XADD %s * id %d", WRITE_STREAM, ID);
-        assertReplyType(c2r, reply, REDIS_REPLY_STRING);
-        freeReplyObject(reply);
+        //reply = RedisCommand(c2r, "XADD %s * id %d", WRITE_STREAM, ID);
+        //assertReplyType(c2r, reply, REDIS_REPLY_STRING);
+        //freeReplyObject(reply);
         // Mette l'ID del trasportatore sullo stream in modo che possa essere reperito poi
     } else {
         response.send(Pistache::Http::Code::Unauthorized, "Authentication failed");

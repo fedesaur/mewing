@@ -20,9 +20,8 @@ def get_random_piva():
 ### Test per ciascuna rotta ###
 
 # 1. Test autentica trasportatore
-def test_autentica_trasportatore():
+def test_autentica_trasportatore(piva):
     global success_count
-    piva = get_random_piva()
     response = requests.post(f"{BASE_URL}/autentica/{piva}")
     if response.status_code == 200:
         print(f"Autenticazione avvenuta con successo per PIVA {piva}")
@@ -48,10 +47,10 @@ def run_all_tests():
     # Esegui il test per ogni PIVA
     for piva in piva_list:
         print(f"\n--- Test Autentica Trasportatore (PIVA: {piva}) ---")
-        #test_autentica_trasportatore()
+        test_autentica_trasportatore(piva)
 
-    print("\n--- Test Recupera Ordini ---")
-    test_get_ordini()
+        print("\n--- Test Recupera Ordini ---")
+        test_get_ordini()
 
     # Stampa dei risultati finali
     print(f"\nTest automatici completati: {success_count} su {total_tests} test sono andati a buon fine.")
