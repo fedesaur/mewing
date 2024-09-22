@@ -4,13 +4,13 @@ using json = nlohmann::json; // Abbreviazione per il json
 void defineRoutes(Pistache::Rest::Router& router) 
 {
     // Registrazione delle rotte con funzioni globali
-    Pistache::Rest::Routes::Post(router, "/autentica/:email", Pistache::Rest::Routes::bind(&autenticaFornitore));
+    Pistache::Rest::Routes::Get(router, "/autentica/:email", Pistache::Rest::Routes::bind(&autenticaFornitore));
     Pistache::Rest::Routes::Put(router, "/:email/prodotti/", Pistache::Rest::Routes::bind(&aggiungiProdotto));
-    //Pistache::Rest::Routes::Get(router, "/ordini/", Pistache::Rest::Routes::bind(&getOrdini));
-    
-
+    Pistache::Rest::Routes::Post(router, "/:email/prodotti/:idProdotto", Pistache::Rest::Routes::bind(&modificaProdotto));
+    Pistache::Rest::Routes::Delete(router, "/:email/prodotti/:idProdotto", Pistache::Rest::Routes::bind(&eliminaProdotto));
 }
 
+//curl -X GET http://localhost:5002/autentica/prova1@prova1.it
 void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     // Recupera l'email dal percorso
@@ -32,8 +32,7 @@ void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::
 }
 
 //curl -X PUT -H "Content-Type: application/json" -d '{"nomeProdotto": "nome", "descrizioneProdotto": "descrizione", "prezzoProdotto": 1.23345}' http://localhost:5002/prova1@prova1.it/prodotti/
-
-void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     // Recupera l'email del fornitore tra i parametri
     std::string email = request.param(":email").as<std::string>();
@@ -43,12 +42,11 @@ void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
     if (!dati.contains("descrizioneProdotto") || dati["descrizioneProdotto"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Product description not provided\n");
     if (!dati.contains("prezzoProdotto") || dati["prezzoProdotto"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Product price not provided\n");
     
-    
     std::string nomeProdotto = dati["nomeProdotto"];
     std::string descrizioneProdotto = dati["descrizioneProdotto"];
     double prezzoProdotto = dati["prezzoProdotto"];
 
-    bool esito = aggiungiFornito(email.c_str(), nomeProdotto.c_str(), descrizioneProdotto.c_str(), prezzoProdotto);
+    bool esito = modificaFornito(email.c_str(), nomeProdotto.c_str(), descrizioneProdotto.c_str(), prezzoProdotto);
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Product added to system\n");
     } else {
@@ -56,6 +54,65 @@ void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
     }
 }
 
+//curl -X DELETE http://localhost:5002/prova1@prova1.it/prodotti/1
+void eliminaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+    // Recupera l'email dal percorso
+    std::string email = request.param(":email").as<std::string>();
+    std::string id = request.param(":idProdotto").as<std::string>();
+
+    // Controlla che i parametri richiesti siano stati forniti
+    if (email.empty()) {
+        response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
+        return;
+    } else if (id.empty() ){
+        response.send(Pistache::Http::Code::Bad_Request, "Product ID not provided\n");
+        return;
+    }
+    int ID = stoi(id);
+    bool esito = rimuoviFornito(email.c_str(), ID); // Ora chiama la funzione autentica
+    if (esito) {
+        response.send(Pistache::Http::Code::Ok, "Product deleted from system\n");
+    } else {
+        response.send(Pistache::Http::Code::Unauthorized, "Failed to remove the product from system\n");
+    }
+}
+
+//curl -X POST -H "Content-Type: application/json" -d '{"nomeProdotto": "nome", "descrizioneProdotto": "descrizione", "prezzoProdotto": 1.23345}' http://localhost:5002/prova1@prova1.it/prodotti/1
+void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+    // Recupera l'email del fornitore tra i parametri
+    std::string email = request.param(":email").as<std::string>();
+    std::string id = request.param(":idProdotto").as<std::string>(); 
+
+
+    // Controlla che i parametri richiesti siano stati forniti
+    if (email.empty()) {
+        response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
+        return;
+    } else if (id.empty() ){
+        response.send(Pistache::Http::Code::Bad_Request, "Product ID not provided\n");
+        return;
+    }
+
+    json dati = json::parse(request.body());
+    // Controlla se i dati forniti dall'utente sono presenti e corretti
+    if (!dati.contains("nomeProdotto") || dati["nomeProdotto"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Product name not provided\n");
+    if (!dati.contains("descrizioneProdotto") || dati["descrizioneProdotto"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Product description not provided\n");
+    if (!dati.contains("prezzoProdotto") || dati["prezzoProdotto"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Product price not provided\n");
+    
+    std::string nomeProdotto = dati["nomeProdotto"];
+    std::string descrizioneProdotto = dati["descrizioneProdotto"];
+    double prezzoProdotto = dati["prezzoProdotto"];
+    int ID = stoi(id);
+
+    bool esito = modificaFornito(email.c_str(), nomeProdotto.c_str(), descrizioneProdotto.c_str(), prezzoProdotto, ID);
+    if (esito) {
+        response.send(Pistache::Http::Code::Created, "Product's attributes modified from system\n");
+    } else {
+        response.send(Pistache::Http::Code::Unauthorized, "Failed to change product's attributes\n");
+    }
+}
 /*
 void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {

@@ -9,6 +9,8 @@
 #include "../../../entities/Ordine.h"
 #include "../metodi/autenticazione.h"
 #include "../metodi/aggiungiFornito.h"
+#include "../metodi/rimuoviFornito.h"
+#include "../metodi/modificaFornito.h"
 #include <pistache/http.h>
 #include <pistache/endpoint.h>
 #include <iostream>
@@ -21,7 +23,9 @@
 #define DB_NAME "mewingdb"
 
 void defineRoutes(Pistache::Rest::Router& router);
-
 void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void eliminaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+
 #endif // ROUTES_H

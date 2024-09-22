@@ -8,11 +8,6 @@
 #include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../../../entities/Prodotto.h"
-#include "../metodi/recuperaForniti.h"
-#include "../../../lib/funzioniAusiliarie.h"
-#include <netinet/in.h>
-#include <sys/socket.h>
 #include <unistd.h>
 #include <cstring>
 
@@ -30,8 +25,6 @@
 #define PASSWORDP "producer"
 #define DB_NAME "mewingdb"
 
-bool rimuoviFornito(int clientSocket);
-
-bool rimuoviDaFornitiDB(int idProdotto, int producerID, Con2DB db, PGresult *res);
+bool rimuoviFornito(const char* email, int productID);
 
 #endif

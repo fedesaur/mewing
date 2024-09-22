@@ -2,17 +2,11 @@
 #define MODIFICA_FORNITO_H
 
 #include <string>
-#include <utility> //Importa pair
 #include <iostream>
 #include <sstream>
 #include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../../../entities/Prodotto.h"
-#include "../metodi/recuperaForniti.h"
-#include "../../../lib/funzioniAusiliarie.h"
-#include <netinet/in.h>
-#include <sys/socket.h>
 #include <unistd.h>
 #include <cstring>
 
@@ -30,10 +24,6 @@
 #define PASSWORDP "producer"
 #define DB_NAME "mewingdb"
 
-bool modificaFornito(int clientSocket);
-bool modificaAttributoFornito(Prodotto prodotto, int clientSocket);
-std::pair<std::string,bool> cambiaNomeProdotto(int clientSocket, int idProdotto);
-std::pair<std::string,bool> cambiaDescrizioneProdotto(int clientSocket, int idProdotto);
-std::pair<std::string,bool> cambiaPrezzoProdotto(int clientSocket, int idProdotto);
+bool modificaFornito(const char* email, const char* nomeProdotto, const char* descrizioneProdotto, double prezzoProdotto, int productID);
 
 #endif
