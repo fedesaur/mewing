@@ -1,9 +1,11 @@
 #include "routes.h"
+using json = nlohmann::json; // Abbreviazione per il json
 
 void defineRoutes(Pistache::Rest::Router& router) 
 {
     // Registrazione delle rotte con funzioni globali
     Pistache::Rest::Routes::Post(router, "/autentica/:email", Pistache::Rest::Routes::bind(&autenticaFornitore));
+    Pistache::Rest::Routes::Put(router, "/:email/prodotti/", Pistache::Rest::Routes::bind(&aggiungiProdotto));
     //Pistache::Rest::Routes::Get(router, "/ordini/", Pistache::Rest::Routes::bind(&getOrdini));
     
 
@@ -26,6 +28,30 @@ void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::
         response.send(Pistache::Http::Code::Ok, "Supplier authenticated");
     } else {
         response.send(Pistache::Http::Code::Unauthorized, "Authentication failed");
+    }
+}
+
+//curl -X POST -H "Content-Type: application/json" -d '{"nomeProdotto": "nome", "descrizioneProdotto": "descrizione", "prezzoProdotto": 1.23345}' http://example.com/api/users
+void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+    // Recupera l'email del fornitore tra i parametri
+    std::string email = request.param(":email").as<std::string>();
+    json dati = json::parse(request.body());
+    // Controlla se i dati forniti dall'utente sono presenti e corretti
+    if (!response.contains("nomeProdotto") || dati["nomeProdotto"].empty() || dati["nomeProdotto"].length() > 100) response.send(Pistache::Http::Code::Bad_Request, "Product name not provided");
+    if (!response.contains("descrizioneProdotto") || dati["descrizioneProdotto"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Product description not provided");
+    if (!response.contains("prezzoProdotto") || dati["prezzoProdotto"].empty() || std::is_floating_point(dati["prezzoProdotto"])) response.send(Pistache::Http::Code::Bad_Request, "Product price not provided");
+    
+    
+    std::string nomeProdotto = dati["nomeProdotto"];
+    std::string descrizioneProdotto = dati["descrizioneProdotto"];
+    double prezzoProdotto = dati["prezzoProdotto"];
+
+    bool esito = aggiungiFornito(email.c_str(), nomeProdotto.c_str(), descrizioneProdotto.c_str(), prezzoProdotto);
+    if (esito) {
+        response.send(Pistache::Http::Code::Created, "Product added to system");
+    } else {
+        response.send(Pistache::Http::Code::Unauthorized, "Failed to add the product to system");
     }
 }
 

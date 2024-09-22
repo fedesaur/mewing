@@ -8,9 +8,11 @@
 #include "../../../entities/Indirizzo.h"
 #include "../../../entities/Ordine.h"
 #include "../metodi/autenticazione.h"
+#include "../metodi/aggiungiFornito.h"
 #include <pistache/http.h>
 #include <pistache/endpoint.h>
 #include <iostream>
+#include <nlohmann/json.hpp>
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
@@ -21,4 +23,5 @@
 void defineRoutes(Pistache::Rest::Router& router);
 
 void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 #endif // ROUTES_H

@@ -7,9 +7,6 @@
 #include <sstream>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../../../entities/Prodotto.h"
-#include <netinet/in.h>
-#include <sys/socket.h>
 #include <unistd.h>
 #include <cstring>
 
@@ -27,6 +24,6 @@
 #define PASSWORDP "producer"
 #define DB_NAME "mewingdb"
 
-bool aggiungiFornito(int clientSocket);
+bool aggiungiFornito(const char* email, const char* nomeProdotto, const char* descrizioneProdotto, double prezzoProdotto);
 
 #endif
