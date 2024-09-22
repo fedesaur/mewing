@@ -48,7 +48,7 @@ def run_all_tests():
     # Esegui il test per ogni PIVA
     for piva in piva_list:
         print(f"\n--- Test Autentica Trasportatore (PIVA: {piva}) ---")
-        #test_autentica_trasportatore()
+        test_autentica_trasportatore()
 
     print("\n--- Test Recupera Ordini ---")
     test_get_ordini()
