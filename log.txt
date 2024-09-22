@@ -9,9 +9,12 @@ BASE_URL = f"http://{HOST}:{PORT}"
 # Lista di email che già esistono nel sistema
 email_list = ["utente1@example.com", "utente2@example.com", "utente3@example.com"]
 
-# Contatore dei test riusciti
+# Variabile per contare i test riusciti
 success_count = 0
 total_tests = 6  # Numero totale di test da eseguire
+
+# Variabile per memorizzare i prodotti recuperati
+prodotti_disponibili = []
 
 # Funzione per ottenere un'email casuale dal sistema
 def get_random_email():
@@ -43,11 +46,12 @@ def test_modifica_nome():
 
 # 3. Test recupera prodotti
 def test_recupera_prodotti():
-    global success_count
+    global success_count, prodotti_disponibili
     response = requests.get(f"{BASE_URL}/prodotti")
     if response.status_code == 200:
         print("Prodotti recuperati con successo:")
-        print(response.text)
+        prodotti_disponibili = response.json()  # Memorizza i prodotti recuperati
+        print(prodotti_disponibili)
         success_count += 1  # Incrementa il contatore in caso di successo
     else:
         print(f"Errore nel recupero dei prodotti. Status code: {response.status_code}")
@@ -55,12 +59,18 @@ def test_recupera_prodotti():
 # 4. Test aggiungi prodotto al carrello
 def test_aggiungi_prodotto_al_carrello():
     global success_count
+    if len(prodotti_disponibili) == 0:
+        print("Nessun prodotto disponibile per aggiungere al carrello.")
+        return
+
     email = get_random_email()
-    prodotto_id = 1  # Supponiamo che il prodotto con ID 1 esista
-    quantita = 2
+    prodotto = random.choice(prodotti_disponibili)  # Scegli un prodotto casuale
+    prodotto_id = prodotto["id"]  # Assumendo che i prodotti abbiano un campo "id"
+    quantita = random.randint(1, 5)  # Quantità casuale tra 1 e 5
+
     response = requests.post(f"{BASE_URL}/addToCarrello/{email}/{prodotto_id}/{quantita}")
     if response.status_code == 200:
-        print(f"Prodotto aggiunto al carrello per l'utente {email}")
+        print(f"Prodotto '{prodotto['nome']}' aggiunto al carrello per l'utente {email} con quantità {quantita}")
         success_count += 1  # Incrementa il contatore in caso di successo
     else:
         print(f"Errore nell'aggiunta del prodotto al carrello per {email}. Status code: {response.status_code}")
