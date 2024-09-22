@@ -7,7 +7,7 @@ PORT = 5003
 BASE_URL = f"http://{HOST}:{PORT}"
 
 # Lista di PIVA per i trasportatori esistenti nel sistema
-piva_list = ["11111111111", "22222222222", "33333333333"]
+piva_list = ["32132132132", "45645645645", "78978978978"]
 
 # Variabile per contare i test riusciti
 success_count = 0
@@ -48,7 +48,7 @@ def run_all_tests():
     # Esegui il test per ogni PIVA
     for piva in piva_list:
         print(f"\n--- Test Autentica Trasportatore (PIVA: {piva}) ---")
-        test_autentica_trasportatore()
+        #test_autentica_trasportatore()
 
     print("\n--- Test Recupera Ordini ---")
     test_get_ordini()

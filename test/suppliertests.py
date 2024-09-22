@@ -5,11 +5,11 @@ import threading
 
 # Dati di configurazione
 HOST = "127.0.0.1"
-PORT = 5001
+PORT = 5005
 BASE_URL = f"http://{HOST}:{PORT}"
 
 # Lista di email che già esistono nel sistema
-email_list = ["abc@abc.it", "cab@cab.it", "bca@bca.it"]
+email_list = ["prova1@prova1.it", "prova2@prova2.it"]
 
 # Lock per gestire l'accesso concorrente al contatore
 lock = threading.Lock()
