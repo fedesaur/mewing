@@ -17,7 +17,7 @@ void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::
     std::string email = request.param(":email").as<std::string>();
 
     if (email.empty()) {
-        response.send(Pistache::Http::Code::Bad_Request, "Email not provided");
+        response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
         return;
     }
 
@@ -25,22 +25,23 @@ void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::
     int ID = autentica(email.c_str());
 
     if (ID > 0) {
-        response.send(Pistache::Http::Code::Ok, "Supplier authenticated");
+        response.send(Pistache::Http::Code::Ok, "Supplier authenticated\n");
     } else {
-        response.send(Pistache::Http::Code::Unauthorized, "Authentication failed");
+        response.send(Pistache::Http::Code::Unauthorized, "Authentication failed\n");
     }
 }
 
-//curl -X POST -H "Content-Type: application/json" -d '{"nomeProdotto": "nome", "descrizioneProdotto": "descrizione", "prezzoProdotto": 1.23345}' http://example.com/api/users
+//curl -X PUT -H "Content-Type: application/json" -d '{"nomeProdotto": "nome", "descrizioneProdotto": "descrizione", "prezzoProdotto": 1.23345}' http://localhost:5002/prova1@prova1.it/prodotti/
+
 void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     // Recupera l'email del fornitore tra i parametri
     std::string email = request.param(":email").as<std::string>();
     json dati = json::parse(request.body());
     // Controlla se i dati forniti dall'utente sono presenti e corretti
-    if (!response.contains("nomeProdotto") || dati["nomeProdotto"].empty() || dati["nomeProdotto"].length() > 100) response.send(Pistache::Http::Code::Bad_Request, "Product name not provided");
-    if (!response.contains("descrizioneProdotto") || dati["descrizioneProdotto"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Product description not provided");
-    if (!response.contains("prezzoProdotto") || dati["prezzoProdotto"].empty() || std::is_floating_point(dati["prezzoProdotto"])) response.send(Pistache::Http::Code::Bad_Request, "Product price not provided");
+    if (!dati.contains("nomeProdotto") || dati["nomeProdotto"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Product name not provided\n");
+    if (!dati.contains("descrizioneProdotto") || dati["descrizioneProdotto"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Product description not provided\n");
+    if (!dati.contains("prezzoProdotto") || dati["prezzoProdotto"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Product price not provided\n");
     
     
     std::string nomeProdotto = dati["nomeProdotto"];
@@ -49,9 +50,9 @@ void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
 
     bool esito = aggiungiFornito(email.c_str(), nomeProdotto.c_str(), descrizioneProdotto.c_str(), prezzoProdotto);
     if (esito) {
-        response.send(Pistache::Http::Code::Created, "Product added to system");
+        response.send(Pistache::Http::Code::Created, "Product added to system\n");
     } else {
-        response.send(Pistache::Http::Code::Unauthorized, "Failed to add the product to system");
+        response.send(Pistache::Http::Code::Unauthorized, "Failed to add the product to system\n");
     }
 }
 
