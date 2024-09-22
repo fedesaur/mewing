@@ -7,6 +7,9 @@
 #include <pistache/endpoint.h>
 #include <pistache/router.h>
 #include <iostream>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 void defineRoutes(Pistache::Rest::Router& router) {
     // Registrazione delle rotte con funzioni globali
@@ -66,6 +69,8 @@ void authenticateUser(const Pistache::Rest::Request& request, Pistache::Http::Re
 
 void modificaNomeHttp(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
     // Implementa la logica di modifica del nome qui
+    json data = json::parse(request.body());
+    std::cout << data["nome"] << std::endl;
     response.send(Pistache::Http::Code::Ok, "Name updated");
 }
 
