@@ -20,7 +20,7 @@ metodi_OBJ = $(wildcard ../metodi/*.o)
 aux_OBJ = $(wildcard ../../../lib/*.o)
 
 
-all:	create_dirs con2db con2redis aux metodi supplier_server $(BDIR)/main
+all:	create_dirs con2db con2redis api aux metodi supplier_server $(BDIR)/main
 
 create_dirs:
 	mkdir -p $(BDIR)
@@ -37,6 +37,9 @@ aux: ../../../lib/funzioniAusiliarie.cpp ../../../lib/funzioniAusiliarie.h
 
 metodi:
 	$(MAKE) -C ../metodi #Chiama il makefile di autenticazione
+
+api: routes.cpp routes.h
+	$(CC) -c -o $(ODIR)/routes.o $< $(CFLAGS)
 
 supplier_server: Supplier_Server.cpp Supplier_Server.h
 	$(CC) -c -o $(ODIR)/Supplier_Server.o $< $(CFLAGS)

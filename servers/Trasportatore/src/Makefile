@@ -51,4 +51,4 @@ $(BDIR)/main: $(OBJ) $(DEPS)
 .PHONY: clean
 
 clean:
-	rm -r $(ODIR) $(BDIR) ../metodi/autenticazione.o ../metodi/ricercaProdotti.o
+	rm -r $(ODIR) $(BDIR) ../metodi/*.o

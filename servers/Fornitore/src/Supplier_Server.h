@@ -2,30 +2,25 @@
 #define SUPPLIER_SERVER_H
 
 #include <string>
+#include <utility> //Importa std::pair
 #include <iostream>
-#include <utility> //Importa pair
-#include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../metodi/autenticazione.h"
-#include "../metodi/recuperaForniti.h"
-#include "../metodi/aggiungiFornito.h"
-#include "../metodi/rimuoviFornito.h"
-#include "../metodi/modificaFornito.h"
-#include "../metodi/modificaInfoF.h"
-#include <netinet/in.h>
-#include <sys/socket.h>
+#include <pistache/endpoint.h>
+#include <pistache/http.h>
+#include <pistache/router.h>
 #include <unistd.h>
 #include <cstring>
-#include <cassert>
 #include <thread>
 #include <mutex>
+#include "routes.h"
+#include <vector>
 
 #define WRITE_STREAM "SupplierW"
 #define READ_STREAM "SupplierR"
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
-#define SERVER_PORT 5001
+#define SERVER_PORT 5002
 #define MAX_CONNECTIONS 100 //Numero di connessioni massime accettabili
 
 class Supplier_Server
@@ -35,17 +30,14 @@ class Supplier_Server
         redisContext *c2r; // c2r contiene le info sul contesto
         redisReply *reply; // reply contiene le risposte da Redis
         int ID_CONNESSIONE = 0;
-        int SERVER_SOCKET;
-        std::string OPZIONI[5]; // Opzioni dell'utente
         std::mutex id_mutex;
-        int NUMERO_OPZIONI = 5;
-        bool handshake(int clientSocket);
-        void gestisciConnessioneCliente(int clientSocket, int connectionID);
-        bool gestisciAutenticazione(int clientSocket);
-        bool gestisciOperazioni(int clientSocket, int PRODUCER_ID);
+        void defineRoutes();
     public:
-        Supplier_Server(); // Costruttore di Customer
-        void gestisciConnessioni(); // Metodi di Customer
+        Supplier_Server(); // Costruttore di Courier
+        ~Supplier_Server();
+        std::thread pistacheThread; // Thread per Pistache server
+        Pistache::Rest::Router router; // Router per Pistache
+        void startPistache(); // Avvia il server Pistache
 };
 
 
