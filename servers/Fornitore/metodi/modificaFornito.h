@@ -22,7 +22,7 @@
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
 
-#define SERVER_PORT 5001
+#define SERVER_PORT 5002
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
