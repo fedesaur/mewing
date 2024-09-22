@@ -28,7 +28,7 @@ Supplier_Server::Supplier_Server()
     std::cout << "Stream Read creato!" << std::endl;
     std::cout.flush();
 
-    pistacheThread = std::thread(&Courier_Server::startPistache, this);
+    pistacheThread = std::thread(&Supplier_Server::startPistache, this);
 }
 
 void Supplier_Server::defineRoutes() {
@@ -38,14 +38,14 @@ void Supplier_Server::defineRoutes() {
 }
 
 void Supplier_Server::startPistache() {
-    Http::Endpoint server(Address("localhost", 5003));
+    Http::Endpoint server(Address("localhost", SERVER_PORT));
     server.init(Http::Endpoint::options().threads(1).flags(Tcp::Options::ReuseAddr));
     defineRoutes();
     server.setHandler(router.handler());
     server.serve();
 }
 
-Supplier_Server::~Supplier_Serverr() {
+Supplier_Server::~Supplier_Server() {
     if (pistacheThread.joinable()) {
         pistacheThread.join();
     }

@@ -8,9 +8,6 @@
 #include "../../../entities/Indirizzo.h"
 #include "../../../entities/Ordine.h"
 #include "../metodi/autenticazione.h"
-#include "../metodi/gestisciCorrieri.h"
-#include "../metodi/registroOrdini.h"
-#include "../metodi/ricercaOrdini.h"
 #include <pistache/http.h>
 #include <pistache/endpoint.h>
 #include <iostream>
@@ -24,6 +21,4 @@
 void defineRoutes(Pistache::Rest::Router& router);
 
 void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 #endif // ROUTES_H

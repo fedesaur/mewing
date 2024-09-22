@@ -4,7 +4,7 @@ void defineRoutes(Pistache::Rest::Router& router)
 {
     // Registrazione delle rotte con funzioni globali
     Pistache::Rest::Routes::Post(router, "/autentica/:email", Pistache::Rest::Routes::bind(&autenticaFornitore));
-    Pistache::Rest::Routes::Get(router, "/ordini/", Pistache::Rest::Routes::bind(&getOrdini));
+    //Pistache::Rest::Routes::Get(router, "/ordini/", Pistache::Rest::Routes::bind(&getOrdini));
     
 
 }
@@ -20,7 +20,7 @@ void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::
     }
 
     // Ora chiama la funzione autentica
-    int ID = autentica(mail.c_str());
+    int ID = autentica(email.c_str());
 
     if (ID > 0) {
         response.send(Pistache::Http::Code::Ok, "Supplier authenticated");
@@ -29,6 +29,7 @@ void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::
     }
 }
 
+/*
 void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     int rows;
@@ -89,7 +90,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
                 }
                 PQclear(res);
             
-            */
+            
         }
         // Pulisci la memoria allocata dinamicamente per gli ordini
         delete[] ORDINI;
@@ -107,6 +108,6 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dei prodotti");
     }
 }
-
+*/
 
 

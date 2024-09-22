@@ -12,24 +12,19 @@ int autentica(const char* mail)
 	
 	// Effettua la connessione a Redis
 	c2r = redisConnect(REDIS_IP, REDIS_PORT);
-    if (c2r == nullptr || c2r->err) {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Unable to connect to Redis");
-        return;
-    }
 	
 	try
 	{
 		// Recupera il fornitore tramite l'email
 		sprintf(comando, "SELECT id FROM fornitore WHERE mail = '%s' ", mail);
     	res = db.ExecSQLtuples(comando);
-
     	rows = PQntuples(res);
 		ID = 0;
     	if (rows > 0) // Se viene trovato un utente con quella mail...
     	{
 			//...vengono recuperati i suoi dati ed inviati al server tramite Redis
-        	int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
-			reply = RedisCommand(c2r, "XADD %s * %s %d", WRITE_STREAM, email, ID);
+        	ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
+			reply = RedisCommand(c2r, "XADD %s * %s %d", WRITE_STREAM, mail, ID);
         	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
         	freeReplyObject(reply);
     	}
