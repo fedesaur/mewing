@@ -64,7 +64,7 @@ int recuperaTrasporterID(std::string IVA)
     PGresult *res;
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_TRAS, PASSWORD_TRAS, DB_NAME); // Effettua la connessione al database
     int ID;
-    sprintf(comando, "SELECT id FROM trasporatore WHERE piva = '%s' ", IVA.c_str());
+    sprintf(comando, "SELECT id FROM trasportatore WHERE piva = '%s' ", IVA.c_str());
     try
     {
         res = db.ExecSQLtuples(comando);
