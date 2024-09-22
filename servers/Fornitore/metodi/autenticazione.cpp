@@ -1,79 +1,45 @@
 #include "autenticazione.h"
 
-bool autentica(int clientSocket)
+int autentica(const char* mail)
 {
-	redisContext *c2r; // c2r contiene le info sul contesto
-	redisReply *reply; // reply contiene le risposte da Redis
-
-	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
-	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
-	/*
-  	 Con2DB(const char *hostname,
-	 const char *port,
-	 const char *username,
-	 const char *password,
-	 const char *dbname);
-	*/
-
-	// Legge l'ultima mail nello stream
-    reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", WRITE_STREAM);
-    if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
-	{
-       std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
-       return false;
-    }
-
-    redisReply* stream = reply -> element[0];
-    redisReply* entryFields = stream -> element[1];
-    std::string fieldName = entryFields->element[0]->str; // Chiave
-    std::string received_email = entryFields->element[1]->str; // Valore
-    freeReplyObject(reply);
-
-    if (received_email.empty())
-      {
-	  std::cerr << "Errore: non è stata trovata nessuna email con la chiave specificata." << std::endl;
-	  return false; 
-      }
-
-    std::cout << "Email letta dallo stream: " << received_email << std::endl;
-    std::cout.flush();
-    const char* mail = received_email.c_str();
-
-	/*
-	 	Controlla se esiste un Customer con quella mail; se non esiste, lo crea.
-		Se vi sono problemi od errori, ritorna false
-	*/
-	bool esito = recuperaSupplier(db, clientSocket, mail);
-    return esito;
-}
-
-bool recuperaSupplier(Con2DB db, int clientSocket, const char* mail)
-{
-    PGresult *res;
+	redisContext *c2r;
+	redisReply* reply;
+	PGresult *res;
     char comando[1000];
     int rows;
-    std::cout << "sto recuperando il supplier " << std::endl;
-    std::cout.flush();
-    
-    sprintf(comando, "SELECT * FROM fornitore WHERE mail = '%s' ", mail);
-    res = db.ExecSQLtuples(comando);
-
-    rows = PQntuples(res);
-    if (rows > 0) // Se viene trovato un utente con quella mail...
-    {
-		//...vengono recuperati i suoi dati ed inviati al server tramite Redis
-        int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
-        const char* nome = PQgetvalue(res, 0, PQfnumber(res, "nome"));
-        const char* piva = PQgetvalue(res, 0, PQfnumber(res, "piva"));
-        const char* telefono = PQgetvalue(res, 0, PQfnumber(res, "telefono"));
-        int sede = atoi(PQgetvalue(res, 0, PQfnumber(res, "sede")));
-		bool esito = inviaDati(ID,nome,piva,telefono,sede);
-        PQclear(res); // <- Importante metterlo DOPO InviaDati altrimenti i dati vengono cancellati
-        return esito;
+	int ID;
+	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
+	
+	// Effettua la connessione a Redis
+	c2r = redisConnect(REDIS_IP, REDIS_PORT);
+    if (c2r == nullptr || c2r->err) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Unable to connect to Redis");
+        return;
     }
-    // Altrimenti crea un nuovo customer tramite funzione ausiliaria
-    PQclear(res);
-    return creaSupplier(db, clientSocket, mail);
+	
+	try
+	{
+		// Recupera il fornitore tramite l'email
+		sprintf(comando, "SELECT id FROM fornitore WHERE mail = '%s' ", mail);
+    	res = db.ExecSQLtuples(comando);
+
+    	rows = PQntuples(res);
+		ID = 0;
+    	if (rows > 0) // Se viene trovato un utente con quella mail...
+    	{
+			//...vengono recuperati i suoi dati ed inviati al server tramite Redis
+        	int ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
+			reply = RedisCommand(c2r, "XADD %s * %s %d", WRITE_STREAM, email, ID);
+        	assertReplyType(c2r, reply, REDIS_REPLY_STRING);
+        	freeReplyObject(reply);
+    	}
+	}
+	catch(...)
+	{
+		ID = -1;
+	}
+	PQclear(res);
+	return ID;
 }
 
 bool creaSupplier(Con2DB db, int clientSocket, const char* mail)

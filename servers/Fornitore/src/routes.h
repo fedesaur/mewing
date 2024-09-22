@@ -23,8 +23,7 @@
 
 void defineRoutes(Pistache::Rest::Router& router);
 
-void autenticaTrasportatore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-int recuperaTrasporterID(std::string IVA);
 #endif // ROUTES_H

@@ -27,9 +27,7 @@
 #define PASSWORD "admin"
 #define DB_NAME "mewingdb"
 
-bool autentica(int clientSocket);
-
-bool recuperaSupplier(Con2DB db, int clientSocket, const char* mail);
+int autentica(const char* mail);
 
 bool creaSupplier(Con2DB db, int clientSocket, const char* mail);
 

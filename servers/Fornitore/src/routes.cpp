@@ -3,80 +3,30 @@
 void defineRoutes(Pistache::Rest::Router& router) 
 {
     // Registrazione delle rotte con funzioni globali
-    Pistache::Rest::Routes::Post(router, "/autentica/:piva", Pistache::Rest::Routes::bind(&autenticaTrasportatore));
+    Pistache::Rest::Routes::Post(router, "/autentica/:email", Pistache::Rest::Routes::bind(&autenticaFornitore));
     Pistache::Rest::Routes::Get(router, "/ordini/", Pistache::Rest::Routes::bind(&getOrdini));
     
 
 }
 
-
-void autenticaTrasportatore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     // Recupera l'email dal percorso
-    std::string IVA = request.param(":piva").as<std::string>();
+    std::string email = request.param(":email").as<std::string>();
 
-    if (IVA.empty()) {
-        response.send(Pistache::Http::Code::Bad_Request, "IVA not provided");
+    if (email.empty()) {
+        response.send(Pistache::Http::Code::Bad_Request, "Email not provided");
         return;
     }
-
-
-    // Connetti a Redis
-    redisContext *c2r = redisConnect(REDIS_IP, REDIS_PORT);
-    if (c2r == nullptr || c2r->err) {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Unable to connect to Redis");
-        return;
-    }
-
-    // Prepara il comando per aggiungere l'email allo stream
-    redisReply* reply = static_cast<redisReply*>(redisCommand(c2r, "XADD %s * iva %s", WRITE_STREAM, IVA.c_str()));
-
-    // Controlla l'esito del comando Redis
-    if (reply == nullptr || reply->type != REDIS_REPLY_STRING) 
-    {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Error writing iva to Redis stream");
-        redisFree(c2r);
-        return;
-    }
-
-    // Pulisci la risposta di Redis
-    freeReplyObject(reply);
-    redisFree(c2r);
 
     // Ora chiama la funzione autentica
-    bool autenticato = autentica();
-    int ID = recuperaTrasporterID(IVA);
+    int ID = autentica(mail.c_str());
 
-    if (autenticato && ID > 0) {
-        response.send(Pistache::Http::Code::Ok, "Trasporter authenticated");
-        reply = RedisCommand(c2r, "XADD %s * id %d", WRITE_STREAM, ID);
-        assertReplyType(c2r, reply, REDIS_REPLY_STRING);
-        freeReplyObject(reply);
-        // Mette l'ID del trasportatore sullo stream in modo che possa essere reperito poi
+    if (ID > 0) {
+        response.send(Pistache::Http::Code::Ok, "Supplier authenticated");
     } else {
         response.send(Pistache::Http::Code::Unauthorized, "Authentication failed");
     }
-}
-
-int recuperaTrasporterID(std::string IVA) 
-{
-    char comando[1000];
-    PGresult *res;
-    Con2DB db(HOSTNAME, DB_PORT, USERNAME_TRAS, PASSWORD_TRAS, DB_NAME); // Effettua la connessione al database
-    int ID;
-    sprintf(comando, "SELECT id FROM trasporatore WHERE piva = '%s' ", IVA.c_str());
-    try
-    {
-        res = db.ExecSQLtuples(comando);
-        ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
-    }
-    catch(...)
-    {
-        std::cerr << "Errore nell'esecuzione della query!" << std::endl;
-        ID = -1;
-    }
-    PQclear(res);
-    return ID;
 }
 
 void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
@@ -156,10 +106,6 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dei prodotti");
     }
-    
-    
-
-
 }
 
 
