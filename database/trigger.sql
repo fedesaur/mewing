@@ -67,9 +67,29 @@ create or replace function tot_cart() returns trigger as $buy_price$
     language plpgsql;
 
 
-create or replace TRIGGER buy_price after insert on prodincart
+create or replace TRIGGER buy_price after insert or update on prodincart
 for each row execute procedure tot_cart();
 
+------------------------------------------------------------------------
+create or replace function no_double_cart() RETURNS TRIGGER AS $check_cart$
+    BEGIN
+    	if exists(select * 
+			from prodincart pc 
+			where pc.carrello=NEW.carrello and pc.prodotto=NEW.prodotto
+			) then update prodincart set quantita=(select (pc.quantita + NEW.quantita)
+								from prodincart pc
+								where pc.prodotto=NEW.prodotto
+								and pc.carrello=NEW.carrello)
+				where prodincart.prodotto=NEW.prodotto and prodincart.carrello=NEW.carrello;
+				RETURN NULL;
+       												
+		else RETURN NEW;
+		END IF;
+    END
+   $check_cart$
+   language plpgsql;
+   create or replace TRIGGER check_cart before insert on prodincart
+for each row execute procedure no_double_cart();
 ------------------------------------------------------------------------
 create or replace function tot_cart_2() RETURNS TRIGGER AS $buy_price2$
     BEGIN
