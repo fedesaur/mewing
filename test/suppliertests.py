@@ -3,7 +3,7 @@ import json
 
 # Configurazione del server
 HOST = "127.0.0.1"
-PORT = 5005
+PORT = 5002
 BASE_URL = f"http://{HOST}:{PORT}"
 
 # Funzione per autenticare un fornitore
@@ -89,10 +89,10 @@ def run_tests():
     test_aggiungi_prodotto(email, "NuovoProdotto", "Descrizione del prodotto", 10.50)
     
     print("\n--- Test Modifica Prodotto ---")
-    test_modifica_prodotto(email, 1, "ProdottoModificato", "Nuova descrizione", 15.99)
+    test_modifica_prodotto(email, 16, "ProdottoModificato", "Nuova descrizione", 15.99)
     
     print("\n--- Test Elimina Prodotto ---")
-    test_elimina_prodotto(email, 1)
+    test_elimina_prodotto(email, 16)
     
     print("\n--- Test Modifica Informazioni Fornitore ---")
     test_modifica_info(email, "NuovoNome", "12312312312", "1234567890")

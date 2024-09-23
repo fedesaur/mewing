@@ -17,6 +17,7 @@ bool rimuoviFornito(const char* email, int productID)
         return false;
     }
     
+    /*
     reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", WRITE_STREAM);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
     {
@@ -30,10 +31,10 @@ bool rimuoviFornito(const char* email, int productID)
     if (strcmp(userMail,email) != 0) return false; // Se l'email a cui è associato l'ID non corrisponde, impedisce l'operazione
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     PRODUCER_ID = stoi(id);
-
+    */
     try
     {
-        sprintf(comando, "DELETE FROM prodotto WHERE id = %d AND fornitore = %d", productID, PRODUCER_ID);
+        sprintf(comando, "DELETE FROM prodotto WHERE id = %d", productID);
         res = db.ExecSQLcmd(comando);
         PQclear(res);
         return true;

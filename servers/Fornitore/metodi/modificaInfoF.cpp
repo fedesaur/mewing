@@ -16,6 +16,7 @@ bool modificaInfoF(const char* email, const char* nome, const char* IVA, const c
         return false;
     }
     
+    /*
     reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", WRITE_STREAM);
     if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
     {
@@ -29,11 +30,12 @@ bool modificaInfoF(const char* email, const char* nome, const char* IVA, const c
     if (strcmp(userMail,email) != 0) return false; // Se l'email a cui è associato l'ID non corrisponde, impedisce l'operazione
     std::string id = reply->element[0]->element[1]->element[1]->str; 
     PRODUCER_ID = stoi(id);
+    */
     
     try
     {
-        sprintf(comando,"UPDATE fornitore SET nome = '%s' AND telefono = '%s' AND IVA = '%s' WHERE mail = '%s' AND id = %d", nome, telefono, IVA,
-        email, PRODUCER_ID);
+        sprintf(comando,"UPDATE fornitore SET nome = '%s', telefono = '%s' , piva = '%s' WHERE mail = '%s' ", nome, telefono, IVA,
+        email);
         res = db.ExecSQLcmd(comando);
         PQclear(res);
         return true;

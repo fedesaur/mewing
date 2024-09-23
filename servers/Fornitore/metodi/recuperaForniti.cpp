@@ -11,7 +11,7 @@ std::pair<int, Prodotto*> recuperaForniti(const char* mail)
 
     try
     {
-        sprintf(comando, "SELECT pr.id, pr.descrizione, pr.prezzo, pr.nome FROM prodotto pr, fornitore, fr WHERE pr.fornitore = fr.id AND fr.mail =  '%s' ", mail);
+        sprintf(comando, "SELECT pr.id, pr.descrizione, pr.prezzo, pr.nome FROM prodotto pr, fornitore fr WHERE pr.fornitore = fr.id AND fr.mail =  '%s' ", mail);
         res = db.ExecSQLtuples(comando);
         rows = PQntuples(res);
         if (rows > 0)

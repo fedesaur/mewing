@@ -7,10 +7,48 @@ void defineRoutes(Pistache::Rest::Router& router)
     Pistache::Rest::Routes::Get(router, "/:email/prodotti/", Pistache::Rest::Routes::bind(&getProdotti));
     Pistache::Rest::Routes::Get(router, "/autentica/:email", Pistache::Rest::Routes::bind(&autenticaFornitore));
     Pistache::Rest::Routes::Put(router, "/:email/prodotti/", Pistache::Rest::Routes::bind(&aggiungiProdotto));
-    Pistache::Rest::Routes::Post(router, "/:email/", Pistache::Rest::Routes::bind(&modificaInfo))
+    Pistache::Rest::Routes::Post(router, "/:email/", Pistache::Rest::Routes::bind(&modificaInfo));
     Pistache::Rest::Routes::Post(router, "/:email/prodotti/:idProdotto", Pistache::Rest::Routes::bind(&modificaProdotto));
     Pistache::Rest::Routes::Delete(router, "/:email/prodotti/:idProdotto", Pistache::Rest::Routes::bind(&eliminaProdotto));
     
+}
+
+int recuperaSupplierID(const std::string& email) {
+    PGconn *conn = PQconnectdb("host=localhost port=5432 dbname=mewingdb user=admin password=admin");
+
+    if (PQstatus(conn) != CONNECTION_OK) {
+        std::cerr << "Errore di connessione al database: " << PQerrorMessage(conn) << std::endl;
+        PQfinish(conn);
+        return -1; // Restituisci un ID non valido in caso di errore
+    }
+
+    // Prepara la query per cercare l'ID cliente tramite l'email
+    const char *query = "SELECT id FROM fornitore WHERE mail = $1";
+    const char *paramValues[1] = { email.c_str() };
+
+    PGresult *res = PQexecParams(conn, query, 1, NULL, paramValues, NULL, NULL, 0);
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        std::cerr << "Errore nell'esecuzione della query: " << PQerrorMessage(conn) << std::endl;
+        PQclear(res);
+        PQfinish(conn);
+        return -1;
+    }
+    
+    std::cout << "sono qui" << std::endl;
+    // Controlla se è stato trovato un cliente
+    int customerID = -1;
+    if (PQntuples(res) == 1) {
+        customerID = atoi(PQgetvalue(res, 0, 0)); // Restituisci l'ID cliente
+    } else {
+        std::cerr << "Cliente non trovato o più di un risultato" << std::endl;
+    }
+
+    // Libera la memoria e chiudi la connessione
+    PQclear(res);
+    PQfinish(conn);
+
+    return customerID;
 }
 
 //curl -X GET http://localhost:5002/autentica/prova1@prova1.it
@@ -35,7 +73,7 @@ void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::
 }
 
 //curl -X PUT -H "Content-Type: application/json" -d '{"nomeProdotto": "nome", "descrizioneProdotto": "descrizione", "prezzoProdotto": 1.23345}' http://localhost:5002/prova1@prova1.it/prodotti/
-void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     // Recupera l'email del fornitore tra i parametri
     std::string email = request.param(":email").as<std::string>();
@@ -49,7 +87,7 @@ void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
     std::string descrizioneProdotto = dati["descrizioneProdotto"];
     double prezzoProdotto = dati["prezzoProdotto"];
 
-    bool esito = modificaFornito(email.c_str(), nomeProdotto.c_str(), descrizioneProdotto.c_str(), prezzoProdotto);
+    bool esito = aggiungiFornito(email.c_str(), nomeProdotto.c_str(), descrizioneProdotto.c_str(), prezzoProdotto);
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Product added to system\n");
     } else {
@@ -107,6 +145,29 @@ void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
     std::string descrizioneProdotto = dati["descrizioneProdotto"];
     double prezzoProdotto = dati["prezzoProdotto"];
     int ID = stoi(id);
+    
+    int supID = recuperaSupplierID(email);
+    
+    // Connetti a Redis
+    redisContext *c2r = redisConnect(REDIS_IP, REDIS_PORT);
+    if (c2r == nullptr || c2r->err) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Unable to connect to Redis");
+        return;
+    }
+
+    // Prepara il comando per aggiungere l'email allo stream
+    redisReply* reply = static_cast<redisReply*>(redisCommand(c2r, "XADD %s * id %d", WRITE_STREAM, supID));
+
+    // Controlla l'esito del comando Redis
+    if (reply == nullptr || reply->type != REDIS_REPLY_STRING) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Error writing id to Redis stream");
+        redisFree(c2r);
+        return;
+    }
+
+    // Pulisci la risposta di Redis
+    freeReplyObject(reply);
+    redisFree(c2r);
 
     bool esito = modificaFornito(email.c_str(), nomeProdotto.c_str(), descrizioneProdotto.c_str(), prezzoProdotto, ID);
     if (esito) {
@@ -139,6 +200,7 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
 
     RIGHE = risultato.first;
     PRODOTTI = risultato.second;
+    std::cout << RIGHE << std::endl;
     // Costruisci la risposta
     if (RIGHE > 0)
     {
@@ -156,10 +218,14 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
             << " Descrizione: " << descrizione
             << " Prezzo Prodotto: " << prezzo << "\n";
         }
+    response.send(Pistache::Http::Code::Ok, ss.str());
+    } else if (risultato.first == 0) {
+        response.send(Pistache::Http::Code::Ok, "Nessun prodotto disponibile");
     } else {
-        ss << "\nNessun prodotto fornito!\n"; //... e lo stampa
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dei prodotti");
     }
-    return;
+    
+    response.send(Pistache::Http::Code::Ok, "carrello visualizzato");
 }
 
 //curl -X POST -H "Content-Type: application/json" -d '{"nome": "nome", "IVA": "12312312312", "telefono": "1234567890"}' http://localhost:5002/prova1@prova1.it/
@@ -180,11 +246,11 @@ void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::Respon
     if (IVA.length() != 11 || !isNumber(IVA) ) response.send(Pistache::Http::Code::Bad_Request, "IVA must be a string of 11 numbers\n");
     if (telefono.length() > 15 || telefono.length() < 10 || !isNumber(telefono)) response.send(Pistache::Http::Code::Bad_Request, "Telephone must be a string a 10-15 numbers\n");
 
-    bool esito = modificaFornito(email.c_str(), nome.c_str(), IVA.c_str(), telefono.c_str());
+    bool esito = modificaInfoF(email.c_str(), nome.c_str(), IVA.c_str(), telefono.c_str());
     if (esito) {
-        response.send(Pistache::Http::Code::Created, "Product added to system\n");
+        response.send(Pistache::Http::Code::Created, "Info changes\n");
     } else {
-        response.send(Pistache::Http::Code::Unauthorized, "Failed to add the product to system\n");
+        response.send(Pistache::Http::Code::Unauthorized, "Failed to change your info\n");
     }
 }
 

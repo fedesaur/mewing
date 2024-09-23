@@ -7,6 +7,7 @@
 #include <sstream>
 #include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
+#include "../../../entities/Prodotto.h"
 #include "../../../lib/con2redis/src/con2redis.h"
 #include <unistd.h>
 #include <cstring>

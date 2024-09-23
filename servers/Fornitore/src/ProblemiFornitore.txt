@@ -1,15 +1,6 @@
-MODIFICA PROFILO: "C'è stato un errore nel database" Output rilasciato dal try-catch principale
-RECUPERA PRODOTTI: Funziona
-AGGIUNGI PRODOTTO: Funziona
-RIMOZIONE PRODOTTO: column number -1 is out of range 0..5
-ExecSQLcmd(): SQL command failed: DELETE FROM prodotto WHERE id = 8 AND fornitore = 1
-ExecSQLcmd(): PGRES_FATAL_ERROR
-ExecSQLcmd(): PQresultErrorMessage: ERROR:  control reached end of trigger procedure without RETURN
-CONTEXT:  PL/pgSQL function rim_prod()
-MODIFICA PRODOTTO: Funziona, ma quando si termina il processo di modifica e si tenta di tornare al menù principale ritorna il seguente errore: 
-free(): double free detected in tcache 2
-Annullato (core dump creato)
-REGISTRAZIONE NUOVO UTENTE: ExecSQLtuples(): SQL command failed: INSERT INTO fornitore(nome, piva, mail, telefono, sede) VALUES('Pippo', '12345678901', 'pippo@pippoli.com','1234567890', 9) RETURNING id
-ExecSQLtuples(): PGRES_FATAL_ERROR
+Quando faccio update prodotto mi dà problemi con lo stream redis
+
+quando faccio get prodotti non finisce mai
+
 
 

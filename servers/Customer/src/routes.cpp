@@ -249,7 +249,7 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
     response.send(Pistache::Http::Code::Ok, "carrello visualizzato");
     
     
-    std::cout << "quii" <<std::endl;
+
 }
 
 

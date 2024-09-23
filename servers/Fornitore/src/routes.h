@@ -13,6 +13,7 @@
 #include "../metodi/rimuoviFornito.h"
 #include "../metodi/modificaFornito.h"
 #include "../metodi/recuperaForniti.h"
+#include "../metodi/modificaInfoF.h"
 #include <pistache/http.h>
 #include <pistache/endpoint.h>
 #include <iostream>
@@ -30,5 +31,7 @@ void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
 void eliminaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+int recuperaSupplierID(const std::string& email);
 
 #endif // ROUTES_H
