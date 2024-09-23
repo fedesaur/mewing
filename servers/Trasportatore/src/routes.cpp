@@ -168,8 +168,8 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
 void accettaOrdine(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response){
 
     auto piva = request.param(":piva").as<std::string>();
-    auto ordine = request.param(":ordine").as<int>();  // Supponendo che l'ID del prodotto sia un intero
-    auto corriere = request.param(":corriere").as<int>();    // Quantità come intero
+    auto ordine = request.param(":ordine").as<int>();  
+    auto corriere = request.param(":corriere").as<int>();    
 
     // Recupera l'ID del cliente basato sull'email
     int courierID = recuperaCourierID(piva);
