@@ -29,9 +29,6 @@
 
 int autentica(const char* mail);
 
-bool creaSupplier(Con2DB db, int clientSocket, const char* mail);
-
-bool inviaDati(int ID, const char* nome, const char* cognome, const char* mail, int abita); // Per leggibilità, l'invio dati viene gestito da un'unica funzione
-
+bool creaFornitore(const char* email, const char* nome, const char* IVA, const char* telefono, const char* via, int civico, const char* CAP, const char* city, const char* stato);
 
 #endif //AUTENTICAZIONE_H
