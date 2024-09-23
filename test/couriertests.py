@@ -1,5 +1,6 @@
 import requests
 import random
+import json
 
 # Dati di configurazione
 HOST = "127.0.0.1"
@@ -11,7 +12,7 @@ piva_list = ["32132132132", "45645645645", "78978978978"]
 
 # Variabile per contare i test riusciti
 success_count = 0
-total_tests = 2 * len(piva_list)  # Numero totale di test da eseguire
+total_tests = 3 * len(piva_list)  # Numero totale di test da eseguire
 
 # Funzione per ottenere una PIVA casuale dal sistema
 def get_random_piva():
@@ -22,23 +23,48 @@ def get_random_piva():
 # 1. Test autentica trasportatore
 def test_autentica_trasportatore(piva):
     global success_count
-    response = requests.post(f"{BASE_URL}/autentica/{piva}")
-    if response.status_code == 200:
-        print(f"Autenticazione avvenuta con successo per PIVA {piva}")
-        success_count += 1  # Incrementa il contatore in caso di successo
-    else:
-        print(f"Errore durante l'autenticazione per PIVA {piva}. Status code: {response.status_code}")
+    try:
+        response = requests.post(f"{BASE_URL}/autentica/{piva}")
+        if response.status_code == 200:
+            print(f"Autenticazione avvenuta con successo per PIVA {piva}")
+            success_count += 1  # Incrementa il contatore in caso di successo
+        elif response.status_code == 401:
+            print(f"Autenticazione fallita per PIVA {piva}: Non autorizzato.")
+        else:
+            print(f"Errore durante l'autenticazione per PIVA {piva}. Status code: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Errore di connessione durante il test di autenticazione per PIVA {piva}: {e}")
 
 # 2. Test recupera ordini
 def test_get_ordini():
     global success_count
-    response = requests.get(f"{BASE_URL}/ordini/")
-    if response.status_code == 200:
-        print("Ordini recuperati con successo:")
-        print(response.text)
-        success_count += 1  # Incrementa il contatore in caso di successo
-    else:
-        print(f"Errore nel recupero degli ordini. Status code: {response.status_code}")
+    try:
+        response = requests.get(f"{BASE_URL}/ordini/")
+        if response.status_code == 200:
+            print("Ordini recuperati con successo:")
+            print(response.text)
+            success_count += 1  # Incrementa il contatore in caso di successo
+            return json.loads(response.text)  # Ritorna gli ordini in formato JSON
+        elif response.status_code == 500:
+            print("Errore interno nel recupero degli ordini.")
+        else:
+            print(f"Errore nel recupero degli ordini. Status code: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Errore di connessione durante il test di recupero ordini: {e}")
+    return None  # In caso di errore, ritorna None
+
+# 3. Test prendere in carico un ordine
+def test_accetta_ordine(piva, ordine_id, corriere_id):
+    global success_count
+    try:
+        response = requests.post(f"{BASE_URL}/accetta/{piva}/{ordine_id}/{corriere_id}")
+        if response.status_code == 200:
+            print(f"Ordine {ordine_id} preso in carico con successo per PIVA {piva}")
+            success_count += 1  # Incrementa il contatore in caso di successo
+        else:
+            print(f"Errore nel prendere in carico l'ordine {ordine_id}. Status code: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Errore di connessione durante il test di presa in carico ordine {ordine_id}: {e}")
 
 ### Funzione principale per eseguire tutti i test ###
 def run_all_tests():
@@ -50,7 +76,17 @@ def run_all_tests():
         test_autentica_trasportatore(piva)
 
         print("\n--- Test Recupera Ordini ---")
-        test_get_ordini()
+        ordini_data = test_get_ordini()
+
+        if ordini_data and len(ordini_data) > 0:
+            # Assumiamo che l'ID del corriere sia sempre valido (es. 1), e prendiamo il primo ordine disponibile
+            ordine_id = ordini_data[0]['ID']  # Ottieni l'ID del primo ordine
+            corriere_id = 1  # Può essere sostituito con un ID corriere valido se necessario
+
+            print(f"\n--- Test Prendi in carico Ordine (ID Ordine: {ordine_id}, PIVA: {piva}) ---")
+            test_accetta_ordine(piva, ordine_id, corriere_id)
+        else:
+            print("Nessun ordine disponibile da prendere in carico.")
 
     # Stampa dei risultati finali
     print(f"\nTest automatici completati: {success_count} su {total_tests} test sono andati a buon fine.")
