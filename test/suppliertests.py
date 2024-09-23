@@ -1,126 +1,101 @@
 import requests
-import random
-import concurrent.futures
-import threading
+import json
 
-# Dati di configurazione
+# Configurazione del server
 HOST = "127.0.0.1"
-PORT = 5005
+PORT = 5002
 BASE_URL = f"http://{HOST}:{PORT}"
 
-# Lista di email che già esistono nel sistema
-email_list = ["prova1@prova1.it", "prova2@prova2.it"]
-
-# Lock per gestire l'accesso concorrente al contatore
-lock = threading.Lock()
-
-# Variabile per contare i test riusciti
-success_count = 0
-total_tests = 6 * len(email_list)  # Numero totale di test da eseguire
-
-# Funzione per aggiornare il contatore dei successi in modo thread-safe
-def increment_success_count():
-    global success_count
-    with lock:
-        success_count += 1
-
-### Test per ciascuna rotta ###
-
-# 1. Test autentica
-def test_autentica(email):
-    response = requests.post(f"{BASE_URL}/autentica/{email}")
+# Funzione per autenticare un fornitore
+def test_autentica_fornitore(email):
+    url = f"{BASE_URL}/autentica/{email}"
+    response = requests.get(url)
     if response.status_code == 200:
         print(f"Autenticazione avvenuta con successo per {email}")
-        increment_success_count()  # Incrementa il contatore in caso di successo
     else:
-        print(f"Errore durante l'autenticazione per {email}. Status code: {response.status_code}")
+        print(f"Errore nell'autenticazione per {email}. Status Code: {response.status_code}")
 
-# 2. Test modificaNome
-def test_modifica_nome():
-    data = {"nome": "NuovoNome"}  # Simula l'invio di un nuovo nome
-    response = requests.post(f"{BASE_URL}/modificaNome", json=data)
+# Funzione per recuperare prodotti
+def test_get_prodotti(email):
+    url = f"{BASE_URL}/{email}/prodotti/"
+    response = requests.get(url)
     if response.status_code == 200:
-        print(f"Nome modificato con successo")
-        increment_success_count()  # Incrementa il contatore in caso di successo
+        print(f"Prodotti recuperati per {email}: {response.text}")
     else:
-        print(f"Errore durante la modifica del nome. Status code: {response.status_code}")
+        print(f"Errore nel recupero prodotti per {email}. Status Code: {response.status_code}")
 
-# 3. Test recupera prodotti
-def test_recupera_prodotti():
-    response = requests.get(f"{BASE_URL}/prodotti")
+# Funzione per aggiungere un prodotto
+def test_aggiungi_prodotto(email, nomeProdotto, descrizioneProdotto, prezzoProdotto):
+    url = f"{BASE_URL}/{email}/prodotti/"
+    data = {
+        "nomeProdotto": nomeProdotto,
+        "descrizioneProdotto": descrizioneProdotto,
+        "prezzoProdotto": prezzoProdotto
+    }
+    response = requests.put(url, json=data)
+    if response.status_code == 201:
+        print(f"Prodotto aggiunto con successo per {email}")
+    else:
+        print(f"Errore nell'aggiunta del prodotto per {email}. Status Code: {response.status_code}")
+
+# Funzione per modificare un prodotto
+def test_modifica_prodotto(email, idProdotto, nomeProdotto, descrizioneProdotto, prezzoProdotto):
+    url = f"{BASE_URL}/{email}/prodotti/{idProdotto}"
+    data = {
+        "nomeProdotto": nomeProdotto,
+        "descrizioneProdotto": descrizioneProdotto,
+        "prezzoProdotto": prezzoProdotto
+    }
+    response = requests.post(url, json=data)
+    if response.status_code == 201:
+        print(f"Prodotto modificato con successo per {email}")
+    else:
+        print(f"Errore nella modifica del prodotto per {email}. Status Code: {response.status_code}")
+
+# Funzione per eliminare un prodotto
+def test_elimina_prodotto(email, idProdotto):
+    url = f"{BASE_URL}/{email}/prodotti/{idProdotto}"
+    response = requests.delete(url)
     if response.status_code == 200:
-        print("Prodotti recuperati con successo:")
-        # prodotti_disponibili = response.json()  # Memorizza i prodotti recuperati
-        increment_success_count()  # Incrementa il contatore in caso di successo
+        print(f"Prodotto eliminato con successo per {email}")
     else:
-        print(f"Errore nel recupero dei prodotti. Status code: {response.status_code}")
+        print(f"Errore nell'eliminazione del prodotto per {email}. Status Code: {response.status_code}")
 
-# 4. Test aggiungi prodotto al carrello
-def test_aggiungi_prodotto_al_carrello(email):
-    prodotto_id = random.randint(1, 7)  # Scegli un prodotto casuale
-    quantita = random.randint(1, 5)  # Quantità casuale tra 1 e 5
-
-    response = requests.post(f"{BASE_URL}/addToCarrello/{email}/{prodotto_id}/{quantita}")
-    if response.status_code == 200:
-        print(f"Prodotto aggiunto al carrello per l'utente {email} con quantità {quantita}")
-        increment_success_count()  # Incrementa il contatore in caso di successo
+# Funzione per modificare informazioni del fornitore
+def test_modifica_info(email, nome, IVA, telefono):
+    url = f"{BASE_URL}/{email}/"
+    data = {
+        "nome": nome,
+        "IVA": IVA,
+        "telefono": telefono
+    }
+    response = requests.post(url, json=data)
+    if response.status_code == 201:
+        print(f"Informazioni modificate con successo per {email}")
     else:
-        print(f"Errore nell'aggiunta del prodotto al carrello per {email}. Status code: {response.status_code}")
+        print(f"Errore nella modifica delle informazioni per {email}. Status Code: {response.status_code}")
 
-# 5. Test visualizza carrello
-def test_visualizza_carrello(email):
-    response = requests.get(f"{BASE_URL}/carrello/{email}")
-    if response.status_code == 200:
-        print(f"Carrello recuperato per {email}:")
-        print(response.text)
-        increment_success_count()  # Incrementa il contatore in caso di successo
-    else:
-        print(f"Errore nel recupero del carrello per {email}. Status code: {response.status_code}")
-
-# 6. Test effettua ordine
-def test_ordina(email):
-    response = requests.post(f"{BASE_URL}/ordina/{email}")
-    if response.status_code == 200:
-        print(f"Ordine effettuato con successo per {email}")
-        increment_success_count()  # Incrementa il contatore in caso di successo
-    else:
-        print(f"Errore durante l'ordine per {email}. Status code: {response.status_code}")
-
-### Funzione per eseguire tutti i test per una specifica email ###
-def run_tests_for_email(email):
-    print(f"\nEsecuzione dei test per {email}...")
-
-    print("\n--- Test Autentica ---")
-    test_autentica(email)
-
-    print("\n--- Test Modifica Nome ---")
-    test_modifica_nome()
-
+# Funzione principale per eseguire tutti i test
+def run_tests():
+    email = "prova1@prova1.it"
+    
+    print("\n--- Test Autenticazione ---")
+    test_autentica_fornitore(email)
+    
     print("\n--- Test Recupera Prodotti ---")
-    test_recupera_prodotti()
-
-    print("\n--- Test Aggiungi Prodotto al Carrello ---")
-    test_aggiungi_prodotto_al_carrello(email)
-
-    print("\n--- Test Visualizza Carrello ---")
-    test_visualizza_carrello(email)
-
-    print("\n--- Test Effettua Ordine ---")
-    test_ordina(email)
-
-### Funzione principale per eseguire tutti i test su più email contemporaneamente ###
-def run_all_tests_concurrently():
-    print("Esecuzione dei test automatici con più email...\n")
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(email_list)) as executor:
-        # Lancia i test per ogni email in modo concorrente
-        futures = [executor.submit(run_tests_for_email, email) for email in email_list]
-        
-        # Attendi il completamento di tutti i thread
-        concurrent.futures.wait(futures)
-
-    # Stampa dei risultati finali
-    print(f"\nTest automatici completati: {success_count} su {total_tests} test sono andati a buon fine.")
+    test_get_prodotti(email)
+    
+    print("\n--- Test Aggiungi Prodotto ---")
+    test_aggiungi_prodotto(email, "NuovoProdotto", "Descrizione del prodotto", 10.50)
+    
+    print("\n--- Test Modifica Prodotto ---")
+    test_modifica_prodotto(email, 1, "ProdottoModificato", "Nuova descrizione", 15.99)
+    
+    print("\n--- Test Elimina Prodotto ---")
+    test_elimina_prodotto(email, 1)
+    
+    print("\n--- Test Modifica Informazioni Fornitore ---")
+    test_modifica_info(email, "NuovoNome", "12312312312", "1234567890")
 
 if __name__ == "__main__":
-    run_all_tests_concurrently()
+    run_tests()
