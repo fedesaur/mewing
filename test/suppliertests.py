@@ -3,7 +3,7 @@ import json
 
 # Configurazione del server
 HOST = "127.0.0.1"
-PORT = 5002
+PORT = 5005
 BASE_URL = f"http://{HOST}:{PORT}"
 
 # Funzione per autenticare un fornitore
