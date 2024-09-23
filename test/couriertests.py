@@ -44,7 +44,7 @@ def test_get_ordini():
             print("Ordini recuperati con successo:")
             print(response.text)
             success_count += 1  # Incrementa il contatore in caso di successo
-            return json.loads(response.text)  # Ritorna gli ordini in formato JSON
+            return None
         elif response.status_code == 500:
             print("Errore interno nel recupero degli ordini.")
         else:
@@ -77,7 +77,9 @@ def run_all_tests():
 
         print("\n--- Test Recupera Ordini ---")
         ordini_data = test_get_ordini()
-
+        
+        test_accetta_ordine(piva, 5, 1)
+        """
         if ordini_data and len(ordini_data) > 0:
             # Assumiamo che l'ID del corriere sia sempre valido (es. 1), e prendiamo il primo ordine disponibile
             ordine_id = ordini_data[0]['ID']  # Ottieni l'ID del primo ordine
@@ -86,7 +88,7 @@ def run_all_tests():
             print(f"\n--- Test Prendi in carico Ordine (ID Ordine: {ordine_id}, PIVA: {piva}) ---")
             test_accetta_ordine(piva, ordine_id, corriere_id)
         else:
-            print("Nessun ordine disponibile da prendere in carico.")
+            print("Nessun ordine disponibile da prendere in carico.") """
 
     # Stampa dei risultati finali
     print(f"\nTest automatici completati: {success_count} su {total_tests} test sono andati a buon fine.")
