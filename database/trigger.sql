@@ -141,7 +141,7 @@ create or replace function check_del() returns trigger as $same_trans$
     BEGIN
         if exists(
                 select *
-                    from ordTrans ot, ordine o, corriere c
+                    from transord ot, ordine o, corriere c
                     where NEW.corriere=c.id
                     and o.id=NEW.ordine
                     and o.id=ot.ordine
