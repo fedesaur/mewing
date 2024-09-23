@@ -5,6 +5,7 @@ void defineRoutes(Pistache::Rest::Router& router)
     // Registrazione delle rotte con funzioni globali
     Pistache::Rest::Routes::Post(router, "/autentica/:piva", Pistache::Rest::Routes::bind(&autenticaTrasportatore));
     Pistache::Rest::Routes::Get(router, "/ordini/", Pistache::Rest::Routes::bind(&getOrdini));
+    Pistache::Rest::Routes::Post(router, "/accetta/:piva/:ordine/:corriere", Pistache::Rest::Routes::bind(&accettaOrdine));
     
 
 }
@@ -45,7 +46,7 @@ void autenticaTrasportatore(const Pistache::Rest::Request& request, Pistache::Ht
 
     // Ora chiama la funzione autentica
     bool autenticato = autentica();
-    int ID = recuperaTrasporterID(IVA);
+    int ID = recuperaCourierID(IVA);
 
     if (autenticato && ID > 0) {
         response.send(Pistache::Http::Code::Ok, "Trasporter authenticated");
@@ -58,7 +59,7 @@ void autenticaTrasportatore(const Pistache::Rest::Request& request, Pistache::Ht
     }
 }
 
-int recuperaTrasporterID(std::string IVA) 
+int recuperaCourierID(std::string IVA) 
 {
     char comando[1000];
     PGresult *res;
@@ -79,6 +80,7 @@ int recuperaTrasporterID(std::string IVA)
     return ID;
 }
 
+//curl -X GET http://localhost:5003/ordini/
 void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     int rows;
@@ -158,6 +160,31 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
     }
     
     
+
+
+}
+
+//curl -X POST http://localhost:5003/accetta/32132132132/1/1
+void accettaOrdine(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response){
+
+    auto piva = request.param(":piva").as<std::string>();
+    auto ordine = request.param(":ordine").as<int>();  // Supponendo che l'ID del prodotto sia un intero
+    auto corriere = request.param(":corriere").as<int>();    // Quantità come intero
+
+    // Recupera l'ID del cliente basato sull'email
+    int courierID = recuperaCourierID(piva);
+    if (courierID <= 0) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente");
+        return;
+    }
+    
+    bool esito=prendiOrdine(courierID, corriere, ordine);
+    
+    if (esito) {
+        response.send(Pistache::Http::Code::Ok, "Ordine preso in carico");
+    } else {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel prendere in carico l'ordine");
+    }
 
 
 }

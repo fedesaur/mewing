@@ -36,8 +36,8 @@
 #define PASSWORD_TRAS "courier"
 #define DB_NAME "mewingdb"
 
-bool gestioneOrdini(int clientSocket);
+
 bool consegnaOrdine(int clientSocket, int ordineID);
 void dettagliOrdine(int clientSocket, int ordineID);
-bool prendiOrdine(int clientSocket, int trasporterID);
+bool prendiOrdine(int courierID, int correre, int ordine);
 #endif
