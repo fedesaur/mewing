@@ -4,10 +4,13 @@ using json = nlohmann::json; // Abbreviazione per il json
 void defineRoutes(Pistache::Rest::Router& router) 
 {
     // Registrazione delle rotte con funzioni globali
+    Pistache::Rest::Routes::Get(router, "/:email/prodotti/", Pistache::Rest::Routes::bind(&getProdotti));
     Pistache::Rest::Routes::Get(router, "/autentica/:email", Pistache::Rest::Routes::bind(&autenticaFornitore));
     Pistache::Rest::Routes::Put(router, "/:email/prodotti/", Pistache::Rest::Routes::bind(&aggiungiProdotto));
+    Pistache::Rest::Routes::Post(router, "/:email/", Pistache::Rest::Routes::bind(&modificaInfo))
     Pistache::Rest::Routes::Post(router, "/:email/prodotti/:idProdotto", Pistache::Rest::Routes::bind(&modificaProdotto));
     Pistache::Rest::Routes::Delete(router, "/:email/prodotti/:idProdotto", Pistache::Rest::Routes::bind(&eliminaProdotto));
+    
 }
 
 //curl -X GET http://localhost:5002/autentica/prova1@prova1.it
@@ -85,7 +88,6 @@ void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
     std::string email = request.param(":email").as<std::string>();
     std::string id = request.param(":idProdotto").as<std::string>(); 
 
-
     // Controlla che i parametri richiesti siano stati forniti
     if (email.empty()) {
         response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
@@ -113,85 +115,76 @@ void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
         response.send(Pistache::Http::Code::Unauthorized, "Failed to change product's attributes\n");
     }
 }
-/*
-void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+
+//curl -X GET http://localhost:5002/prova1@prova1.it/prodotti/
+void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
-    int rows;
-    char comando[1000];
-    PGresult *res;
-    Con2DB db(HOSTNAME, DB_PORT, USERNAME_TRAS, PASSWORD_TRAS, DB_NAME); // Effettua la connessione al database
-    // Recupera tutti gli ordini disponibili
-    
-    std::tuple<int, Ordine*, Indirizzo*> risultato = ricercaOrdini();
-    if (std::get<0>(risultato) == -1) response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero degli ordini\n");
-    
-    int RIGHE = std::get<0>(risultato);
-    Ordine* ORDINI = std::get<1>(risultato);
-    Indirizzo* INDIRIZZI =  std::get<2>(risultato);
-    
-    // Costruisci la risposta
-    try
-    {
-        if (RIGHE > 0) 
-        {
-            std::stringstream ss;
-            ss << "ORDINI DISPONIBILI:\n";
-            
-            // Itera sui prodotti e li inserisce nella stringa di risposta
-            for (int i = 0; i < RIGHE; i++) 
-            {
-               ss << i + 1 << ") ID Ordine: " << ORDINI[i].ID
-               << " Mail Customer: " << ORDINI[i].MailCustomer
-               << " Data Richiesta: " << ORDINI[i].DataRichiesta
-               << " Pagamento: " << ORDINI[i].Pagamento
-               << " Totale: " << ORDINI[i].Totale << "\n"
-               << " Da consegnare in: " << INDIRIZZI[i].via << " " << INDIRIZZI[i].civico
-               << ", " << INDIRIZZI[i].citta << " (CAP : " << INDIRIZZI[i].CAP << "), "
-               << INDIRIZZI[i].stato << "\n";
-               /*
-                
-                sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF, pn.quantita "
-                "FROM prodotto pr, prodinord pn, fornitore fr WHERE pn.prodotto = pr.id "
-                "AND pr.fornitore = fr.id AND pn.ordine = %d", ORDINI[i].ID);
-                res = db.ExecSQLtuples(comando);
-                rows = PQntuples(res); // Si presume ci siano prodotti nell'ordine
-                ss << "PRODOTTI PRESENTI NELL'ORDINE:\n";
-                for (int j = 0; j < rows; j++)
-                {
-                    int IDProd = atoi(PQgetvalue(res, j, PQfnumber(res, "id")));
-                    const char* descrizione = PQgetvalue(res, j, PQfnumber(res, "descrizione"));
-                    double prezzo = atof(PQgetvalue(res, j, PQfnumber(res, "prezzo")));
-                    const char* nome = PQgetvalue(res, j, PQfnumber(res, "nome"));
-                    const char* fornitore = PQgetvalue(res, j, PQfnumber(res, "nomeF"));
-                    int quantita = atoi(PQgetvalue(res, j, PQfnumber(res, "quantita")));
+    std::stringstream ss;
+    int RIGHE;
+    Prodotto* PRODOTTI;
 
-                    ss << "\t" << std::to_string(j+1) + ") ID Prodotto: " << std::to_string(IDProd)
-                    << " Nome Prodotto: " << nome
-                    << " Descrizione: " << descrizione
-                    << " Fornitore: " << fornitore
-                    << " Prezzo Prodotto: " << std::to_string(prezzo)
-                    << " Quantità :" << std::to_string(quantita) << "\n";
-                }
-                PQclear(res);
-            
-            
-        }
-        // Pulisci la memoria allocata dinamicamente per gli ordini
-        delete[] ORDINI;
-        delete[] INDIRIZZI;
-
-        response.send(Pistache::Http::Code::Ok, ss.str());
-        } else if (RIGHE == 0) {
-            response.send(Pistache::Http::Code::Ok, "Nessun ordine disponibile");
-        } else {
-            response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dei prodotti");
-        }
+    std::string email = request.param(":email").as<std::string>();
+    // Controlla che i parametri richiesti siano stati forniti
+    if (email.empty()) {
+        response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
+        return;
     }
-    catch(...)
+
+    std::pair<int, Prodotto*> risultato = recuperaForniti(email.c_str());
+    if (risultato.first == -1)
     {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dei prodotti");
+        response.send(Pistache::Http::Code::Unauthorized, "Failed to recover products\n");
+        return;
+    }
+
+    RIGHE = risultato.first;
+    PRODOTTI = risultato.second;
+    // Costruisci la risposta
+    if (RIGHE > 0)
+    {
+        ss << "\nPRODOTTI FORNITI:\n"; //... e lo stampa
+        for (int i = 0; i < RIGHE; i++)
+        {
+            // Recupera gli attributi dei prodotti dal carrello...
+            int ID = PRODOTTI[i].ID;
+            const char* descrizione = PRODOTTI[i].descrizione;
+            double prezzo = PRODOTTI[i].prezzo;
+            const char* nomeP = PRODOTTI[i].nome;
+            // ...e li invia all'utente così che possa visualizzarli ed effettuarci operazioni
+            ss << i+1 << ") ID Prodotto: " << std::to_string(ID)
+            << " Nome Prodotto: " << nomeP
+            << " Descrizione: " << descrizione
+            << " Prezzo Prodotto: " << prezzo << "\n";
+        }
+    } else {
+        ss << "\nNessun prodotto fornito!\n"; //... e lo stampa
+    }
+    return;
+}
+
+//curl -X POST -H "Content-Type: application/json" -d '{"nome": "nome", "IVA": "12312312312", "telefono": "1234567890"}' http://localhost:5002/prova1@prova1.it/
+void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+    // Recupera l'email del fornitore tra i parametri
+    std::string email = request.param(":email").as<std::string>();
+    json dati = json::parse(request.body());
+    // Controlla se i dati forniti dall'utente sono presenti e corretti
+    if (!dati.contains("nome") || dati["nome"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Name not provided\n");
+    if (!dati.contains("IVA") || dati["IVA"].empty()) response.send(Pistache::Http::Code::Bad_Request, "IVA not provided\n");
+    if (!dati.contains("telefono") || dati["telefono"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Telephone not provided\n");
+    
+    std::string nome = dati["nome"];
+    std::string IVA = dati["IVA"];
+    std::string telefono = dati["telefono"];
+    if (nome.length() > 100) response.send(Pistache::Http::Code::Bad_Request, "Name length is above 100 characters\n");
+    if (IVA.length() != 11 || !isNumber(IVA) ) response.send(Pistache::Http::Code::Bad_Request, "IVA must be a string of 11 numbers\n");
+    if (telefono.length() > 15 || telefono.length() < 10 || !isNumber(telefono)) response.send(Pistache::Http::Code::Bad_Request, "Telephone must be a string a 10-15 numbers\n");
+
+    bool esito = modificaFornito(email.c_str(), nome.c_str(), IVA.c_str(), telefono.c_str());
+    if (esito) {
+        response.send(Pistache::Http::Code::Created, "Product added to system\n");
+    } else {
+        response.send(Pistache::Http::Code::Unauthorized, "Failed to add the product to system\n");
     }
 }
-*/
-
 

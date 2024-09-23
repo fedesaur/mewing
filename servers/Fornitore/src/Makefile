@@ -38,7 +38,7 @@ aux: ../../../lib/funzioniAusiliarie.cpp ../../../lib/funzioniAusiliarie.h
 metodi:
 	$(MAKE) -C ../metodi #Chiama il makefile di autenticazione
 
-api: routes.cpp routes.h
+api: routes.cpp routes.h ../../../lib/funzioniAusiliarie.h
 	$(CC) -c -o $(ODIR)/routes.o $< $(CFLAGS)
 
 supplier_server: Supplier_Server.cpp Supplier_Server.h

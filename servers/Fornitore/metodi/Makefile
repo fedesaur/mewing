@@ -22,19 +22,19 @@ con2redis:
 forniti: recuperaForniti.cpp recuperaForniti.h
 	$(CC) -c $< $(CFLAGS) -o recuperaForniti.o # Crea il file recuperaForniti.o
 
-info: modificaInfoF.cpp modificaInfoF.h ../../../lib/funzioniAusiliarie.h
+info: modificaInfoF.cpp modificaInfoF.h
 	$(CC) -c $< $(CFLAGS) -o modificaInfoF.o # Crea il file modificaInfoF.o
 
 aggiungi: aggiungiFornito.cpp aggiungiFornito.h
 	$(CC) -c $< $(CFLAGS) -o aggiungiFornito.o # Crea il file aggiungiFornito.o
 
-autenticazione: autenticazione.cpp autenticazione.h ../../../lib/funzioniAusiliarie.h
+autenticazione: autenticazione.cpp autenticazione.h
 	$(CC) -c $< $(CFLAGS) -o autenticazione.o # Crea il file autenticazione.o
 
-modifica: modificaFornito.cpp modificaFornito.h ../../../lib/funzioniAusiliarie.h
+modifica: modificaFornito.cpp modificaFornito.h
 	$(CC) -c $< $(CFLAGS) -o modificaFornito.o # Crea il file modificaFornito.o
 
-rimuovi: rimuoviFornito.cpp rimuoviFornito.h ../../../lib/funzioniAusiliarie.h
+rimuovi: rimuoviFornito.cpp rimuoviFornito.h
 	$(CC) -c $< $(CFLAGS) -o rimuoviFornito.o # Crea il file rimuoviFornito.o
 
 .PHONY: clean

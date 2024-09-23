@@ -2,15 +2,17 @@
 #define ROUTES_H
 
 #pragma once
+#include <utility> //Importa pair
 #include <pistache/router.h>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../../../entities/Indirizzo.h"
-#include "../../../entities/Ordine.h"
+#include "../../../lib/funzioniAusiliarie.h"
+#include "../../../entities/Prodotto.h"
 #include "../metodi/autenticazione.h"
 #include "../metodi/aggiungiFornito.h"
 #include "../metodi/rimuoviFornito.h"
 #include "../metodi/modificaFornito.h"
+#include "../metodi/recuperaForniti.h"
 #include <pistache/http.h>
 #include <pistache/endpoint.h>
 #include <iostream>
@@ -27,5 +29,6 @@ void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::
 void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void eliminaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
 #endif // ROUTES_H
