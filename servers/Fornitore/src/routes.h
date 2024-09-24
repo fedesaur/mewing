@@ -27,7 +27,7 @@
 
 void defineRoutes(Pistache::Rest::Router& router);
 void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-void creaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void crea(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void eliminaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);

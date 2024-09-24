@@ -6,22 +6,23 @@ void defineRoutes(Pistache::Rest::Router& router)
     // Registrazione delle rotte con funzioni globali
     Pistache::Rest::Routes::Get(router, "/:email/prodotti/", Pistache::Rest::Routes::bind(&getProdotti));
     Pistache::Rest::Routes::Get(router, "/autentica/:email", Pistache::Rest::Routes::bind(&autenticaFornitore));
-    Pistache::Rest::Routes::Put(router, "/autentica/", Pistache::Rest::Routes::bind(&creaFornitore));
+    Pistache::Rest::Routes::Put(router, "/autentica/", Pistache::Rest::Routes::bind(&crea));
     Pistache::Rest::Routes::Put(router, "/:email/prodotti/", Pistache::Rest::Routes::bind(&aggiungiProdotto));
     Pistache::Rest::Routes::Post(router, "/:email/", Pistache::Rest::Routes::bind(&modificaInfo));
     Pistache::Rest::Routes::Post(router, "/:email/prodotti/:idProdotto", Pistache::Rest::Routes::bind(&modificaProdotto));
-    Pistache::Rest::Routes::Delete(router, "/:email/prodotti/:idProdotto", Pistache::Rest::Routes::bind(&eliminaProdotto));
+    Pistache::Rest::Routes::Delete(router, "/:email/prodotti/:idProdotto",   Pistache::Rest::Routes::bind(&eliminaProdotto));
 }
 
 int recuperaSupplierID(const std::string& email) 
 {
     int ID;
     PGresult *res;
+    char comando[1000];
     Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
 
     // Prepara la query per cercare l'ID cliente tramite l'email
     sprintf(comando, "SELECT id FROM fornitore WHERE mail = '%s' ", email.c_str());
-    PGresult *res = PQexecParams(conn, query, 1, NULL, paramValues, NULL, NULL, 0);
+    
     try
     {
         res = db.ExecSQLtuples(comando);
@@ -62,8 +63,9 @@ void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::
     }
 }
 
+
 //curl -X PUT -H "Content-Type: application/json" -d '{"nome": "nome", "IVA": "12312312312", "telefono": "1234567890", "email" : "simy@email.com", "via" : "Via lotteria", "civico": 12, "cap" : "12345", "city" : "Palermo", "stato" : "Repubblica delle Banane"}' http://localhost:5002/prova1@prova1.it/
-void creaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+void crea(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     json dati = json::parse(request.body());
     // Controlla se i dati forniti dall'utente sono presenti e corretti
@@ -278,3 +280,5 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
     freeReplyObject(reply);
     redisFree(redis);  // Chiudi la connessione a Redis
 }
+
+

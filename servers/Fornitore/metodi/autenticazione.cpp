@@ -54,10 +54,10 @@ bool creaFornitore(const char* email, const char* nome, const char* IVA, const c
 		int sede = atoi(PQgetvalue(res, 0, PQfnumber(res, "id"))); // Recupera l'ID dell'indirizzo appena aggiunto
 		
 		sprintf(comando, "INSERT INTO fornitore(nome, piva, mail, telefono, sede) VALUES('%s', '%s', '%s','%s', %d)",
-		nome.c_str(), IVA.c_str(), mail, telefono.c_str(), sede);
+		nome, IVA, email, telefono, sede);
 		res = db.ExecSQLcmd(comando); // Viene inserito il nuovo fornitore nel database nel database
 		PQclear(res);	
-		return esito;
+		return true;
 	}
 	catch(...)
 	{
