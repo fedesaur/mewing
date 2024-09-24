@@ -1,5 +1,3 @@
-#include "recuperaForniti.h"
-
 std::pair<int, Prodotto*> recuperaForniti(const char* mail)
 {
     std::pair<int, Prodotto*> risultato;
@@ -15,7 +13,7 @@ std::pair<int, Prodotto*> recuperaForniti(const char* mail)
         return risultato;
     }
 
-    // Recupera la lista di ID prodotti dal Redis per l'email
+    // Recupera la lista di ID prodotti da Redis per l'email
     redisReply* reply = (redisReply*)redisCommand(redis, "LRANGE prodotti:%s 0 -1", mail);
     if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) {
         // Recupera i prodotti da Redis
@@ -24,14 +22,14 @@ std::pair<int, Prodotto*> recuperaForniti(const char* mail)
 
         for (int i = 0; i < rows; i++) {
             std::string prodottoID = reply->element[i]->str;
-            
+
             // Recupera il prodotto come hash
             redisReply* prodottoReply = (redisReply*)redisCommand(redis, "HGETALL prodotto:%s", prodottoID.c_str());
             if (prodottoReply->type == REDIS_REPLY_ARRAY && prodottoReply->elements == 8) {
                 // Associa i valori del prodotto a un oggetto Prodotto
                 forniti[i].ID = std::stoi(prodottoReply->element[1]->str);
-                forniti[i].nome = prodottoReply->element[3]->str;
-                forniti[i].descrizione = prodottoReply->element[5]->str;
+                forniti[i].nome = strdup(prodottoReply->element[3]->str);  // Copia sicura della stringa
+                forniti[i].descrizione = strdup(prodottoReply->element[5]->str);
                 forniti[i].prezzo = std::stod(prodottoReply->element[7]->str);
             }
             freeReplyObject(prodottoReply);
@@ -65,12 +63,13 @@ std::pair<int, Prodotto*> recuperaForniti(const char* mail)
 
                 // Assegna gli attributi all'i-esimo Prodotto in forniti
                 forniti[i].ID = ID;
-                forniti[i].descrizione = descrizione;
+                forniti[i].descrizione = strdup(descrizione);  // Copia sicura della stringa
                 forniti[i].prezzo = prezzo;
-                forniti[i].nome = nome;
+                forniti[i].nome = strdup(nome);
 
                 // Memorizza il prodotto in Redis come hash
-                redisCommand(redis, "HMSET prodotto:%d id %d nome %s descrizione %s prezzo %f", ID, ID, nome, descrizione, prezzo);
+                redisCommand(redis, "HMSET prodotto:%d id %d nome %s descrizione %s prezzo %f", 
+                            ID, ID, nome, descrizione, prezzo);
 
                 // Aggiungi l'ID del prodotto alla lista associata all'email
                 redisCommand(redis, "RPUSH prodotti:%s %d", mail, ID);
