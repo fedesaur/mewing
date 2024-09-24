@@ -13,66 +13,188 @@ using json = nlohmann::json;
 
 void defineRoutes(Pistache::Rest::Router& router) {
     // Registrazione delle rotte con funzioni globali
-    Pistache::Rest::Routes::Post(router, "/autentica/:email", Pistache::Rest::Routes::bind(&authenticateUser));
-    Pistache::Rest::Routes::Post(router, "/modificaNome", Pistache::Rest::Routes::bind(&modificaNomeHttp));
+    Pistache::Rest::Routes::Get(router, "/autentica/:email", Pistache::Rest::Routes::bind(&autenticaCustomer));
+    Pistache::Rest::Routes::Put(router, "/autentica/", Pistache::Rest::Routes::bind(&creaCustomer));
+    Pistache::Rest::Routes::Post(router, "/:email/", Pistache::Rest::Routes::bind(&modificaInfo));
+    Pistache::Rest::Routes::Get(router, "/:email/indirizzi/", Pistache::Rest::Routes::bind(&getIndirizzi));
     Pistache::Rest::Routes::Get(router, "/prodotti", Pistache::Rest::Routes::bind(&getProdotti));
     Pistache::Rest::Routes::Post(router, "/addToCarrello/:email/:prodotto/:quantita", Pistache::Rest::Routes::bind(&addProdottoToCarrello));
-    Pistache::Rest::Routes::Get(router, "/carrello/:email", Pistache::Rest::Routes::bind(&getCarrello));
+    Pistache::Rest::Routes::Get(router, "/:email/carrello/", Pistache::Rest::Routes::bind(&getCarrello));
     Pistache::Rest::Routes::Post(router, "/ordina/:email", Pistache::Rest::Routes::bind(&ordina));
 
 }
 
-
-void authenticateUser(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
+//curl -X GET http://localhost:5001/autentica/abc@abc.it
+void autenticaCustomer(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
     // Recupera l'email dal percorso
-    auto email = request.param(":email").as<std::string>();
+    std::string email = request.param(":email").as<std::string>();
 
     if (email.empty()) {
-        response.send(Pistache::Http::Code::Bad_Request, "Email not provided");
+        response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
         return;
     }
-
-    // Connetti a Redis
-    redisContext *c2r = redisConnect(REDIS_IP, REDIS_PORT);
-    if (c2r == nullptr || c2r->err) {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Unable to connect to Redis");
-        return;
-    }
-
-    // Prepara il comando per aggiungere l'email allo stream
-    redisReply* reply = static_cast<redisReply*>(redisCommand(c2r, "XADD %s * email %s", WRITE_STREAM, email.c_str()));
-
-    // Controlla l'esito del comando Redis
-    if (reply == nullptr || reply->type != REDIS_REPLY_STRING) {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Error writing email to Redis stream");
-        redisFree(c2r);
-        return;
-    }
-
-    // Pulisci la risposta di Redis
-    freeReplyObject(reply);
-    redisFree(c2r);
-
-    // Simulazione del socket client
-    int clientSocket = 0;
 
     // Ora chiama la funzione autentica
-    bool autenticato = autentica(clientSocket);
+    int ID = autentica(email.c_str());
 
-    if (autenticato) {
-        response.send(Pistache::Http::Code::Ok, "User authenticated");
+    if (ID > 0) {
+        response.send(Pistache::Http::Code::Ok, "Customer authenticated\n");
+    } else if (ID == 0) {
+        response.send(Pistache::Http::Code::Not_Found, "User isn't in the system. You have to create it first\n");
     } else {
-        response.send(Pistache::Http::Code::Unauthorized, "Authentication failed");
+        response.send(Pistache::Http::Code::Unauthorized, "Authentication failed\n");
     }
 }
 
+//curl -X PUT -H "Content-Type: application/json" -d '{"nome": "Fabrizio", "cognome": "Fibroni", "email" : "fabri@email.com", "via" : "Via lotteria", "civico": 12, "cap" : "12345", "city" : "Palermo", "stato" : "Repubblica delle Banane"}' http://localhost:5001/autentica/
+void creaCustomer(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+    json dati = json::parse(request.body());
+    // Controlla se i dati forniti dall'utente sono presenti e corretti
+    if (!dati.contains("email") || dati["email"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
+    if (!dati.contains("nome") || dati["nome"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Name not provided\n");
+    if (!dati.contains("cognome") || dati["cognome"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Surname not provided\n");
+    if (!dati.contains("via") || dati["via"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Via not provided\n");
+    if (!dati.contains("civico") || dati["civico"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Civico not provided\n");
+    if (!dati.contains("cap") || dati["cap"].empty()) response.send(Pistache::Http::Code::Bad_Request, "CAP not provided\n");
+    if (!dati.contains("city") || dati["city"].empty()) response.send(Pistache::Http::Code::Bad_Request, "City not provided\n");
+    if (!dati.contains("stato") || dati["stato"].empty()) response.send(Pistache::Http::Code::Bad_Request, "State not provided\n");
+    
+    std::string email = dati["email"];
+    std::string nome = dati["nome"];
+    std::string cognome = dati["cognome"];
+    std::string telefono = dati["telefono"];
+    std::string via = dati["via"];
+    int civico = dati["civico"];
+    std::string CAP = dati["cap"];
+    std::string city = dati["city"];
+    std::string stato = dati["stato"];
 
-void modificaNomeHttp(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
-    // Implementa la logica di modifica del nome qui
-    json data = json::parse(request.body());
-    std::cout << data["nome"] << std::endl;
-    response.send(Pistache::Http::Code::Ok, "Name updated");
+    if (email.length() > 50) response.send(Pistache::Http::Code::Bad_Request, "Mail length is above 50 characters\n");
+    if (nome.length() > 20) response.send(Pistache::Http::Code::Bad_Request, "Name length is above 20 characters\n");
+    if (cognome.length() > 20) response.send(Pistache::Http::Code::Bad_Request, "Surnam length is above 20 characters\n");
+    if (via.length() > 30) response.send(Pistache::Http::Code::Bad_Request, "Via length is above 50 characters\n");
+    if (CAP.length() != 5 || !isNumber(CAP)) response.send(Pistache::Http::Code::Bad_Request, "CAP must be a string of 5 numbers\n");
+    if (city.length() > 30) response.send(Pistache::Http::Code::Bad_Request, "City length is above 30 characters\n");
+    if (stato.length() > 50) response.send(Pistache::Http::Code::Bad_Request, "State length is above 50 characters\n");
+    
+    //Chiama la funzione per creare il nuovo Fornitore
+    bool esito = creaFornitore(email.c_str(), nome.c_str(), cognome.c_str(), via.c_str(), civico, CAP.c_str(), city.c_str(), stato.c_str());
+    if (esito) {
+        response.send(Pistache::Http::Code::Created, "Customer created\n");
+    } else {
+        response.send(Pistache::Http::Code::Unauthorized, "Failed to create the Customer\n");
+    }
 }
+
+//curl -X POST -H "Content-Type: application/json" -d '{"nome": "Fabrizione", "cognome": "Napoli"}' http://localhost:5002/abc@abc.it/
+void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+    // Recupera l'email del fornitore tra i parametri
+    std::string email = request.param(":email").as<std::string>();
+    json dati = json::parse(request.body());
+    // Controlla se i dati forniti dall'utente sono presenti e corretti
+    if (!dati.contains("nome") || dati["nome"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Name not provided\n");
+    if (!dati.contains("cognome") || dati["cognome"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Surname not provided\n");
+    
+    std::string nome = dati["nome"];
+    std::string cognome = dati["cognome"];
+    if (nome.length() > 20) response.send(Pistache::Http::Code::Bad_Request, "Name length is above 20 characters\n");
+    if (cognome.length() > 20) response.send(Pistache::Http::Code::Bad_Request, "Surnam length is above 20 characters\n");
+
+    bool esito = modificaInfoCustomer(email.c_str(), nome.c_str(), cognome.c_str());
+    if (esito) {
+        response.send(Pistache::Http::Code::Created, "Info changed\n");
+    } else {
+        response.send(Pistache::Http::Code::Unauthorized, "Failed to change your info\n");
+    }
+}
+
+//curl -X GET http://localhost:5001/abc@abc.it/indirizzi/
+void getIndirizzi(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+    std::stringstream ss;
+    redisContext *c2r; // c2r contiene le info sul contesto
+	redisReply *reply; // reply contiene le risposte da Redis
+    redisReply *addressReply;
+    Indirizzo* INDIRIZZI;
+    int RIGHE;
+
+    std::string email = request.param(":email").as<std::string>();
+    
+    // Controlla che i parametri richiesti siano stati forniti
+    if (email.empty()) {
+        response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
+        return;
+    }
+
+    // Connessione a Redis
+    c2r = redisConnect(REDIS_IP, REDIS_PORT); // Redis su localhost
+    if (c2r == nullptr || c2r->err) {
+        std::cerr << "Errore nella connessione a Redis" << std::endl;
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to connect to Redis");
+        return;
+    }
+
+    // Recupera la lista di ID prodotti per l'email dal Redis
+    reply = RedisCommand(redis, "LRANGE indirizzi:%s 0 -1", email.c_str());
+    if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera gli indirizzi da Redis
+    {
+        RIGHE = reply->elements;
+        INDIRIZZI = new Indirizzo[RIGHE];  // Array dinamico di prodotti
+        
+        for (int i = 0; i < RIGHE; i++) 
+        {
+            std::string indirizzoID = reply->element[i]->str;
+
+            // Debug: Stampa l'ID del prodotto che stai per recuperare
+            std::cout << "Recuperando indirizzo con ID: " << indirizzoID << std::endl;
+            INDIRIZZI[i].ID = std::atoi(indirizzoID);
+
+            // Recupera il prodotto come hash da Redis
+            addressReply = RedisCommand(c2r, "HGETALL indirizzo:%s", indirizzoID.c_str());
+    
+            // Verifica il risultato del recupero...
+            if ( addressReply->type == REDIS_REPLY_ARRAY && addressReply->elements == 10) // 5 dati Richiesti: Via, Civico, CAP, Città, Stato
+            { //... e asssocia i valori dell'indirizzo recuperato dallo stream Redis ad un oggetto Indirizzo 
+        
+                INDIRIZZI[i].via = (addressReply->element[1]->str).c_str();
+                INDIRIZZI[i].civico = std::atoi(addressReply->element[3]->str);
+                INDIRIZZI[i].CAP = (addressReply->element[5]->str).c_str();
+                INDIRIZZI[i].citta = (addressReply->element[7]->str).c_str();
+                INDIRIZZI[i].stato = (addressReply->element[9]->str).c_str();;
+            } else {
+                std::cerr << "Errore nel recupero di un indirizzo da Redis" << std::endl;
+                freeReplyObject(addressReply);
+                redisFree(c2r);
+                return;
+            }
+        }
+        // Stampa i prodotti
+        ss << "\nINDIRIZZI REGISTRATI:\n";
+        for (int i = 0; i < RIGHE; i++) 
+        {
+            ss << i + 1 << ") ID Indirizzo: " << INDIRIZZI[i].ID
+               << " Via: " << INDIRIZZI[i].via
+               << " Civico: " << INDIRIZZI[i].civico
+               << " CAP: " << INDIRIZZI[i].CAP 
+               << " Città: " << INDIRIZZI[i].citta
+               << " Stato: " << INDIRIZZI[i].stato <<"\n";
+        }
+
+        // Invia la risposta con i prodotti
+        response.send(Pistache::Http::Code::Ok, ss.str());
+        delete[] INDIRIZZI; // Libera la memoria allocata dinamicamente
+    } else {
+        // Nessun prodotto trovato in Redis
+        response.send(Pistache::Http::Code::Ok, "Nessun prodotto disponibile in Redis");
+    }
+    freeReplyObject(reply);
+    redisFree(redis);  // Chiudi la connessione a Redis
+    return;
+}
+
 
 void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) {
     // Recupera tutti i prodotti disponibili
@@ -139,42 +261,33 @@ void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Htt
     //delete[] prodotti;
 }
 
-int recuperaCustomerID(const std::string& email) {
-    PGconn *conn = PQconnectdb("host=localhost port=5432 dbname=mewingdb user=admin password=admin");
-
-    if (PQstatus(conn) != CONNECTION_OK) {
-        std::cerr << "Errore di connessione al database: " << PQerrorMessage(conn) << std::endl;
-        PQfinish(conn);
-        return -1; // Restituisci un ID non valido in caso di errore
-    }
+int recuperaCustomerID(std::string email)
+{
+    int ID;
+    PGresult *res;
+    char comando[1000];
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
 
     // Prepara la query per cercare l'ID cliente tramite l'email
-    const char *query = "SELECT id FROM customers WHERE mail = $1";
-    const char *paramValues[1] = { email.c_str() };
-
-    PGresult *res = PQexecParams(conn, query, 1, NULL, paramValues, NULL, NULL, 0);
-
-    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
-        std::cerr << "Errore nell'esecuzione della query: " << PQerrorMessage(conn) << std::endl;
-        PQclear(res);
-        PQfinish(conn);
-        return -1;
-    }
+    sprintf(comando, "SELECT id FROM customers WHERE mail = '%s' ", email.c_str());
     
-    std::cout << "sono qui" << std::endl;
-    // Controlla se è stato trovato un cliente
-    int customerID = -1;
-    if (PQntuples(res) == 1) {
-        customerID = atoi(PQgetvalue(res, 0, 0)); // Restituisci l'ID cliente
-    } else {
-        std::cerr << "Cliente non trovato o più di un risultato" << std::endl;
+    try
+    {
+        res = db.ExecSQLtuples(comando);
+    	int rows = PQntuples(res);
+		ID = 0;
+    	if (rows > 0) // Se viene trovato un utente con quella mail...
+    	{
+			//...vengono recuperati i suoi dati ed inviati al server tramite Redis
+        	ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
+    	}
     }
-
-    // Libera la memoria e chiudi la connessione
+    catch(...)
+    {
+        ID = -1;
+    }
     PQclear(res);
-    PQfinish(conn);
-
-    return customerID;
+    return ID;
 }
 
 

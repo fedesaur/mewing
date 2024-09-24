@@ -7,7 +7,7 @@ std::pair<int, Prodotto*> recuperaForniti(const char* mail)
     PGresult *res;
 
     // Connessione a Redis
-    redisContext *redis = redisConnect("127.0.0.1", 6379);  // Redis su localhost
+    redisContext *redis = redisConnect(REDIS_IP, REDIS_PORT);  // Redis su localhost
     if (redis == nullptr || redis->err) {
         std::cerr << "Errore nella connessione a Redis" << std::endl;
         risultato.first = -1;

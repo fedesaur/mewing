@@ -1,38 +1,75 @@
 #include "recuperaIndirizzi.h"
-
-std::pair<int, Indirizzo*> recuperaIndirizzi(int clientSocket)
+std::pair<int, Indirizzo*> recuperaIndirizzi(const char* mail)
 {
-    std::pair <int, Indirizzo*> risultato;
-    int RIGHE;
-    int CUSTOMER_ID;
+    std::pair<int, Indirizzo*> risultato;
     char comando[1000];
+    int rows;
+    int RIGHE;
+    Indirizzo* INDIRIZZI;
+    redisReply* addressReply;
+    redisReply* reply;
+    redisContext *c2r;
     PGresult *res;
-    redisContext *c2r; // c2r contiene le info sul contesto
-	redisReply *reply; // reply contiene le risposte da Redis
 
-	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
-	Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
-
-    reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
-    if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
-    {
-        std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
+    // Connessione a Redis
+    c2r = redisConnect(REDIS_IP, REDIS_PORT);  // Redis su localhost
+    if (c2r == nullptr || c2r->err) {
+        std::cerr << "Errore nella connessione a Redis" << std::endl;
+        risultato.first = -1;
+        risultato.second = nullptr;
+        return risultato;
     }
 
-    std::string id = reply->element[0]->element[1]->element[1]->str; 
-    CUSTOMER_ID = atoi(id.c_str()); // ID Customer
-    sprintf(comando, "SELECT ind.id, ind.via, ind.civico, ind.cap, ind.citta, ind.stato "
-    "FROM indirizzo ind, custadd cst WHERE cst.customer = %d AND cst.addr = ind.id", CUSTOMER_ID);
+    // Recupera la lista di ID prodotti da Redis per l'email
+    reply = RedisCommand(redis, "LRANGE indirizzi:%s 0 -1", mail);
+    if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera gli indirizzi da Redis
+    {
+        RIGHE = reply->elements;
+        INDIRIZZI = new Indirizzo[RIGHE];  // Array dinamico di prodotti
+        
+        for (int i = 0; i < RIGHE; i++) 
+        {
+            std::string indirizzoID = reply->element[i]->str;
+
+            // Debug: Stampa l'ID del prodotto che stai per recuperare
+            std::cout << "Recuperando indirizzo con ID: " << indirizzoID << std::endl;
+            INDIRIZZI[i].ID = std::atoi(indirizzoID);
+
+            // Recupera il prodotto come hash da Redis
+            addressReply = RedisCommand(c2r, "HGETALL indirizzo:%s", indirizzoID.c_str());
+    
+            // Verifica il risultato del recupero...
+            if ( addressReply->type == REDIS_REPLY_ARRAY && addressReply->elements == 10) // 5 dati Richiesti: Via, Civico, CAP, Città, Stato
+            { //... e asssocia i valori dell'indirizzo recuperato dallo stream Redis ad un oggetto Indirizzo 
+        
+                INDIRIZZI[i].via = (addressReply->element[1]->str).c_str();
+                INDIRIZZI[i].civico = std::atoi(addressReply->element[3]->str);
+                INDIRIZZI[i].CAP = (addressReply->element[5]->str).c_str();
+                INDIRIZZI[i].citta = (addressReply->element[7]->str).c_str();
+                INDIRIZZI[i].stato = (addressReply->element[9]->str).c_str();;
+            }
+            freeReplyObject(addressReply);
+        }
+        risultato.first = RIGHE;
+        risultato.second = INDIRIZZI;
+        freeReplyObject(reply);
+        redisFree(redis);
+        return risultato;
+    }
+
+    // Se gli indirizzi non sono trovati su Redis, recupera dal DB
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
     try
     {
+        sprintf(comando, "SELECT ind.id, ind.via, ind.civico, ind.cap, ind.citta, ind.stato "
+        "FROM indirizzo ind, custadd cst, customers cus WHERE cst.customer = cus.id AND cus.mail = '%s' AND cst.addr = ind.id", mail);
         res = db.ExecSQLtuples(comando);
-        RIGHE = PQntuples(res);
-        if (RIGHE > 0)
+        rows = PQntuples(res);
+        if (rows > 0)
         {
-            
-            Indirizzo* indirizzi = new Indirizzo[RIGHE];
-            // Recupera gli indirizzi e li memorizza
-            for (int i = 0; i < RIGHE; i++)
+            INDIRIZZI = new Indirizzo[rows];
+
+            for (int i = 0; i < rows; i++)
             {
                 // Recupera gli attributi degli dalla query sopra svolta...
                 int ID = atoi(PQgetvalue(res, i, PQfnumber(res, "id")));
@@ -49,46 +86,30 @@ std::pair<int, Indirizzo*> recuperaIndirizzi(int clientSocket)
                 indirizzi[i].CAP = CAP;
                 indirizzi[i].citta = citta;
                 indirizzi[i].stato = stato;
+
+                // Memorizza il prodotto in Redis come hash
+                redisCommand(redis, "HMSET indirizzo:%d id %d nome %s via %s civico %d cap %s città %s stato %s", 
+                            ID, ID, via, civico, CAP, citta, stato);
+
+                // Aggiungi l'ID del prodotto alla lista associata all'email
+                redisCommand(redis, "RPUSH indirizzi:%s %d", mail, ID);
             }
-            risultato.first = RIGHE; // Ritorna il numero di righe degli indirizzi
-            risultato.second = indirizzi; // Ritorna l'array degli indirizzi
-        } else {     // Se non ci sono indirizzi
-        risultato.first = 0;
-        risultato.second = nullptr;
+
+            risultato.first = rows;
+            risultato.second = INDIRIZZI;
+        } else {
+            risultato.first = 0;
+            risultato.second = nullptr;
         }
         PQclear(res);
-        return risultato;
     }
-    catch(...)
+    catch (...) 
     {
         risultato.first = -1;
         risultato.second = nullptr;
         PQclear(res);
-	    std::string errore = "C'è stato un errore nel database\n\n"; // Seleziona la frase del turno
-	    send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
-        return risultato;
     }
-}
-
-void mostraIndirizzi(int clientSocket, int righe, Indirizzo* indirizzi)
-{
-    if (righe > 0)
-    {
-        std::string request = "\nINDIRIZZI REGISTRATI:\n";
-	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-        for (int i = 0; i < righe; i++)
-        {
-            std::string indirizzo = std::to_string(i+1) + ") ID Indirizzo: " + std::to_string(indirizzi[i].ID) +
-             " Via: " + indirizzi[i].via + 
-             " Civico: " + std::to_string(indirizzi[i].civico) + 
-             " CAP: " + indirizzi[i].CAP + 
-             " Città: " + indirizzi[i].citta + 
-             " Stato :" + indirizzi[i].stato  + "\n";
-	        send(clientSocket, indirizzo.c_str(), indirizzo.length(), 0);
-        }
-    } else {
-        std::string request = "\nNon ci sono indirizzi registrati!\n\n"; //... e lo stampa
-	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-    }
-    return;
+    
+    redisFree(c2r);  // Chiudi connessione Redis
+    return risultato;
 }

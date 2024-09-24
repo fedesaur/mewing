@@ -6,7 +6,7 @@ void defineRoutes(Pistache::Rest::Router& router)
     // Registrazione delle rotte con funzioni globali
     Pistache::Rest::Routes::Get(router, "/:email/prodotti/", Pistache::Rest::Routes::bind(&getProdotti));
     Pistache::Rest::Routes::Get(router, "/autentica/:email", Pistache::Rest::Routes::bind(&autenticaFornitore));
-    Pistache::Rest::Routes::Put(router, "/autentica/", Pistache::Rest::Routes::bind(&crea));
+    Pistache::Rest::Routes::Put(router, "/autentica/", Pistache::Rest::Routes::bind(&creaFornitore));
     Pistache::Rest::Routes::Put(router, "/:email/prodotti/", Pistache::Rest::Routes::bind(&aggiungiProdotto));
     Pistache::Rest::Routes::Post(router, "/:email/", Pistache::Rest::Routes::bind(&modificaInfo));
     Pistache::Rest::Routes::Post(router, "/:email/prodotti/:idProdotto", Pistache::Rest::Routes::bind(&modificaProdotto));
@@ -64,8 +64,8 @@ void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::
 }
 
 
-//curl -X PUT -H "Content-Type: application/json" -d '{"nome": "nome", "IVA": "12312312312", "telefono": "1234567890", "email" : "simy@email.com", "via" : "Via lotteria", "civico": 12, "cap" : "12345", "city" : "Palermo", "stato" : "Repubblica delle Banane"}' http://localhost:5002/prova1@prova1.it/
-void crea(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+//curl -X PUT -H "Content-Type: application/json" -d '{"nome": "nome", "IVA": "12312312312", "telefono": "1234567890", "email" : "simy@email.com", "via" : "Via lotteria", "civico": 12, "cap" : "12345", "city" : "Palermo", "stato" : "Repubblica delle Banane"}' http://localhost:5002/autentica/
+void creaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     json dati = json::parse(request.body());
     // Controlla se i dati forniti dall'utente sono presenti e corretti
@@ -227,7 +227,7 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
     }
 
     // Connessione a Redis
-    redisContext *redis = redisConnect("127.0.0.1", 6379);  // Redis su localhost
+    redisContext *redis = redisConnect(REDIS_IP, REDIS_PORT);  // Redis su localhost
     if (redis == nullptr || redis->err) {
         std::cerr << "Errore nella connessione a Redis" << std::endl;
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to connect to Redis");
@@ -239,53 +239,52 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
     if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) {
         RIGHE = reply->elements;
         Prodotto* forniti = new Prodotto[RIGHE];  // Array dinamico di prodotti
-
         // Recupera i prodotti da Redis
-        // Recupera i prodotti da Redis
-for (int i = 0; i < RIGHE; i++) {
-    std::string prodottoID = reply->element[i]->str;
+    for (int i = 0; i < RIGHE; i++) 
+    {
+        std::string prodottoID = reply->element[i]->str;
 
-    // Debug: Stampa l'ID del prodotto che stai per recuperare
-    std::cout << "Recuperando prodotto con ID: " << prodottoID << std::endl;
+        // Debug: Stampa l'ID del prodotto che stai per recuperare
+        std::cout << "Recuperando prodotto con ID: " << prodottoID << std::endl;
 
-    // Recupera il prodotto come hash da Redis
-    redisReply* prodottoReply = (redisReply*)redisCommand(redis, "HGETALL prodotto:%s", prodottoID.c_str());
+        // Recupera il prodotto come hash da Redis
+        redisReply* prodottoReply = (redisReply*)redisCommand(redis, "HGETALL prodotto:%s", prodottoID.c_str());
     
-    // Verifica il risultato del recupero
-    if (prodottoReply->type == REDIS_REPLY_ARRAY && prodottoReply->elements == 8) {
+        // Verifica il risultato del recupero
+        if (prodottoReply->type == REDIS_REPLY_ARRAY && prodottoReply->elements == 8) 
+        {
         // Associa i valori del prodotto a un oggetto Prodotto
-        forniti[i].ID = std::stoi(prodottoReply->element[1]->str);
+            forniti[i].ID = std::stoi(prodottoReply->element[1]->str);
         
         // Debug: Stampa il prodotto recuperato
-        std::cout << "Prodotto recuperato: ID " << forniti[i].ID << ", Nome: " << prodottoReply->element[3]->str << std::endl;
+            std::cout << "Prodotto recuperato: ID " << forniti[i].ID << ", Nome: " << prodottoReply->element[3]->str << std::endl;
 
         // Copia i valori delle stringhe in buffer di memoria allocati dinamicamente
         // Nome
-        std::string nomeTemp = prodottoReply->element[3]->str;
-        forniti[i].nome = new char[nomeTemp.length() + 1];
-        std::strcpy(const_cast<char*>(forniti[i].nome), nomeTemp.c_str());
+            std::string nomeTemp = prodottoReply->element[3]->str;
+            forniti[i].nome = new char[nomeTemp.length() + 1];
+            std::strcpy(const_cast<char*>(forniti[i].nome), nomeTemp.c_str());
 
         // Descrizione
-        std::string descrizioneTemp = prodottoReply->element[5]->str;
-        forniti[i].descrizione = new char[descrizioneTemp.length() + 1];
-        std::strcpy(const_cast<char*>(forniti[i].descrizione), descrizioneTemp.c_str());
+            std::string descrizioneTemp = prodottoReply->element[5]->str;
+            forniti[i].descrizione = new char[descrizioneTemp.length() + 1];
+            std::strcpy(const_cast<char*>(forniti[i].descrizione), descrizioneTemp.c_str());
 
         // Prezzo
         forniti[i].prezzo = std::stod(prodottoReply->element[7]->str);
-    } else {
-        std::cerr << "Errore nel recupero di un prodotto da Redis" << std::endl;
-        freeReplyObject(prodottoReply);
-        redisFree(redis);
-        return;
-    }
+        } else {
+            std::cerr << "Errore nel recupero di un prodotto da Redis" << std::endl;
+            freeReplyObject(prodottoReply);
+            redisFree(redis);
+            return;
+        }
 
     
-}
-
-
+    }
         // Stampa i prodotti
         ss << "\nPRODOTTI FORNITI:\n";
-        for (int i = 0; i < RIGHE; i++) {
+        for (int i = 0; i < RIGHE; i++) 
+        {
             ss << i + 1 << ") ID Prodotto: " << forniti[i].ID
                << " Nome Prodotto: " << forniti[i].nome
                << " Descrizione: " << forniti[i].descrizione
@@ -295,14 +294,7 @@ for (int i = 0; i < RIGHE; i++) {
 
         // Invia la risposta con i prodotti
         response.send(Pistache::Http::Code::Ok, ss.str());
-
-        // Libera la memoria allocata dinamicamente
-        for (int i = 0; i < RIGHE; i++) {
-            delete[] forniti[i].nome;
-            delete[] forniti[i].descrizione;
-            delete[] forniti[i].fornitore;
-        }
-        delete[] forniti;
+        delete[] forniti; // Libera la memoria allocata dinamicamente
     } else {
         // Nessun prodotto trovato in Redis
         response.send(Pistache::Http::Code::Ok, "Nessun prodotto disponibile in Redis");

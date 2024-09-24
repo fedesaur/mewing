@@ -29,6 +29,6 @@
 #define PASSWORD_CUST "customer"
 #define DB_NAME "mewingdb"
 
-bool modificaNomeHttp(const Pistache::Http::Request& req, Pistache::Http::ResponseWriter response);
+bool modificaInfoCustomer(const char* email, const char* nome, const char* cognome);
 
 #endif // MODIFICA_NOME_H

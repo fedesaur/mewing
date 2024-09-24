@@ -5,6 +5,7 @@
 #include <pistache/router.h>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
+#include "../../../entities/Indirizzo.h"
 #include "../metodi/gestisciCarrello.h"
 #include "../metodi/autenticazione.h"
 #include "../metodi/recuperaProdotti.h"
@@ -18,11 +19,13 @@
 
 void defineRoutes(Pistache::Rest::Router& router);
 
-void authenticateUser(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-void modificaNomeHttp(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void autenticaCustomer(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void creaCustomer(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void getIndirizzi(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-int recuperaCustomerID(const std::string& email);
+int recuperaCustomerID(std::string email);
 void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void ordina(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 

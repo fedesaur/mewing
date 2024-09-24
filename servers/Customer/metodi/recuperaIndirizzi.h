@@ -19,7 +19,7 @@
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
 
-#define SERVER_PORT 5000
+#define SERVER_PORT 5001
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
@@ -27,8 +27,6 @@
 #define PASSWORD_CUST "customer"
 #define DB_NAME "mewingdb"
 
-std::pair<int, Indirizzo*> recuperaIndirizzi(int clientSocket);
-void mostraIndirizzi(int clientSocket, int righe, Indirizzo* indirizzi);
-
+std::pair<int, Indirizzo*> recuperaIndirizzi(const char* mail);
 
 #endif //AUTENTICAZIONE_H

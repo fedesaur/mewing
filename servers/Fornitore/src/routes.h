@@ -19,6 +19,9 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 
+#define REDIS_IP "localhost"
+#define REDIS_PORT 6379
+
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
 #define USERNAMEP "producer"
@@ -27,7 +30,7 @@
 
 void defineRoutes(Pistache::Rest::Router& router);
 void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-void crea(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void creaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void eliminaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);

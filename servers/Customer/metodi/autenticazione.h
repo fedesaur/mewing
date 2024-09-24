@@ -19,7 +19,7 @@
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
 
-#define SERVER_PORT 5000
+#define SERVER_PORT 5001
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
@@ -27,13 +27,7 @@
 #define PASSWORD "admin"
 #define DB_NAME "mewingdb"
 
-bool autentica(int clientSocket);
-
-bool recuperaCustomer(Con2DB db, int clientSocket, const char* mail);
-
-bool creaCustomer(Con2DB db, int clientSocket, const char* mail);
-
-bool inviaDati(int ID, const char* nome, const char* cognome, const char* mail, int abita); // Per leggibilità, l'invio dati viene gestito da un'unica funzione
-
+int autentica(const char* mail);
+bool creaCustomer(const char* email, const char* nome, const char* cognome, const char* via, int civico, const char* CAP, const char* city, const char* stato);
 
 #endif //AUTENTICAZIONE_H
