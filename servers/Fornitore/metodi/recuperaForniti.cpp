@@ -1,3 +1,5 @@
+#include "recuperaForniti.h"
+
 std::pair<int, Prodotto*> recuperaForniti(const char* mail)
 {
     std::pair<int, Prodotto*> risultato;

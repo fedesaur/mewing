@@ -279,7 +279,7 @@ for (int i = 0; i < RIGHE; i++) {
         return;
     }
 
-    freeReplyObject(prodottoReply);
+    
 }
 
 
@@ -289,7 +289,6 @@ for (int i = 0; i < RIGHE; i++) {
             ss << i + 1 << ") ID Prodotto: " << forniti[i].ID
                << " Nome Prodotto: " << forniti[i].nome
                << " Descrizione: " << forniti[i].descrizione
-               << " Fornitore: " << forniti[i].fornitore
                << " Prezzo Prodotto: " << forniti[i].prezzo
                <<  "\n";
         }
