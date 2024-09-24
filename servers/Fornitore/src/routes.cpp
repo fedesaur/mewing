@@ -246,7 +246,7 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
 
             // Recupera il prodotto come hash da Redis
             redisReply* prodottoReply = (redisReply*)redisCommand(redis, "HGETALL prodotto:%s", prodottoID.c_str());
-            if (prodottoReply->type == REDIS_REPLY_ARRAY && prodottoReply->elements == 10) {  // Assicurati di avere tutti i campi
+            if (prodottoReply->type == REDIS_REPLY_ARRAY && prodottoReply->elements == 8) {  // Assicurati di avere tutti i campi
                 forniti[i].ID = std::stoi(prodottoReply->element[1]->str);
 
                 // Copia i valori delle stringhe in buffer di memoria allocati dinamicamente
@@ -260,13 +260,8 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
                 forniti[i].descrizione = new char[descrizioneTemp.length() + 1];
                 std::strcpy(const_cast<char*>(forniti[i].descrizione), descrizioneTemp.c_str());
 
-                // Fornitore
-                std::string fornitoreTemp = prodottoReply->element[7]->str;
-                forniti[i].fornitore = new char[fornitoreTemp.length() + 1];
-                std::strcpy(const_cast<char*>(forniti[i].fornitore), fornitoreTemp.c_str());
-
                 // Prezzo
-                forniti[i].prezzo = std::stod(prodottoReply->element[9]->str);
+                forniti[i].prezzo = std::stod(prodottoReply->element[7]->str);
 
             } else {
                 response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero di un prodotto da Redis");
