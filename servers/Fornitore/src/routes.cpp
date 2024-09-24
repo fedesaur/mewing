@@ -281,4 +281,30 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
     redisFree(redis);  // Chiudi la connessione a Redis
 }
 
+//curl -X POST -H "Content-Type: application/json" -d '{"nome": "nome", "IVA": "12312312312", "telefono": "1234567890"}' http://localhost:5002/prova1@prova1.it/
+void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+    // Recupera l'email del fornitore tra i parametri
+    std::string email = request.param(":email").as<std::string>();
+    json dati = json::parse(request.body());
+    // Controlla se i dati forniti dall'utente sono presenti e corretti
+    if (!dati.contains("nome") || dati["nome"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Name not provided\n");
+    if (!dati.contains("IVA") || dati["IVA"].empty()) response.send(Pistache::Http::Code::Bad_Request, "IVA not provided\n");
+    if (!dati.contains("telefono") || dati["telefono"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Telephone not provided\n");
+    
+    std::string nome = dati["nome"];
+    std::string IVA = dati["IVA"];
+    std::string telefono = dati["telefono"];
+    if (nome.length() > 100) response.send(Pistache::Http::Code::Bad_Request, "Name length is above 100 characters\n");
+    if (IVA.length() != 11 || !isNumber(IVA) ) response.send(Pistache::Http::Code::Bad_Request, "IVA must be a string of 11 numbers\n");
+    if (telefono.length() > 15 || telefono.length() < 10 || !isNumber(telefono)) response.send(Pistache::Http::Code::Bad_Request, "Telephone must be a string a 10-15 numbers\n");
+
+    bool esito = modificaInfoF(email.c_str(), nome.c_str(), IVA.c_str(), telefono.c_str());
+    if (esito) {
+        response.send(Pistache::Http::Code::Created, "Info changes\n");
+    } else {
+        response.send(Pistache::Http::Code::Unauthorized, "Failed to change your info\n");
+    }
+}
+
 
