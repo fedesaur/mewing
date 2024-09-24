@@ -241,41 +241,47 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
         Prodotto* forniti = new Prodotto[RIGHE];  // Array dinamico di prodotti
 
         // Recupera i prodotti da Redis
-        for (int i = 0; i < RIGHE; i++) {
-            std::string prodottoID = reply->element[i]->str;
+        // Recupera i prodotti da Redis
+for (int i = 0; i < RIGHE; i++) {
+    std::string prodottoID = reply->element[i]->str;
 
-            // Recupera il prodotto come hash da Redis
-            redisReply* prodottoReply = (redisReply*)redisCommand(redis, "HGETALL prodotto:%s", prodottoID.c_str());
+    // Debug: Stampa l'ID del prodotto che stai per recuperare
+    std::cout << "Recuperando prodotto con ID: " << prodottoID << std::endl;
 
-            // Verifica se il numero di elementi è corretto (pari, poiché HGETALL restituisce coppie chiave-valore)
-            if (prodottoReply->type == REDIS_REPLY_ARRAY && prodottoReply->elements % 2 == 0) {  
-                for (int j = 0; j < prodottoReply->elements; j += 2) {
-                    std::string key = prodottoReply->element[j]->str;
-                    std::string value = prodottoReply->element[j + 1]->str;
+    // Recupera il prodotto come hash da Redis
+    redisReply* prodottoReply = (redisReply*)redisCommand(redis, "HGETALL prodotto:%s", prodottoID.c_str());
+    
+    // Verifica il risultato del recupero
+    if (prodottoReply->type == REDIS_REPLY_ARRAY && prodottoReply->elements == 8) {
+        // Associa i valori del prodotto a un oggetto Prodotto
+        forniti[i].ID = std::stoi(prodottoReply->element[1]->str);
+        
+        // Debug: Stampa il prodotto recuperato
+        std::cout << "Prodotto recuperato: ID " << forniti[i].ID << ", Nome: " << prodottoReply->element[3]->str << std::endl;
 
-                    if (key == "id") {
-                        forniti[i].ID = std::stoi(value);
-                    } else if (key == "nome") {
-                        forniti[i].nome = new char[value.length() + 1];
-                        std::strcpy(const_cast<char*>(forniti[i].nome), value.c_str());
-                    } else if (key == "descrizione") {
-                        forniti[i].descrizione = new char[value.length() + 1];
-                        std::strcpy(const_cast<char*>(forniti[i].descrizione), value.c_str());
-                    } else if (key == "prezzo") {
-                        forniti[i].prezzo = std::stod(value);
-                    } else if (key == "fornitore") {
-                        forniti[i].fornitore = new char[value.length() + 1];
-                        std::strcpy(const_cast<char*>(forniti[i].fornitore), value.c_str());
-                    }
-                }
-            } else {
-                response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero di un prodotto da Redis");
-                freeReplyObject(prodottoReply);
-                redisFree(redis);
-                return;
-            }
-            freeReplyObject(prodottoReply);
-        }
+        // Copia i valori delle stringhe in buffer di memoria allocati dinamicamente
+        // Nome
+        std::string nomeTemp = prodottoReply->element[3]->str;
+        forniti[i].nome = new char[nomeTemp.length() + 1];
+        std::strcpy(const_cast<char*>(forniti[i].nome), nomeTemp.c_str());
+
+        // Descrizione
+        std::string descrizioneTemp = prodottoReply->element[5]->str;
+        forniti[i].descrizione = new char[descrizioneTemp.length() + 1];
+        std::strcpy(const_cast<char*>(forniti[i].descrizione), descrizioneTemp.c_str());
+
+        // Prezzo
+        forniti[i].prezzo = std::stod(prodottoReply->element[7]->str);
+    } else {
+        std::cerr << "Errore nel recupero di un prodotto da Redis" << std::endl;
+        freeReplyObject(prodottoReply);
+        redisFree(redis);
+        return;
+    }
+
+    freeReplyObject(prodottoReply);
+}
+
 
         // Stampa i prodotti
         ss << "\nPRODOTTI FORNITI:\n";
