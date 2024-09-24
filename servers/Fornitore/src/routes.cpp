@@ -218,72 +218,63 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
     Prodotto* PRODOTTI;
 
     std::string email = request.param(":email").as<std::string>();
+    
     // Controlla che i parametri richiesti siano stati forniti
     if (email.empty()) {
         response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
         return;
     }
 
-    std::pair<int, Prodotto*> risultato = recuperaForniti(email.c_str());
-    if (risultato.first == -1)
-    {
-        response.send(Pistache::Http::Code::Unauthorized, "Failed to recover products\n");
+    // Connessione a Redis
+    redisContext *redis = redisConnect("127.0.0.1", 6379);  // Redis su localhost
+    if (redis == nullptr || redis->err) {
+        std::cerr << "Errore nella connessione a Redis" << std::endl;
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to connect to Redis");
         return;
     }
 
-    RIGHE = risultato.first;
-    PRODOTTI = risultato.second;
-    std::cout << RIGHE << std::endl;
-    // Costruisci la risposta
-    if (RIGHE > 0)
-    {
-        ss << "\nPRODOTTI FORNITI:\n"; //... e lo stampa
-        for (int i = 0; i < RIGHE; i++)
-        {
-            // Recupera gli attributi dei prodotti dal carrello...
-            int ID = PRODOTTI[i].ID;
-            const char* descrizione = PRODOTTI[i].descrizione;
-            double prezzo = PRODOTTI[i].prezzo;
-            const char* nomeP = PRODOTTI[i].nome;
-            // ...e li invia all'utente così che possa visualizzarli ed effettuarci operazioni
-            ss << i+1 << ") ID Prodotto: " << std::to_string(ID)
-            << " Nome Prodotto: " << nomeP
-            << " Descrizione: " << descrizione
-            << " Prezzo Prodotto: " << prezzo << "\n";
+    // Recupera la lista di ID prodotti per l'email dal Redis
+    redisReply* reply = (redisReply*)redisCommand(redis, "LRANGE prodotti:%s 0 -1", email.c_str());
+    if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) {
+        RIGHE = reply->elements;
+        Prodotto* forniti = new Prodotto[RIGHE];
+
+        // Recupera i prodotti da Redis
+        for (int i = 0; i < RIGHE; i++) {
+            std::string prodottoID = reply->element[i]->str;
+
+            // Recupera il prodotto come hash da Redis
+            redisReply* prodottoReply = (redisReply*)redisCommand(redis, "HGETALL prodotto:%s", prodottoID.c_str());
+            if (prodottoReply->type == REDIS_REPLY_ARRAY && prodottoReply->elements == 8) {
+                forniti[i].ID = std::stoi(prodottoReply->element[1]->str);
+                forniti[i].nome = prodottoReply->element[3]->str;
+                forniti[i].descrizione = prodottoReply->element[5]->str;
+                forniti[i].prezzo = std::stod(prodottoReply->element[7]->str);
+            } else {
+                response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero di un prodotto da Redis");
+                freeReplyObject(prodottoReply);
+                redisFree(redis);
+                return;
+            }
+            freeReplyObject(prodottoReply);
         }
-    response.send(Pistache::Http::Code::Ok, ss.str());
-    } else if (risultato.first == 0) {
-        response.send(Pistache::Http::Code::Ok, "Nessun prodotto disponibile");
+
+        // Stampa i prodotti
+        ss << "\nPRODOTTI FORNITI:\n";
+        for (int i = 0; i < RIGHE; i++) {
+            ss << i + 1 << ") ID Prodotto: " << forniti[i].ID
+               << " Nome Prodotto: " << forniti[i].nome
+               << " Descrizione: " << forniti[i].descrizione
+               << " Prezzo Prodotto: " << forniti[i].prezzo << "\n";
+        }
+
+        // Invia la risposta con i prodotti
+        response.send(Pistache::Http::Code::Ok, ss.str());
     } else {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dei prodotti");
+        // Nessun prodotto trovato in Redis
+        response.send(Pistache::Http::Code::Ok, "Nessun prodotto disponibile in Redis");
     }
-    
-    response.send(Pistache::Http::Code::Ok, "carrello visualizzato");
+
+    freeReplyObject(reply);
+    redisFree(redis);  // Chiudi la connessione a Redis
 }
-
-//curl -X POST -H "Content-Type: application/json" -d '{"nome": "nome", "IVA": "12312312312", "telefono": "1234567890"}' http://localhost:5002/prova1@prova1.it/
-void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
-{
-    // Recupera l'email del fornitore tra i parametri
-    std::string email = request.param(":email").as<std::string>();
-    json dati = json::parse(request.body());
-    // Controlla se i dati forniti dall'utente sono presenti e corretti
-    if (!dati.contains("nome") || dati["nome"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Name not provided\n");
-    if (!dati.contains("IVA") || dati["IVA"].empty()) response.send(Pistache::Http::Code::Bad_Request, "IVA not provided\n");
-    if (!dati.contains("telefono") || dati["telefono"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Telephone not provided\n");
-    
-    std::string nome = dati["nome"];
-    std::string IVA = dati["IVA"];
-    std::string telefono = dati["telefono"];
-    if (nome.length() > 100) response.send(Pistache::Http::Code::Bad_Request, "Name length is above 100 characters\n");
-    if (IVA.length() != 11 || !isNumber(IVA) ) response.send(Pistache::Http::Code::Bad_Request, "IVA must be a string of 11 numbers\n");
-    if (telefono.length() > 15 || telefono.length() < 10 || !isNumber(telefono)) response.send(Pistache::Http::Code::Bad_Request, "Telephone must be a string a 10-15 numbers\n");
-
-    bool esito = modificaInfoF(email.c_str(), nome.c_str(), IVA.c_str(), telefono.c_str());
-    if (esito) {
-        response.send(Pistache::Http::Code::Created, "Info changes\n");
-    } else {
-        response.send(Pistache::Http::Code::Unauthorized, "Failed to change your info\n");
-    }
-}
-
