@@ -217,7 +217,6 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
 {
     std::stringstream ss;
     int RIGHE;
-    Prodotto* PRODOTTI;
 
     std::string email = request.param(":email").as<std::string>();
     
@@ -239,7 +238,7 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
     redisReply* reply = (redisReply*)redisCommand(redis, "LRANGE prodotti:%s 0 -1", email.c_str());
     if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) {
         RIGHE = reply->elements;
-        Prodotto* forniti = new Prodotto[RIGHE];
+        Prodotto* forniti = new Prodotto[RIGHE];  // Array dinamico di prodotti
 
         // Recupera i prodotti da Redis
         for (int i = 0; i < RIGHE; i++) {
@@ -247,11 +246,28 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
 
             // Recupera il prodotto come hash da Redis
             redisReply* prodottoReply = (redisReply*)redisCommand(redis, "HGETALL prodotto:%s", prodottoID.c_str());
-            if (prodottoReply->type == REDIS_REPLY_ARRAY && prodottoReply->elements == 8) {
+            if (prodottoReply->type == REDIS_REPLY_ARRAY && prodottoReply->elements == 10) {  // Assicurati di avere tutti i campi
                 forniti[i].ID = std::stoi(prodottoReply->element[1]->str);
-                forniti[i].nome = prodottoReply->element[3]->str;
-                forniti[i].descrizione = prodottoReply->element[5]->str;
-                forniti[i].prezzo = std::stod(prodottoReply->element[7]->str);
+
+                // Copia i valori delle stringhe in buffer di memoria allocati dinamicamente
+                // Nome
+                std::string nomeTemp = prodottoReply->element[3]->str;
+                forniti[i].nome = new char[nomeTemp.length() + 1];
+                std::strcpy(const_cast<char*>(forniti[i].nome), nomeTemp.c_str());
+
+                // Descrizione
+                std::string descrizioneTemp = prodottoReply->element[5]->str;
+                forniti[i].descrizione = new char[descrizioneTemp.length() + 1];
+                std::strcpy(const_cast<char*>(forniti[i].descrizione), descrizioneTemp.c_str());
+
+                // Fornitore
+                std::string fornitoreTemp = prodottoReply->element[7]->str;
+                forniti[i].fornitore = new char[fornitoreTemp.length() + 1];
+                std::strcpy(const_cast<char*>(forniti[i].fornitore), fornitoreTemp.c_str());
+
+                // Prezzo
+                forniti[i].prezzo = std::stod(prodottoReply->element[9]->str);
+
             } else {
                 response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero di un prodotto da Redis");
                 freeReplyObject(prodottoReply);
@@ -267,11 +283,21 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
             ss << i + 1 << ") ID Prodotto: " << forniti[i].ID
                << " Nome Prodotto: " << forniti[i].nome
                << " Descrizione: " << forniti[i].descrizione
-               << " Prezzo Prodotto: " << forniti[i].prezzo << "\n";
+               << " Fornitore: " << forniti[i].fornitore
+               << " Prezzo Prodotto: " << forniti[i].prezzo
+               <<  "\n";
         }
 
         // Invia la risposta con i prodotti
         response.send(Pistache::Http::Code::Ok, ss.str());
+
+        // Libera la memoria allocata dinamicamente
+        for (int i = 0; i < RIGHE; i++) {
+            delete[] forniti[i].nome;
+            delete[] forniti[i].descrizione;
+            delete[] forniti[i].fornitore;
+        }
+        delete[] forniti;
     } else {
         // Nessun prodotto trovato in Redis
         response.send(Pistache::Http::Code::Ok, "Nessun prodotto disponibile in Redis");
@@ -280,6 +306,7 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
     freeReplyObject(reply);
     redisFree(redis);  // Chiudi la connessione a Redis
 }
+
 
 //curl -X POST -H "Content-Type: application/json" -d '{"nome": "nome", "IVA": "12312312312", "telefono": "1234567890"}' http://localhost:5002/prova1@prova1.it/
 void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
