@@ -99,7 +99,7 @@ void creaFornitore(const Pistache::Rest::Request& request, Pistache::Http::Respo
     if (stato.length() > 50) response.send(Pistache::Http::Code::Bad_Request, "State length is above 50 characters\n");
     
     //Chiama la funzione per creare il nuovo Fornitore
-    bool esito = creaFornitore(email.c_str(), nome.c_str(), IVA.c_str(), telefono.c_str(), via.c_str(), civico, CAP.c_str(), city.c_str(), stato.c_str());
+    bool esito = crea(email.c_str(), nome.c_str(), IVA.c_str(), telefono.c_str(), via.c_str(), civico, CAP.c_str(), city.c_str(), stato.c_str());
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Supplier created\n");
     } else {
@@ -225,6 +225,7 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
         response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
         return;
     }
+    recuperaForniti(email.c_str());
 
     // Connessione a Redis
     redisContext *redis = redisConnect(REDIS_IP, REDIS_PORT);  // Redis su localhost

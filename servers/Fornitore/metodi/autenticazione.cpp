@@ -37,7 +37,7 @@ int autentica(const char* mail)
 	return ID;
 }
 
-bool creaFornitore(const char* email, const char* nome, const char* IVA, const char* telefono, const char* via, int civico, const char* CAP, const char* city, const char* stato)
+bool crea(const char* email, const char* nome, const char* IVA, const char* telefono, const char* via, int civico, const char* CAP, const char* city, const char* stato)
 {
 	/* 
 		Sono richiesti 8 dati all'utente:

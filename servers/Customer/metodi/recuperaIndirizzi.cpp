@@ -38,9 +38,9 @@ std::pair<int, Indirizzo*> recuperaIndirizzi(const char* mail)
             if ( addressReply->type == REDIS_REPLY_ARRAY && addressReply->elements == 12) // 5 dati Richiesti: Via, Civico, CAP, Città, Stato
             { //... e asssocia i valori dell'indirizzo recuperato dallo stream Redis ad un oggetto Indirizzo 
             
-                INDIRIZZI[i].ID = std::atoi(addressReply->element[1]->str);
+                INDIRIZZI[i].ID = std::stoi(addressReply->element[1]->str);
                 INDIRIZZI[i].via = (addressReply->element[3]->str);
-                INDIRIZZI[i].civico = std::atoi(addressReply->element[5]->str);
+                INDIRIZZI[i].civico = std::stoi(addressReply->element[5]->str);
                 INDIRIZZI[i].CAP = (addressReply->element[7]->str);
                 INDIRIZZI[i].citta = (addressReply->element[9]->str);
                 INDIRIZZI[i].stato = (addressReply->element[11]->str);
@@ -78,14 +78,14 @@ std::pair<int, Indirizzo*> recuperaIndirizzi(const char* mail)
 
                 // e li assegna all'i-esimo Indirizzo in indirizzi
                 INDIRIZZI[i].ID = ID;
-                INDIRIZZI[i].via = via;
+                INDIRIZZI[i].via = strdup(via);
                 INDIRIZZI[i].civico = civico;
-                INDIRIZZI[i].CAP = CAP;
-                INDIRIZZI[i].citta = citta;
-                INDIRIZZI[i].stato = stato;
+                INDIRIZZI[i].CAP = strdup(CAP);
+                INDIRIZZI[i].citta = strdup(citta);
+                INDIRIZZI[i].stato = strdup(stato);
 
                 // Memorizza il prodotto in Redis come hash
-                redisCommand(c2r, "HMSET indirizzo:%d id %d nome %s via %s civico %d cap %s città %s stato %s", 
+                redisCommand(c2r, "HMSET indirizzo:%d id %d via %s civico %d cap %s città %s stato %s", 
                             ID, ID, via, civico, CAP, citta, stato);
 
                 // Aggiungi l'ID del prodotto alla lista associata all'email

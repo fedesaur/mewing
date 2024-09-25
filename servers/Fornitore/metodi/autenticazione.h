@@ -29,6 +29,6 @@
 
 int autentica(const char* mail);
 
-bool creaFornitore(const char* email, const char* nome, const char* IVA, const char* telefono, const char* via, int civico, const char* CAP, const char* city, const char* stato);
+bool crea(const char* email, const char* nome, const char* IVA, const char* telefono, const char* via, int civico, const char* CAP, const char* city, const char* stato);
 
 #endif //AUTENTICAZIONE_H
