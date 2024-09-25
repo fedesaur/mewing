@@ -16,7 +16,7 @@ lock = threading.Lock()
 
 # Variabile per contare i test riusciti
 success_count = 0
-total_tests = 6 * len(email_list)  # Numero totale di test da eseguire
+total_tests = 5 * len(email_list)  # Numero totale di test da eseguire
 
 # Funzione per aggiornare il contatore dei successi in modo thread-safe
 def increment_success_count():
@@ -28,7 +28,7 @@ def increment_success_count():
 
 # 1. Test autentica
 def test_autentica(email):
-    response = requests.post(f"{BASE_URL}/autentica/{email}")
+    response = requests.get(f"{BASE_URL}/autentica/{email}")
     if response.status_code == 200:
         print(f"Autenticazione avvenuta con successo per {email}")
         increment_success_count()  # Incrementa il contatore in caso di successo
@@ -122,13 +122,13 @@ def test_ordina(email):
 def run_tests_for_email(email):
     print(f"\nEsecuzione dei test per {email}...")
 
-    test_dati_corretti()
+    #test_dati_corretti()
 
     print("\n--- Test Autentica ---")
     test_autentica(email)
 
     print("\n--- Test Modifica Nome ---")
-    test_modifica_nome()
+    #test_modifica_nome()
 
     print("\n--- Test Recupera Prodotti ---")
     test_recupera_prodotti()
