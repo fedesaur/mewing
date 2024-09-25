@@ -1,10 +1,9 @@
-#ifndef RECUPERA_CARRELLO_H
-#define RECUPERA_CARRELLO_H
+#ifndef RIMUOVI_CARRELLO_H
+#define RIMUOVI_CARRELLO_H
 
-#include <string>
+#include <string> // Importa std::string
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include <unistd.h>
 #include <cstring>
 
 #define WRITE_STREAM "CustomerW"
@@ -21,6 +20,6 @@
 #define PASSWORD_CUST "customer"
 #define DB_NAME "mewingdb"
 
-bool recuperaCarrello(const char* mail);
+bool rimuoviCarrello(int idProdotto, int userID);
 
 #endif

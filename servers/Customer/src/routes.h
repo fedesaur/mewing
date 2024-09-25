@@ -8,6 +8,7 @@
 #include "../../../entities/Indirizzo.h"
 #include "../../../entities/Prodotto.h"
 #include "../metodi/modificaNome.h"
+#include "../metodi/rimuoviCarrello.h"
 #include "../metodi/gestisciCarrello.h"
 #include "../metodi/autenticazione.h"
 #include "../metodi/recuperaProdotti.h"
@@ -18,6 +19,7 @@
 #include <pistache/router.h>
 #include "routes.h"
 #include <iostream>
+#include <nlohmann/json.hpp>
 
 void defineRoutes(Pistache::Rest::Router& router);
 

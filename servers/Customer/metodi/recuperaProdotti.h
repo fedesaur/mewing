@@ -29,8 +29,7 @@
 #define PASSWORD_CUST "customer"
 #define DB_NAME "mewingdb"
 
-std::pair<int, Prodotto*> recuperaProdotti(int clientSocket);
+bool recuperaProdotti(const char* mail);
 std::pair<int, Prodotto*> recuperaProdottiPerNome(int clientSocket, std::string nome);
-void mostraProdotti(int clientSocket, Prodotto* prodotti, int righe);
 
 #endif

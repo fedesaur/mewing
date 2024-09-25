@@ -1,4 +1,5 @@
 #include "recuperaIndirizzi.h"
+
 std::pair<int, Indirizzo*> recuperaIndirizzi(const char* mail)
 {
     std::pair<int, Indirizzo*> risultato;

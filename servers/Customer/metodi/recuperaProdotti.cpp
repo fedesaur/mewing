@@ -1,23 +1,63 @@
 #include "recuperaProdotti.h"
 
-std::pair<int, Prodotto*> recuperaProdotti(int clientSocket)
+bool recuperaProdotti(const char* mail)
 {
-    char buffer[1024] = {0};
     char comando[1000];
-    std::pair<int, Prodotto*> risultato;
+    int rows;
+    int RIGHE;
+    redisReply* productReply;
+    redisReply* reply;
+    redisContext *c2r;
     PGresult *res;
+
+    // Connessione a Redis
+    c2r = redisConnect(REDIS_IP, REDIS_PORT);  // Redis su localhost
+    if (c2r == nullptr || c2r->err) {
+        std::cerr << "Errore nella connessione a Redis" << std::endl;
+        return false;
+    }
+
+    // Recupera la lista di ID prodotti da Redis per l'email
+    bool onRedis = true; // Controlla che i dati siano nello stream Redis
+    reply = RedisCommand(c2r, "LRANGE prodottiRic:%s 0 -1", mail);
+    if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera i prodotti da Redis
+    {
+        RIGHE = reply->elements;
+        
+        for (int i = 0; i < RIGHE; i++) 
+        {
+            std::string productID = reply->element[i]->str;
+
+            // Recupera il prodotto come hash da Redis
+            productReply = RedisCommand(c2r, "HGETALL prodottoRic:%s", productID.c_str());
+    
+            // Verifica il risultato del recupero...
+            if (!productReply->type == REDIS_REPLY_ARRAY || productReply->elements != 10) 
+            {
+                onRedis = false;
+                freeReplyObject(productReply);
+                break;
+            }
+            freeReplyObject(productReply);
+        } 
+        if (onRedis) // Se ci sono, routes li recupererà poi...
+        {
+            freeReplyObject(reply);
+            redisFree(c2r);
+            return true;
+        }
+
+    }
+
+    //...altrimenti li recupera dal DB e li immette nello stream
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
     try
     {
         sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, fr.nome AS nomeF, pr.prezzo FROM prodotto pr, fornitore fr WHERE pr.fornitore = fr.id");
         res = db.ExecSQLtuples(comando);
-        int RIGHE = PQntuples(res);
-        if (RIGHE > 0)
+        int rows = PQntuples(res);
+        if (rows > 0)
         {
-            // Prima mostriamo all'utente i prodotti disponibili..
-            std::string request = "PRODOTTI DISPONIBILI:\n"; //... e lo stampa
-	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-            Prodotto* prodottiDisponibili = new Prodotto[RIGHE];
 
             for (int i = 0; i < RIGHE; i++)
             {
@@ -28,30 +68,23 @@ std::pair<int, Prodotto*> recuperaProdotti(int clientSocket)
                 const char* nome = PQgetvalue(res, i, PQfnumber(res, "nome"));
                 const char* fornitore = PQgetvalue(res, i, PQfnumber(res, "nomeF"));
 
-            // Assegna gli attributi all'i-esimo Prodotto in prodottiDisponibili
-                prodottiDisponibili[i].ID = ID;
-                prodottiDisponibili[i].descrizione = descrizione;
-                prodottiDisponibili[i].prezzo = prezzo;
-                prodottiDisponibili[i].nome = nome;
-                prodottiDisponibili[i].fornitore = fornitore;
+                // Memorizza il prodotto in Redis come hash
+                redisCommand(c2r, "HMSET prodottoRic:%d id %d descrizione %s prezzo %f nome %s fornitore %s", 
+                            ID, ID, descrizione, prezzo, nome, fornitore);
+
+                // Aggiungi l'ID del prodotto alla lista associata all'email
+                redisCommand(c2r, "RPUSH prodottiRic:%s %d", mail, ID);
             }
-            risultato.first = RIGHE;
-            risultato.second = prodottiDisponibili;
-        } else {
-            risultato.first = 0;
-            risultato.second =  nullptr;
         }
+        PQclear(res);
+        return true;
     }
-    catch(...) // Controlla che la query sia andata a buon fine
+    catch (...) 
     {
-        std::string errore = "C'è stato un errore nel database!\n"; // Seleziona la frase del turno
-	    send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
-        risultato.first = -1;
-        risultato.second = nullptr;
-        
+        PQclear(res);
+        redisFree(c2r);  // Chiudi connessione Redis
+        return false;
     }
-    PQclear(res);
-    return risultato; 
 }
 
 std::pair<int, Prodotto*> recuperaProdottiPerNome(int clientSocket, std::string nome)
@@ -108,21 +141,3 @@ std::pair<int, Prodotto*> recuperaProdottiPerNome(int clientSocket, std::string 
     PQclear(res);
     return risultato; 
 }
-
- void mostraProdotti(int clientSocket, Prodotto* prodotti, int righe) {
-        if (righe > 0) {
-            std::string request = "\nPRODOTTI DISPONIBILI:\n";
-            send(clientSocket, request.c_str(), request.length(), 0);
-            for (int i = 0; i < righe; i++) {
-                std::string prodotto = std::to_string(i+1) + ") ID Prodotto: " + std::to_string(prodotti[i].ID) + 
-                                       " Nome Prodotto: " + prodotti[i].nome + 
-                                       " Descrizione: " + prodotti[i].descrizione + 
-                                       " Fornitore: " + prodotti[i].fornitore + 
-                                       " Prezzo Prodotto: " + std::to_string(prodotti[i].prezzo) + "\n";
-                send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
-            }
-        } else {
-            std::string request = "Non ci sono prodotti disponibili!\n";
-            send(clientSocket, request.c_str(), request.length(), 0);
-        }
-    }
