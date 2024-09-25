@@ -35,6 +35,29 @@ def test_autentica(email):
     else:
         print(f"Errore durante l'autenticazione per {email}. Status code: {response.status_code}")
 
+def test_crea_customer(data, expected_status_code, expected_message):
+    response = requests.post(f"{BASE_URL}/creaCustomer", json=data)
+    assert response.status_code == expected_status_code, f"Expected {expected_status_code}, got {response.status_code}"
+    assert response.text.strip() == expected_message, f"Expected message '{expected_message}', got '{response.text.strip()}'"
+
+def test_dati_corretti():
+    data = {
+        "email": "test@example.com",
+        "nome": "Mario",
+        "cognome": "Rossi",
+        "via": "Via Roma",
+        "civico": 10,
+        "cap": "00100",
+        "city": "Roma",
+        "stato": "Italia"
+    }
+    test_crea_customer(data, 201, "Customer created")
+
+def test_modifica_info(data, expected_status_code, expected_message, email):
+    response = requests.put(f"{BASE_URL}/modificaInfo/{email}", json=data)
+    assert response.status_code == expected_status_code, f"Expected {expected_status_code}, got {response.status_code}"
+    assert response.text.strip() == expected_message, f"Expected message '{expected_message}', got '{response.text.strip()}'"
+
 # 2. Test modificaNome
 def test_modifica_nome():
     data = {"nome": "NuovoNome"}  # Simula l'invio di un nuovo nome
@@ -69,13 +92,22 @@ def test_aggiungi_prodotto_al_carrello(email):
 
 # 5. Test visualizza carrello
 def test_visualizza_carrello(email):
-    response = requests.get(f"{BASE_URL}/carrello/{email}")
+    response = requests.get(f"{BASE_URL}/{email}/carrello")
     if response.status_code == 200:
         print(f"Carrello recuperato per {email}:")
         print(response.text)
         increment_success_count()  # Incrementa il contatore in caso di successo
     else:
         print(f"Errore nel recupero del carrello per {email}. Status code: {response.status_code}")
+
+def test_get_indirizzi_corretti(email):
+    response = requests.get(f"{BASE_URL}/{email}/indirizzi")
+    if response.status_code == 200:
+        print(f"Indirizzi recuperati per {email}:")
+        print(response.text)
+        increment_success_count()  # Incrementa il contatore in caso di successo
+    else:
+        print(f"Errore nel recupero degli indirizzi per {email}. Status code: {response.status_code}")
 
 # 6. Test effettua ordine
 def test_ordina(email):
@@ -89,6 +121,8 @@ def test_ordina(email):
 ### Funzione per eseguire tutti i test per una specifica email ###
 def run_tests_for_email(email):
     print(f"\nEsecuzione dei test per {email}...")
+
+    test_dati_corretti()
 
     print("\n--- Test Autentica ---")
     test_autentica(email)
@@ -104,6 +138,9 @@ def run_tests_for_email(email):
 
     print("\n--- Test Visualizza Carrello ---")
     test_visualizza_carrello(email)
+
+    print("\n--- Test Visualizza Indirizzi ---")
+    test_get_indirizzi_corretti(email)
 
     print("\n--- Test Effettua Ordine ---")
     test_ordina(email)
