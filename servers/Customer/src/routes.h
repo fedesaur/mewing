@@ -7,6 +7,7 @@
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../../../entities/Indirizzo.h"
 #include "../../../entities/Prodotto.h"
+#include "../metodi/annullaOrdine.h"
 #include "../metodi/modificaNome.h"
 #include "../metodi/rimuoviCarrello.h"
 #include "../metodi/gestisciCarrello.h"

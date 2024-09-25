@@ -1,6 +1,4 @@
 #include "routes.h"
-
-
 using json = nlohmann::json;
 
 void defineRoutes(Pistache::Rest::Router& router) 
@@ -16,6 +14,7 @@ void defineRoutes(Pistache::Rest::Router& router)
     Pistache::Rest::Routes::Put(router, "/autentica/", Pistache::Rest::Routes::bind(&creaCustomer));
     Pistache::Rest::Routes::Post(router, "/:email/", Pistache::Rest::Routes::bind(&modificaInfo));
     Pistache::Rest::Routes::Delete(router, "/:email/carrello/:productID", Pistache::Rest::Routes::bind(&rimuoviCarrello));
+    Pistache::Rest::Routes::Delete(router, "/:email/ordini/:ordineID", Pistache::Rest::Routes::bind(&annullaOrd));
 }
 
 //curl -X GET http://localhost:5001/autentica/abc@abc.it
@@ -386,7 +385,7 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
         delete[] PRODOTTI; // Libera la memoria allocata dinamicamente
     } else {
         // Nessun prodotto trovato in Redis
-        response.send(Pistache::Http::Code::Ok, "Nessun disponibile in Redis");
+        response.send(Pistache::Http::Code::Ok, "Nessun prodotto disponibile in Redis\n");
     }
     freeReplyObject(reply);
     redisFree(c2r);  // Chiudi la connessione a Redis
@@ -430,15 +429,15 @@ void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Htt
     // Recupera l'ID del cliente basato sull'email
     int customerID = recuperaCustomerID(email);
     if (customerID <= 0) {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente");
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente\n");
         return;
     }
 
     bool esito = aggiungiCarrello(prodottoID, customerID, quantita);
     if (esito) {
-        response.send(Pistache::Http::Code::Ok, "Prodotto aggiunto al carrello con successo");
+        response.send(Pistache::Http::Code::Ok, "Prodotto aggiunto al carrello con successo\n");
     } else {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore durante l'aggiunta del prodotto al carrello");
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore durante l'aggiunta del prodotto al carrello\n");
     }
 }
 
@@ -461,15 +460,46 @@ void rimuoviCarrello(const Pistache::Rest::Request& request, Pistache::Http::Res
     // Recupera l'ID del cliente basato sull'email
     int customerID = recuperaCustomerID(email);
     if (customerID <= 0) {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente");
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente\n");
         return;
     }
 
     bool esito = rimuoviCarrello(productID, customerID);
     if (esito) {
-        response.send(Pistache::Http::Code::Ok, "Prodotto rimosso dal carrello con successo");
+        response.send(Pistache::Http::Code::Ok, "Prodotto rimosso dal carrello con successo\n");
     } else {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore durante la rimozione del prodotto dal carrello");
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore durante la rimozione del prodotto dal carrello\n");
+    }
+}
+
+//curl -X DELETE http://localhost:5001/abc@abc.it/ordini/1
+void annullaOrd(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) 
+{
+    // Recupera i parametri dalla richiesta
+    std::string email = request.param(":email").as<std::string>();
+    if (email.empty()) {
+        response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
+        return;
+    }
+    int ordineID = request.param(":ordineID").as<int>();
+    if (ordineID.empty() || ordineID <= 0)
+    {
+        response.send(Pistache::Http::Code::Bad_Request, "OrdineID not provided\n");
+        return;
+    }
+
+    // Recupera l'ID del cliente basato sull'email
+    int customerID = recuperaCustomerID(email);
+    if (customerID <= 0) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente\n");
+        return;
+    }
+
+    bool esito = annullaOrdine(ordineID, customerID);
+    if (esito) {
+        response.send(Pistache::Http::Code::Ok, "Ordine annullato con successo\n");
+    } else {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore durante l'annullamento dell'ordine\n(Se l'ordine è già stato preso in carico, non è possibile annullarlo!)\n");
     }
 }
 
