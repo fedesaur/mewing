@@ -18,7 +18,7 @@ def increment_success_count():
 
 # Funzione per testare la creazione di un cliente
 def test_crea_customer(data, expected_status_code, expected_message):
-    response = requests.post(f"{BASE_URL}/creaCustomer", json=data)
+    response = requests.put(f"{BASE_URL}/creaCustomer", json=data)
     assert response.status_code == expected_status_code, f"Expected {expected_status_code}, got {response.status_code}"
     assert response.text.strip() == expected_message, f"Expected message '{expected_message}', got '{response.text.strip()}'"
 
