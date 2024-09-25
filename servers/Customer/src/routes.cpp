@@ -54,28 +54,28 @@ void creaCustomer(const Pistache::Rest::Request& request, Pistache::Http::Respon
     
     // Controlla se i dati forniti dall'utente sono presenti, non null e corretti
     if (!dati.contains("email") || dati["email"].is_null() || dati["email"].get<std::string>().empty()) 
-        return response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
+        response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
     
     if (!dati.contains("nome") || dati["nome"].is_null() || dati["nome"].get<std::string>().empty()) 
-        return response.send(Pistache::Http::Code::Bad_Request, "Name not provided\n");
+        response.send(Pistache::Http::Code::Bad_Request, "Name not provided\n");
     
     if (!dati.contains("cognome") || dati["cognome"].is_null() || dati["cognome"].get<std::string>().empty()) 
-        return response.send(Pistache::Http::Code::Bad_Request, "Surname not provided\n");
+        response.send(Pistache::Http::Code::Bad_Request, "Surname not provided\n");
     
     if (!dati.contains("via") || dati["via"].is_null() || dati["via"].get<std::string>().empty()) 
-        return response.send(Pistache::Http::Code::Bad_Request, "Via not provided\n");
+        response.send(Pistache::Http::Code::Bad_Request, "Via not provided\n");
     
     if (!dati.contains("civico") || dati["civico"].is_null() || !dati["civico"].is_number()) 
-        return response.send(Pistache::Http::Code::Bad_Request, "Civico not provided or not a number\n");
+        response.send(Pistache::Http::Code::Bad_Request, "Civico not provided or not a number\n");
     
     if (!dati.contains("cap") || dati["cap"].is_null() || dati["cap"].get<std::string>().empty()) 
-        return response.send(Pistache::Http::Code::Bad_Request, "CAP not provided\n");
+        response.send(Pistache::Http::Code::Bad_Request, "CAP not provided\n");
     
     if (!dati.contains("city") || dati["city"].is_null() || dati["city"].get<std::string>().empty()) 
-        return response.send(Pistache::Http::Code::Bad_Request, "City not provided\n");
+        response.send(Pistache::Http::Code::Bad_Request, "City not provided\n");
     
     if (!dati.contains("stato") || dati["stato"].is_null() || dati["stato"].get<std::string>().empty()) 
-        return response.send(Pistache::Http::Code::Bad_Request, "State not provided\n");
+        response.send(Pistache::Http::Code::Bad_Request, "State not provided\n");
 
     // Recupera i dati convertiti
     std::string email = dati["email"].get<std::string>();
@@ -89,28 +89,28 @@ void creaCustomer(const Pistache::Rest::Request& request, Pistache::Http::Respon
 
     // Verifica la lunghezza dei campi
     if (email.length() > 50) 
-        return response.send(Pistache::Http::Code::Bad_Request, "Mail length is above 50 characters\n");
+        response.send(Pistache::Http::Code::Bad_Request, "Mail length is above 50 characters\n");
     
     if (nome.length() > 20) 
-        return response.send(Pistache::Http::Code::Bad_Request, "Name length is above 20 characters\n");
+        response.send(Pistache::Http::Code::Bad_Request, "Name length is above 20 characters\n");
     
     if (cognome.length() > 20) 
-        return response.send(Pistache::Http::Code::Bad_Request, "Surname length is above 20 characters\n");
+        response.send(Pistache::Http::Code::Bad_Request, "Surname length is above 20 characters\n");
     
     if (via.length() > 30) 
-        return response.send(Pistache::Http::Code::Bad_Request, "Via length is above 30 characters\n");
+        response.send(Pistache::Http::Code::Bad_Request, "Via length is above 30 characters\n");
     
     if (CAP.length() != 5 || !isNumber(CAP)) 
-        return response.send(Pistache::Http::Code::Bad_Request, "CAP must be a string of 5 numbers\n");
+        response.send(Pistache::Http::Code::Bad_Request, "CAP must be a string of 5 numbers\n");
     
     if (city.length() > 30) 
-        return response.send(Pistache::Http::Code::Bad_Request, "City length is above 30 characters\n");
+        response.send(Pistache::Http::Code::Bad_Request, "City length is above 30 characters\n");
     
     if (stato.length() > 50) 
-        return response.send(Pistache::Http::Code::Bad_Request, "State length is above 50 characters\n");
+        response.send(Pistache::Http::Code::Bad_Request, "State length is above 50 characters\n");
     
     // Chiama la funzione per creare il nuovo Fornitore
-    bool esito = creaFornitore(email.c_str(), nome.c_str(), cognome.c_str(), via.c_str(), civico, CAP.c_str(), city.c_str(), stato.c_str());
+    bool esito = crea(email.c_str(), nome.c_str(), cognome.c_str(), via.c_str(), civico, CAP.c_str(), city.c_str(), stato.c_str());
     
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Customer created\n");
@@ -148,18 +148,21 @@ void getIndirizzi(const Pistache::Rest::Request& request, Pistache::Http::Respon
 {
     std::stringstream ss;
     redisContext *c2r; // c2r contiene le info sul contesto
-	redisReply *reply; // reply contiene le risposte da Redis
+    redisReply *reply; // reply contiene le risposte da Redis
     redisReply *addressReply;
     Indirizzo* INDIRIZZI;
     int RIGHE;
 
     std::string email = request.param(":email").as<std::string>();
     
+    
     // Controlla che i parametri richiesti siano stati forniti
     if (email.empty()) {
         response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
         return;
     }
+    
+    recuperaIndirizzi(email.c_str());
 
     // Connessione a Redis
     c2r = redisConnect(REDIS_IP, REDIS_PORT); // Redis su localhost
@@ -180,22 +183,19 @@ void getIndirizzi(const Pistache::Rest::Request& request, Pistache::Http::Respon
         {
             std::string indirizzoID = reply->element[i]->str;
 
-            // Debug: Stampa l'ID del prodotto che stai per recuperare
-            std::cout << "Recuperando indirizzo con ID: " << indirizzoID << std::endl;
-            INDIRIZZI[i].ID = std::stoi(indirizzoID);
-
             // Recupera il prodotto come hash da Redis
             addressReply = RedisCommand(c2r, "HGETALL indirizzo:%s", indirizzoID.c_str());
     
             // Verifica il risultato del recupero...
-            if ( addressReply->type == REDIS_REPLY_ARRAY && addressReply->elements == 10) // 5 dati Richiesti: Via, Civico, CAP, Città, Stato
+            if ( addressReply->type == REDIS_REPLY_ARRAY && addressReply->elements == 12) // 5 dati Richiesti: Via, Civico, CAP, Città, Stato
             { //... e asssocia i valori dell'indirizzo recuperato dallo stream Redis ad un oggetto Indirizzo 
-        
-                INDIRIZZI[i].via = (addressReply->element[1]->str);
-                INDIRIZZI[i].civico = std::atoi(addressReply->element[3]->str);
-                INDIRIZZI[i].CAP = (addressReply->element[5]->str);
-                INDIRIZZI[i].citta = (addressReply->element[7]->str);
-                INDIRIZZI[i].stato = (addressReply->element[9]->str);
+            
+                INDIRIZZI[i].ID = std::atoi(addressReply->element[1]->str);        
+                INDIRIZZI[i].via = (addressReply->element[3]->str);
+                INDIRIZZI[i].civico = std::atoi(addressReply->element[5]->str);
+                INDIRIZZI[i].CAP = (addressReply->element[7]->str);
+                INDIRIZZI[i].citta = (addressReply->element[9]->str);
+                INDIRIZZI[i].stato = (addressReply->element[11]->str);
             } else {
                 std::cerr << "Errore nel recupero di un indirizzo da Redis" << std::endl;
                 freeReplyObject(addressReply);

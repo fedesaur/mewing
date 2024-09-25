@@ -31,22 +31,19 @@ std::pair<int, Indirizzo*> recuperaIndirizzi(const char* mail)
         {
             std::string indirizzoID = reply->element[i]->str;
 
-            // Debug: Stampa l'ID del prodotto che stai per recuperare
-            std::cout << "Recuperando indirizzo con ID: " << indirizzoID << std::endl;
-            INDIRIZZI[i].ID = std::stoi(indirizzoID);
-
             // Recupera il prodotto come hash da Redis
             addressReply = RedisCommand(c2r, "HGETALL indirizzo:%s", indirizzoID.c_str());
     
             // Verifica il risultato del recupero...
-            if ( addressReply->type == REDIS_REPLY_ARRAY && addressReply->elements == 10) // 5 dati Richiesti: Via, Civico, CAP, Città, Stato
+            if ( addressReply->type == REDIS_REPLY_ARRAY && addressReply->elements == 12) // 5 dati Richiesti: Via, Civico, CAP, Città, Stato
             { //... e asssocia i valori dell'indirizzo recuperato dallo stream Redis ad un oggetto Indirizzo 
-        
-                INDIRIZZI[i].via = (addressReply->element[1]->str);
-                INDIRIZZI[i].civico = std::atoi(addressReply->element[3]->str);
-                INDIRIZZI[i].CAP = (addressReply->element[5]->str);
-                INDIRIZZI[i].citta = (addressReply->element[7]->str);
-                INDIRIZZI[i].stato = (addressReply->element[9]->str);
+            
+                INDIRIZZI[i].ID = std::atoi(addressReply->element[1]->str);
+                INDIRIZZI[i].via = (addressReply->element[3]->str);
+                INDIRIZZI[i].civico = std::atoi(addressReply->element[5]->str);
+                INDIRIZZI[i].CAP = (addressReply->element[7]->str);
+                INDIRIZZI[i].citta = (addressReply->element[9]->str);
+                INDIRIZZI[i].stato = (addressReply->element[11]->str);
             }
             freeReplyObject(addressReply);
         }
