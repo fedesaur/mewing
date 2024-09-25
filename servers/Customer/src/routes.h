@@ -6,12 +6,13 @@
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../../../entities/Indirizzo.h"
+#include "../../../entities/Prodotto.h"
 #include "../metodi/modificaNome.h"
 #include "../metodi/gestisciCarrello.h"
 #include "../metodi/autenticazione.h"
 #include "../metodi/recuperaProdotti.h"
 #include "../metodi/recuperaCarrello.h"
-#include "../metodi/gestisciCarrello.h"
+#include "../metodi/effettuaOrdine.h"
 #include <pistache/http.h>
 #include <pistache/endpoint.h>
 #include <pistache/router.h>
