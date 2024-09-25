@@ -28,6 +28,6 @@
 #define DB_NAME "mewingdb"
 
 int autentica(const char* mail);
-bool creaCustomer(const char* email, const char* nome, const char* cognome, const char* via, int civico, const char* CAP, const char* city, const char* stato);
+bool crea(const char* email, const char* nome, const char* cognome, const char* via, int civico, const char* CAP, const char* city, const char* stato);
 
 #endif //AUTENTICAZIONE_H

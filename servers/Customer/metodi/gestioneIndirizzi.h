@@ -23,7 +23,7 @@
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
 
-#define SERVER_PORT 5000
+#define SERVER_PORT 5001
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
@@ -31,7 +31,6 @@
 #define PASSWORD_CUST "customer"
 #define DB_NAME "mewingdb"
 
-bool gestisciIndirizzi(int clientSocket);
 bool aggiungiIndirizzo(int clientSocket, int customerID);
 
 #endif //AUTENTICAZIONE_H

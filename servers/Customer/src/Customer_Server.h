@@ -22,7 +22,7 @@
 #define READ_STREAM "CustomerR"
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
-#define SERVER_PORT 5000
+#define SERVER_PORT 5001
 #define MAX_CONNECTIONS 100 // Numero di connessioni massime accettabili
 
 class Customer_Server

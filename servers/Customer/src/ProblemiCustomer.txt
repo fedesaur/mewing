@@ -1,8 +1,7 @@
-CAMBIO NOME E COGNOME: Funziona
-AGGIUNGI/RIMUOVI PRODOTTO DAL CARRELLO: ExecSQLtuples(): SQL command failed: SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF FROM prodotto pr, fornitore fr WHERE pr.fornitore = fr.id
-ExecSQLtuples(): PGRES_FATAL_ERROR
-Errore nel reperimento del carrello
-GESTIONE INDIRIZZI REGISTRATI: Funziona, ma bisogna uscire e rientrare per mostrare le modifiche
-GESTIONE METODI PAGAMENTI: AggiungiMetodi non funziona per qualche motivo
+aggiungi customer dà errore json
+
+
+
+indirizzi non vengono reperiti da redis
 
 

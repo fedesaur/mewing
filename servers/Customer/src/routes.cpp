@@ -80,13 +80,14 @@ void creaCustomer(const Pistache::Rest::Request& request, Pistache::Http::Respon
     if (stato.length() > 50) response.send(Pistache::Http::Code::Bad_Request, "State length is above 50 characters\n");
     
     //Chiama la funzione per creare il nuovo Fornitore
-    bool esito = creaFornitore(email.c_str(), nome.c_str(), cognome.c_str(), via.c_str(), civico, CAP.c_str(), city.c_str(), stato.c_str());
+    bool esito = crea(email.c_str(), nome.c_str(), cognome.c_str(), via.c_str(), civico, CAP.c_str(), city.c_str(), stato.c_str());
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Customer created\n");
     } else {
         response.send(Pistache::Http::Code::Unauthorized, "Failed to create the Customer\n");
     }
 }
+
 
 //curl -X POST -H "Content-Type: application/json" -d '{"nome": "Fabrizione", "cognome": "Napoli"}' http://localhost:5002/abc@abc.it/
 void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
@@ -138,7 +139,7 @@ void getIndirizzi(const Pistache::Rest::Request& request, Pistache::Http::Respon
     }
 
     // Recupera la lista di ID prodotti per l'email dal Redis
-    reply = RedisCommand(redis, "LRANGE indirizzi:%s 0 -1", email.c_str());
+    reply = RedisCommand(c2r, "LRANGE indirizzi:%s 0 -1", email.c_str());
     if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera gli indirizzi da Redis
     {
         RIGHE = reply->elements;
@@ -150,7 +151,7 @@ void getIndirizzi(const Pistache::Rest::Request& request, Pistache::Http::Respon
 
             // Debug: Stampa l'ID del prodotto che stai per recuperare
             std::cout << "Recuperando indirizzo con ID: " << indirizzoID << std::endl;
-            INDIRIZZI[i].ID = std::atoi(indirizzoID);
+            INDIRIZZI[i].ID = std::stoi(indirizzoID);
 
             // Recupera il prodotto come hash da Redis
             addressReply = RedisCommand(c2r, "HGETALL indirizzo:%s", indirizzoID.c_str());
@@ -159,11 +160,11 @@ void getIndirizzi(const Pistache::Rest::Request& request, Pistache::Http::Respon
             if ( addressReply->type == REDIS_REPLY_ARRAY && addressReply->elements == 10) // 5 dati Richiesti: Via, Civico, CAP, Città, Stato
             { //... e asssocia i valori dell'indirizzo recuperato dallo stream Redis ad un oggetto Indirizzo 
         
-                INDIRIZZI[i].via = (addressReply->element[1]->str).c_str();
+                INDIRIZZI[i].via = (addressReply->element[1]->str);
                 INDIRIZZI[i].civico = std::atoi(addressReply->element[3]->str);
-                INDIRIZZI[i].CAP = (addressReply->element[5]->str).c_str();
-                INDIRIZZI[i].citta = (addressReply->element[7]->str).c_str();
-                INDIRIZZI[i].stato = (addressReply->element[9]->str).c_str();;
+                INDIRIZZI[i].CAP = (addressReply->element[5]->str);
+                INDIRIZZI[i].citta = (addressReply->element[7]->str);
+                INDIRIZZI[i].stato = (addressReply->element[9]->str);
             } else {
                 std::cerr << "Errore nel recupero di un indirizzo da Redis" << std::endl;
                 freeReplyObject(addressReply);
@@ -191,7 +192,7 @@ void getIndirizzi(const Pistache::Rest::Request& request, Pistache::Http::Respon
         response.send(Pistache::Http::Code::Ok, "Nessun prodotto disponibile in Redis");
     }
     freeReplyObject(reply);
-    redisFree(redis);  // Chiudi la connessione a Redis
+    redisFree(c2r);  // Chiudi la connessione a Redis
     return;
 }
 

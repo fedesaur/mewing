@@ -36,7 +36,7 @@ int autentica(const char* mail)
 	return ID;
 }
 
-bool creaCustomer(const char* email, const char* nome, const char* cognome, const char* via, int civico, const char* CAP, const char* city, const char* stato)
+bool crea(const char* email, const char* nome, const char* cognome, const char* via, int civico, const char* CAP, const char* city, const char* stato)
 {
 	PGresult *res;
 	char comando[1000];

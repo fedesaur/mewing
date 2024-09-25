@@ -21,7 +21,7 @@ std::pair<int, Indirizzo*> recuperaIndirizzi(const char* mail)
     }
 
     // Recupera la lista di ID prodotti da Redis per l'email
-    reply = RedisCommand(redis, "LRANGE indirizzi:%s 0 -1", mail);
+    reply = RedisCommand(c2r, "LRANGE indirizzi:%s 0 -1", mail);
     if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera gli indirizzi da Redis
     {
         RIGHE = reply->elements;
@@ -33,7 +33,7 @@ std::pair<int, Indirizzo*> recuperaIndirizzi(const char* mail)
 
             // Debug: Stampa l'ID del prodotto che stai per recuperare
             std::cout << "Recuperando indirizzo con ID: " << indirizzoID << std::endl;
-            INDIRIZZI[i].ID = std::atoi(indirizzoID);
+            INDIRIZZI[i].ID = std::stoi(indirizzoID);
 
             // Recupera il prodotto come hash da Redis
             addressReply = RedisCommand(c2r, "HGETALL indirizzo:%s", indirizzoID.c_str());
@@ -42,18 +42,18 @@ std::pair<int, Indirizzo*> recuperaIndirizzi(const char* mail)
             if ( addressReply->type == REDIS_REPLY_ARRAY && addressReply->elements == 10) // 5 dati Richiesti: Via, Civico, CAP, Città, Stato
             { //... e asssocia i valori dell'indirizzo recuperato dallo stream Redis ad un oggetto Indirizzo 
         
-                INDIRIZZI[i].via = (addressReply->element[1]->str).c_str();
+                INDIRIZZI[i].via = (addressReply->element[1]->str);
                 INDIRIZZI[i].civico = std::atoi(addressReply->element[3]->str);
-                INDIRIZZI[i].CAP = (addressReply->element[5]->str).c_str();
-                INDIRIZZI[i].citta = (addressReply->element[7]->str).c_str();
-                INDIRIZZI[i].stato = (addressReply->element[9]->str).c_str();;
+                INDIRIZZI[i].CAP = (addressReply->element[5]->str);
+                INDIRIZZI[i].citta = (addressReply->element[7]->str);
+                INDIRIZZI[i].stato = (addressReply->element[9]->str);
             }
             freeReplyObject(addressReply);
         }
         risultato.first = RIGHE;
         risultato.second = INDIRIZZI;
         freeReplyObject(reply);
-        redisFree(redis);
+        redisFree(c2r);
         return risultato;
     }
 
@@ -80,19 +80,19 @@ std::pair<int, Indirizzo*> recuperaIndirizzi(const char* mail)
                 const char* stato = PQgetvalue(res, i, PQfnumber(res, "stato"));
 
                 // e li assegna all'i-esimo Indirizzo in indirizzi
-                indirizzi[i].ID = ID;
-                indirizzi[i].via = via;
-                indirizzi[i].civico = civico;
-                indirizzi[i].CAP = CAP;
-                indirizzi[i].citta = citta;
-                indirizzi[i].stato = stato;
+                INDIRIZZI[i].ID = ID;
+                INDIRIZZI[i].via = via;
+                INDIRIZZI[i].civico = civico;
+                INDIRIZZI[i].CAP = CAP;
+                INDIRIZZI[i].citta = citta;
+                INDIRIZZI[i].stato = stato;
 
                 // Memorizza il prodotto in Redis come hash
-                redisCommand(redis, "HMSET indirizzo:%d id %d nome %s via %s civico %d cap %s città %s stato %s", 
+                redisCommand(c2r, "HMSET indirizzo:%d id %d nome %s via %s civico %d cap %s città %s stato %s", 
                             ID, ID, via, civico, CAP, citta, stato);
 
                 // Aggiungi l'ID del prodotto alla lista associata all'email
-                redisCommand(redis, "RPUSH indirizzi:%s %d", mail, ID);
+                redisCommand(c2r, "RPUSH indirizzi:%s %d", mail, ID);
             }
 
             risultato.first = rows;
