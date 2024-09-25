@@ -51,36 +51,67 @@ void autenticaCustomer(const Pistache::Rest::Request& request, Pistache::Http::R
 void creaCustomer(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     json dati = json::parse(request.body());
-    // Controlla se i dati forniti dall'utente sono presenti e corretti
-    if (!dati.contains("email") || dati["email"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
-    if (!dati.contains("nome") || dati["nome"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Name not provided\n");
-    if (!dati.contains("cognome") || dati["cognome"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Surname not provided\n");
-    if (!dati.contains("via") || dati["via"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Via not provided\n");
-    if (!dati.contains("civico") || dati["civico"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Civico not provided\n");
-    if (!dati.contains("cap") || dati["cap"].empty()) response.send(Pistache::Http::Code::Bad_Request, "CAP not provided\n");
-    if (!dati.contains("city") || dati["city"].empty()) response.send(Pistache::Http::Code::Bad_Request, "City not provided\n");
-    if (!dati.contains("stato") || dati["stato"].empty()) response.send(Pistache::Http::Code::Bad_Request, "State not provided\n");
     
-    std::string email = dati["email"];
-    std::string nome = dati["nome"];
-    std::string cognome = dati["cognome"];
-    std::string telefono = dati["telefono"];
-    std::string via = dati["via"];
-    int civico = dati["civico"];
-    std::string CAP = dati["cap"];
-    std::string city = dati["city"];
-    std::string stato = dati["stato"];
+    // Controlla se i dati forniti dall'utente sono presenti, non null e corretti
+    if (!dati.contains("email") || dati["email"].is_null() || dati["email"].get<std::string>().empty()) 
+        return response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
+    
+    if (!dati.contains("nome") || dati["nome"].is_null() || dati["nome"].get<std::string>().empty()) 
+        return response.send(Pistache::Http::Code::Bad_Request, "Name not provided\n");
+    
+    if (!dati.contains("cognome") || dati["cognome"].is_null() || dati["cognome"].get<std::string>().empty()) 
+        return response.send(Pistache::Http::Code::Bad_Request, "Surname not provided\n");
+    
+    if (!dati.contains("via") || dati["via"].is_null() || dati["via"].get<std::string>().empty()) 
+        return response.send(Pistache::Http::Code::Bad_Request, "Via not provided\n");
+    
+    if (!dati.contains("civico") || dati["civico"].is_null() || !dati["civico"].is_number()) 
+        return response.send(Pistache::Http::Code::Bad_Request, "Civico not provided or not a number\n");
+    
+    if (!dati.contains("cap") || dati["cap"].is_null() || dati["cap"].get<std::string>().empty()) 
+        return response.send(Pistache::Http::Code::Bad_Request, "CAP not provided\n");
+    
+    if (!dati.contains("city") || dati["city"].is_null() || dati["city"].get<std::string>().empty()) 
+        return response.send(Pistache::Http::Code::Bad_Request, "City not provided\n");
+    
+    if (!dati.contains("stato") || dati["stato"].is_null() || dati["stato"].get<std::string>().empty()) 
+        return response.send(Pistache::Http::Code::Bad_Request, "State not provided\n");
 
-    if (email.length() > 50) response.send(Pistache::Http::Code::Bad_Request, "Mail length is above 50 characters\n");
-    if (nome.length() > 20) response.send(Pistache::Http::Code::Bad_Request, "Name length is above 20 characters\n");
-    if (cognome.length() > 20) response.send(Pistache::Http::Code::Bad_Request, "Surnam length is above 20 characters\n");
-    if (via.length() > 30) response.send(Pistache::Http::Code::Bad_Request, "Via length is above 50 characters\n");
-    if (CAP.length() != 5 || !isNumber(CAP)) response.send(Pistache::Http::Code::Bad_Request, "CAP must be a string of 5 numbers\n");
-    if (city.length() > 30) response.send(Pistache::Http::Code::Bad_Request, "City length is above 30 characters\n");
-    if (stato.length() > 50) response.send(Pistache::Http::Code::Bad_Request, "State length is above 50 characters\n");
+    // Recupera i dati convertiti
+    std::string email = dati["email"].get<std::string>();
+    std::string nome = dati["nome"].get<std::string>();
+    std::string cognome = dati["cognome"].get<std::string>();
+    std::string via = dati["via"].get<std::string>();
+    int civico = dati["civico"].get<int>();
+    std::string CAP = dati["cap"].get<std::string>();
+    std::string city = dati["city"].get<std::string>();
+    std::string stato = dati["stato"].get<std::string>();
+
+    // Verifica la lunghezza dei campi
+    if (email.length() > 50) 
+        return response.send(Pistache::Http::Code::Bad_Request, "Mail length is above 50 characters\n");
     
-    //Chiama la funzione per creare il nuovo Fornitore
-    bool esito = crea(email.c_str(), nome.c_str(), cognome.c_str(), via.c_str(), civico, CAP.c_str(), city.c_str(), stato.c_str());
+    if (nome.length() > 20) 
+        return response.send(Pistache::Http::Code::Bad_Request, "Name length is above 20 characters\n");
+    
+    if (cognome.length() > 20) 
+        return response.send(Pistache::Http::Code::Bad_Request, "Surname length is above 20 characters\n");
+    
+    if (via.length() > 30) 
+        return response.send(Pistache::Http::Code::Bad_Request, "Via length is above 30 characters\n");
+    
+    if (CAP.length() != 5 || !isNumber(CAP)) 
+        return response.send(Pistache::Http::Code::Bad_Request, "CAP must be a string of 5 numbers\n");
+    
+    if (city.length() > 30) 
+        return response.send(Pistache::Http::Code::Bad_Request, "City length is above 30 characters\n");
+    
+    if (stato.length() > 50) 
+        return response.send(Pistache::Http::Code::Bad_Request, "State length is above 50 characters\n");
+    
+    // Chiama la funzione per creare il nuovo Fornitore
+    bool esito = creaFornitore(email.c_str(), nome.c_str(), cognome.c_str(), via.c_str(), civico, CAP.c_str(), city.c_str(), stato.c_str());
+    
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Customer created\n");
     } else {
