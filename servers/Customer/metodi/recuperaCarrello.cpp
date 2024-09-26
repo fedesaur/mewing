@@ -1,7 +1,5 @@
 #include "recuperaCarrello.h"
 
-#include "recuperaCarrello.h"
-
 bool recuperaCarrello(const char* mail)
 {
     char comando[1000];
