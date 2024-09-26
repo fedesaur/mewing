@@ -316,22 +316,22 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
 {
     std::stringstream ss;
     redisContext *c2r; // c2r contiene le info sul contesto
-    redisReply *reply; // reply contiene le risposte da Redis
-    redisReply *productReply;
-    Prodotto* PRODOTTI;
+    redisReply *reply = nullptr; // reply contiene le risposte da Redis
+    redisReply *productReply = nullptr;
+    Prodotto* PRODOTTI = nullptr;
     int RIGHE;
 
     std::string email = request.param(":email").as<std::string>();
-    
+
     // Controlla che i parametri richiesti siano stati forniti
     if (email.empty()) {
         response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
         return;
     }
     
-    bool pubblicati = recuperaCarrello(email.c_str()); // Immette i prodotti presenti nel carrello nello stream
-    if (!pubblicati) 
-    {
+    // Recupera i prodotti del carrello, eventualmente recuperandoli dal DB se non presenti in Redis
+    bool pubblicati = recuperaCarrello(email.c_str());
+    if (!pubblicati) {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover cart's info\n");
         return;
     }
@@ -339,53 +339,71 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
     // Connessione a Redis
     c2r = redisConnect(REDIS_IP, REDIS_PORT); // Redis su localhost
     if (c2r == nullptr || c2r->err) {
-        std::cerr << "Errore nella connessione a Redis" << std::endl;
+        std::cerr << "Errore nella connessione a Redis: " << (c2r ? c2r->errstr : "null") << std::endl;
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to connect to Redis");
+        if (c2r) redisFree(c2r);  // Chiudi connessione Redis in caso di errore
         return;
     }
 
-    // Recupera la lista di ID prodotti per l'email dal Redis
-    reply = RedisCommand(c2r, "LRANGE carrello:%s 0 -1", email.c_str());
-    if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera gli indirizzi da Redis
-    {
+    // Recupera la lista di ID prodotti per l'email da Redis
+    reply = (redisReply*)redisCommand(c2r, "LRANGE carrello:%s 0 -1", email.c_str());
+    if (reply == nullptr) {
+        std::cerr << "Errore nel recupero della lista da Redis" << std::endl;
+        redisFree(c2r);  // Chiudi connessione Redis
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover cart from Redis");
+        return;
+    }
+
+    if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) { // Recupera gli ID dei prodotti da Redis
         RIGHE = reply->elements;
         PRODOTTI = new Prodotto[RIGHE];  // Array dinamico di prodotti
         
-        for (int i = 0; i < RIGHE; i++) 
-        {
+        for (int i = 0; i < RIGHE; i++) {
             std::string productID = reply->element[i]->str;
 
             // Recupera il prodotto come hash da Redis
-            productReply = RedisCommand(c2r, "HGETALL prodottoCarr:%s", productID.c_str());
-    
-            // Verifica il risultato del recupero...
-            if (productReply->type == REDIS_REPLY_ARRAY && productReply->elements == 12) // 6 dati Richiesti: ID Indirizzo, Via, Civico, CAP, Città, Stato
-            { //... e asssocia i valori dell'indirizzo recuperato dallo stream Redis ad un oggetto Indirizzo 
-            
-                PRODOTTI[i].ID = std::atoi(productReply->element[1]->str);
-                PRODOTTI[i].descrizione = (productReply->element[3]->str);
-                PRODOTTI[i].prezzo = std::atof(productReply->element[5]->str);
-                PRODOTTI[i].nome = (productReply->element[7]->str);
-                PRODOTTI[i].fornitore = (productReply->element[9]->str);
-                PRODOTTI[i].quantita = std::atoi(productReply->element[11]->str);
-            } else {
-                std::cerr << "Errore nel recupero di un indirizzo da Redis" << std::endl;
-                freeReplyObject(productReply);
+            productReply = (redisReply*)redisCommand(c2r, "HGETALL prodottoCarr:%s", productID.c_str());
+            if (productReply == nullptr) {
+                std::cerr << "Errore nel recupero del prodotto " << productID << " da Redis" << std::endl;
+                delete[] PRODOTTI;
+                freeReplyObject(reply);
                 redisFree(c2r);
+                response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover product from Redis");
                 return;
             }
+
+            // Verifica il risultato del recupero
+            if (productReply->type == REDIS_REPLY_ARRAY && productReply->elements == 12) { 
+                // Associa i valori del prodotto recuperato dallo stream Redis all'oggetto Prodotto
+                PRODOTTI[i].ID = std::atoi(productReply->element[1]->str);
+                PRODOTTI[i].descrizione = productReply->element[3]->str;
+                PRODOTTI[i].prezzo = std::atof(productReply->element[5]->str);
+                PRODOTTI[i].nome = productReply->element[7]->str;
+                PRODOTTI[i].fornitore = productReply->element[9]->str;
+                PRODOTTI[i].quantita = std::atoi(productReply->element[11]->str);
+            } else {
+                std::cerr << "Errore nel recupero dei dettagli del prodotto da Redis" << std::endl;
+                delete[] PRODOTTI;
+                freeReplyObject(productReply);
+                freeReplyObject(reply);
+                redisFree(c2r);
+                response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to parse product details from Redis");
+                return;
+            }
+            freeReplyObject(productReply); // Libera la memoria del productReply
         }
+
         // Stampa i prodotti
         ss << "\nPRODOTTI NEL CARRELLO:\n";
-        for (int i = 0; i < RIGHE; i++) 
-        {
+        for (int i = 0; i < RIGHE; i++) {
             ss << i + 1 << ") ID Prodotto: " << PRODOTTI[i].ID
                << " Nome Prodotto: " << PRODOTTI[i].nome
                << " Descrizione Prodotto: " << PRODOTTI[i].descrizione
                << " Prezzo: " << PRODOTTI[i].prezzo
                << " Quantità: " << PRODOTTI[i].quantita
-               << " Nome Fornitore: " << PRODOTTI[i].fornitore <<"\n";
+               << " Nome Fornitore: " << PRODOTTI[i].fornitore << "\n";
         }
+
         // Invia la risposta con i prodotti
         response.send(Pistache::Http::Code::Ok, ss.str());
         delete[] PRODOTTI; // Libera la memoria allocata dinamicamente
@@ -393,10 +411,12 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
         // Nessun prodotto trovato in Redis
         response.send(Pistache::Http::Code::Ok, "Nessun prodotto nel carrello in Redis");
     }
+
+    // Libera risorse
     freeReplyObject(reply);
     redisFree(c2r);  // Chiudi la connessione a Redis
-    return;
 }
+
 
 //curl -X GET http://localhost:5001/abc@abc.it/prodotti/
 void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) 
