@@ -9,7 +9,7 @@ PORT = 5001
 BASE_URL = f"http://{HOST}:{PORT}"
 
 # Lista di email che già esistono nel sistema
-email_list = ["abc@abc.it", "cab@cab.it", "bca@bca.it"]
+email_list = ["abc@abc.it"]
 
 # Lock per gestire l'accesso concorrente al contatore
 lock = threading.Lock()
@@ -45,8 +45,8 @@ def test_recupera_indirizzi(email):
         print(f"Errore durante il recupero degli indirizzi per {email}. Status code: {response.status_code}")
 
 # 3. Test recupera prodotti
-def test_recupera_prodotti():
-    response = requests.get(f"{BASE_URL}/prodotti")
+def test_recupera_prodotti(email):
+    response = requests.get(f"{BASE_URL}/{email}/prodotti")
     if response.status_code == 200:
         print("Prodotti recuperati con successo:")
         increment_success_count()  # Incrementa il contatore in caso di successo
@@ -55,10 +55,7 @@ def test_recupera_prodotti():
 
 # 4. Test aggiungi prodotto al carrello
 def test_aggiungi_prodotto_al_carrello(email):
-    prodotto_id = random.randint(1, 7)  # Scegli un prodotto casuale
-    quantita = random.randint(1, 5)  # Quantità casuale tra 1 e 5
-
-    response = requests.put(f"{BASE_URL}/{email}/carrello/", json={"productID": prodotto_id, "quantita": quantita})
+    response = requests.put(f"{BASE_URL}/{email}/carrello/", json={"quantita": 1, "IDprodotto": 1})
     if response.status_code == 200:
         print(f"Prodotto aggiunto al carrello per l'utente {email} con quantità {quantita}")
         increment_success_count()  # Incrementa il contatore in caso di successo
@@ -77,7 +74,7 @@ def test_visualizza_carrello(email):
 
 # 6. Test effettua ordine
 def test_ordina(email):
-    response = requests.put(f"{BASE_URL}/{email}/ordini/")
+    response = requests.put(f"{BASE_URL}/{email}/ordini/", json={"pagamento": 'bancomat', "indirizzo": 1})
     if response.status_code == 200:
         print(f"Ordine effettuato con successo per {email}")
         increment_success_count()  # Incrementa il contatore in caso di successo
@@ -95,7 +92,7 @@ def run_tests_for_email(email):
     test_recupera_indirizzi(email)
 
     print("\n--- Test Recupera Prodotti ---")
-    test_recupera_prodotti()
+    test_recupera_prodotti(email)
 
     print("\n--- Test Aggiungi Prodotto al Carrello ---")
     test_aggiungi_prodotto_al_carrello(email)

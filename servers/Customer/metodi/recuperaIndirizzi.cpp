@@ -21,41 +21,8 @@ std::pair<int, Indirizzo*> recuperaIndirizzi(const char* mail)
         return risultato;
     }
 
-    // Recupera la lista di ID prodotti da Redis per l'email
-    reply = RedisCommand(c2r, "LRANGE indirizzi:%s 0 -1", mail);
-    if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera gli indirizzi da Redis
-    {
-        RIGHE = reply->elements;
-        INDIRIZZI = new Indirizzo[RIGHE];  // Array dinamico di prodotti
-        
-        for (int i = 0; i < RIGHE; i++) 
-        {
-            std::string indirizzoID = reply->element[i]->str;
 
-            // Recupera il prodotto come hash da Redis
-            addressReply = RedisCommand(c2r, "HGETALL indirizzo:%s", indirizzoID.c_str());
-    
-            // Verifica il risultato del recupero...
-            if ( addressReply->type == REDIS_REPLY_ARRAY && addressReply->elements == 12) // 5 dati Richiesti: Via, Civico, CAP, Città, Stato
-            { //... e asssocia i valori dell'indirizzo recuperato dallo stream Redis ad un oggetto Indirizzo 
-            
-                INDIRIZZI[i].ID = std::stoi(addressReply->element[1]->str);
-                INDIRIZZI[i].via = (addressReply->element[3]->str);
-                INDIRIZZI[i].civico = std::stoi(addressReply->element[5]->str);
-                INDIRIZZI[i].CAP = (addressReply->element[7]->str);
-                INDIRIZZI[i].citta = (addressReply->element[9]->str);
-                INDIRIZZI[i].stato = (addressReply->element[11]->str);
-            }
-            freeReplyObject(addressReply);
-        }
-        risultato.first = RIGHE;
-        risultato.second = INDIRIZZI;
-        freeReplyObject(reply);
-        redisFree(c2r);
-        return risultato;
-    }
-
-    // Se gli indirizzi non sono trovati su Redis, recupera dal DB
+    // recupera dal DB
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
     try
     {

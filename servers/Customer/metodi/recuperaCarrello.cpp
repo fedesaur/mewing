@@ -18,47 +18,8 @@ bool recuperaCarrello(int id, const char* mail)
         return false;
     }
 
-    // Recupera la lista di ID prodotti da Redis per l'email
-    bool onRedis = true; // Controlla che i dati siano nello stream Redis
-    reply = (redisReply*)redisCommand(c2r, "LRANGE carrello:%s 0 -1", mail);
-    if (reply == nullptr) {
-        std::cerr << "Errore nel recupero della lista da Redis" << std::endl;
-        redisFree(c2r);
-        return false;
-    }
-
-    if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera i prodotti da Redis
-    {
-        RIGHE = reply->elements;
-
-        for (int i = 0; i < RIGHE; i++) 
-        {
-            std::string productID = reply->element[i]->str;
-
-            // Recupera il prodotto come hash da Redis
-            productReply = (redisReply*)redisCommand(c2r, "HGETALL prodottoCarr:%s", productID.c_str());
-    
-            // Verifica il risultato del recupero...
-            if (productReply == nullptr || productReply->type != REDIS_REPLY_ARRAY || productReply->elements != 12) 
-            {
-                onRedis = false;
-                if (productReply) freeReplyObject(productReply);
-                break;
-            }
-            freeReplyObject(productReply);
-        } 
-
-        if (onRedis) // Se ci sono, routes li recupererà poi...
-        {
-            freeReplyObject(reply);
-            redisFree(c2r);
-            return true;
-        }
-    }
-
-    freeReplyObject(reply); // Libera la risposta Redis
-
-    //...altrimenti li recupera dal DB e li immette nello stream
+  
+    //recupera dal DB e li immette nello stream
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
     try
     {

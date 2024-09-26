@@ -17,39 +17,10 @@ bool recuperaOrdini(const char* mail)
         return false;
     }
 
-    // Recupera la lista di ID prodotti da Redis per l'email
-    bool onRedis = true; // Controlla che i dati siano nello stream Redis
-    reply = RedisCommand(c2r, "LRANGE ordini:%s 0 -1", mail);
-    if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera i prodotti da Redis
-    {
-        RIGHE = reply->elements;
-        
-        for (int i = 0; i < RIGHE; i++) 
-        {
-            std::string orderID = reply->element[i]->str;
 
-            // Recupera il prodotto come hash da Redis
-            orderReply = RedisCommand(c2r, "HGETALL ordine:%s", orderID.c_str());
-    
-            // Verifica il risultato del recupero...
-            if (!orderReply->type == REDIS_REPLY_ARRAY || orderReply->elements != 14) 
-            {
-                onRedis = false;
-                freeReplyObject(orderReply);
-                break;
-            }
-            freeReplyObject(orderReply);
-        } 
-        if (onRedis) // Se ci sono, routes li recupererà poi...
-        {
-            freeReplyObject(reply);
-            redisFree(c2r);
-            return true;
-        }
 
-    }
 
-    // Se gli indirizzi non sono trovati su Redis, recupera dal DB
+    // recupera dal DB
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
     try
     {
