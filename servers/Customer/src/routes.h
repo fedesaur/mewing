@@ -8,6 +8,7 @@
 #include "../../../entities/Indirizzo.h"
 #include "../../../entities/Prodotto.h"
 #include "../../../entities/Ordine.h"
+#include "../metodi/aggiungiIndirizzo.h"
 #include "../metodi/annullaOrdine.h"
 #include "../metodi/modificaNome.h"
 #include "../metodi/rimuoviCarrello.h"

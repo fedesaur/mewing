@@ -10,6 +10,7 @@ void defineRoutes(Pistache::Rest::Router& router)
     Pistache::Rest::Routes::Get(router, "/:email/ordini/", Pistache::Rest::Routes::bind(&getOrdini));
     Pistache::Rest::Routes::Get(router, "/:email/carrello/", Pistache::Rest::Routes::bind(&getCarrello));
     Pistache::Rest::Routes::Get(router, "/:email/prodotti/", Pistache::Rest::Routes::bind(&getProdotti));
+    Pistache::Rest::Routes::Put(router, "/:email/indirizzi/", Pistache::Rest::Routes::bind(&addIndirizzo));
     Pistache::Rest::Routes::Put(router, "/:email/ordini/", Pistache::Rest::Routes::bind(&ordina));
     Pistache::Rest::Routes::Put(router, "/:email/carrello/", Pistache::Rest::Routes::bind(&addProdottoToCarrello));
     Pistache::Rest::Routes::Put(router, "/autentica/", Pistache::Rest::Routes::bind(&creaCustomer));
@@ -280,7 +281,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
                 ORDINI[i].Pagamento = (orderReply->element[11]->str);
                 ORDINI[i].Indirizzo = std::atoi(orderReply->element[13]->str);
             } else {
-                std::cerr << "Errore nel recupero di un indirizzo da Redis" << std::endl;
+                std::cerr << "Errore nel recupero di un ordine da Redis" << std::endl;
                 freeReplyObject(orderReply);
                 redisFree(c2r);
                 return;
@@ -528,6 +529,82 @@ void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Htt
         response.send(Pistache::Http::Code::Ok, "Prodotto aggiunto al carrello con successo\n");
     } else {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore durante l'aggiunta del prodotto al carrello\n");
+    }
+}
+
+//curl -X PUT -H "Content-Type: application/json" -d '{"via" : "Via Salaria", "civico": 122, "cap" : "10123", "city" : "Roma", "stato" : "Puponia"}' http://localhost:5001/abc@abc.it/indirizzi/
+void addIndirizzo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+    std::string email = request.param(":email").as<std::string>();
+    if (email.empty()) {
+        response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
+        return;
+    }
+    json dati = json::parse(request.body());
+    
+    // Controlla se i dati forniti dall'utente sono presenti, non null e corretti
+    if (!dati.contains("via") || dati["via"].is_null() || dati["via"].get<std::string>().empty()) 
+        response.send(Pistache::Http::Code::Bad_Request, "Via not provided\n");
+    
+    if (!dati.contains("civico") || dati["civico"].is_null()) 
+        response.send(Pistache::Http::Code::Bad_Request, "Civico not provided or not a number\n");
+    
+    if (!dati.contains("cap") || dati["cap"].is_null() || dati["cap"].get<std::string>().empty()) 
+        response.send(Pistache::Http::Code::Bad_Request, "CAP not provided\n");
+    
+    if (!dati.contains("city") || dati["city"].is_null() || dati["city"].get<std::string>().empty()) 
+        response.send(Pistache::Http::Code::Bad_Request, "City not provided\n");
+    
+    if (!dati.contains("stato") || dati["stato"].is_null() || dati["stato"].get<std::string>().empty()) 
+        response.send(Pistache::Http::Code::Bad_Request, "State not provided\n");
+
+    // Recupera i dati convertiti
+    std::string via = dati["via"].get<std::string>();
+    int civico = dati["civico"].get<int>();
+    std::string CAP = dati["cap"].get<std::string>();
+    std::string city = dati["city"].get<std::string>();
+    std::string stato = dati["stato"].get<std::string>();
+
+    // Verifica la lunghezza dei campi
+    
+    if (via.length() > 30)
+    {
+        response.send(Pistache::Http::Code::Bad_Request, "Via length is above 30 characters\n");
+        return;
+    }
+    if (civico < 0)
+    {
+        response.send(Pistache::Http::Code::Bad_Request, "Civico must be a positive integer\n");
+        return;
+    }
+    if (CAP.length() != 5 || !isNumber(CAP))
+    {
+        response.send(Pistache::Http::Code::Bad_Request, "CAP must be a string of 5 numbers\n");
+        return;
+    }
+    if (city.length() > 30)
+    {
+        response.send(Pistache::Http::Code::Bad_Request, "City length is above 30 characters\n");
+        return;
+    }
+    if (stato.length() > 50)
+    {
+        response.send(Pistache::Http::Code::Bad_Request, "State length is above 50 characters\n");
+        return;
+    }
+    int customerID = recuperaCustomerID(email);
+    if (customerID <= 0) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente\n");
+        return;
+    }
+
+    // Chiama la funzione per creare il nuovo Fornitore
+    bool esito = aggiungiindirizzo(customerID, via.c_str(), civico, CAP.c_str(), city.c_str(), stato.c_str());
+    
+    if (esito) {
+        response.send(Pistache::Http::Code::Created, "Indirizzo Aggiunto\n");
+    } else {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nell'aggiunta dell'Indirizzo\n");
     }
 }
 
