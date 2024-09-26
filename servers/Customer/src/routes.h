@@ -2,17 +2,17 @@
 #define ROUTES_TRASPORTATORE_H
 
 #pragma once
-#include <pistache/router.h>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../../../entities/Indirizzo.h"
 #include "../../../entities/Prodotto.h"
 #include "../../../entities/Ordine.h"
 #include "../metodi/aggiungiIndirizzo.h"
+#include "../metodi/aggiungiCarrello.h"
 #include "../metodi/annullaOrdine.h"
 #include "../metodi/modificaNome.h"
 #include "../metodi/rimuoviCarrello.h"
-#include "../metodi/gestisciCarrello.h"
+#include "../metodi/recuperaIndirizzi.h"
 #include "../metodi/autenticazione.h"
 #include "../metodi/recuperaProdotti.h"
 #include "../metodi/recuperaCarrello.h"
@@ -34,8 +34,10 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
 void getIndirizzi(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void addIndirizzo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 int recuperaCustomerID(std::string email);
 void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void ordina(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void annullaOrd(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
 #endif // ROUTES_H

@@ -244,7 +244,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
     if (!pubblicati) 
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover orders' info\n");
-        return
+        return;
     }
 
     // Connessione a Redis
@@ -260,14 +260,14 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
     if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera gli indirizzi da Redis
     {
         RIGHE = reply->elements;
-        PRODOTTI = new Prodotto[RIGHE];  // Array dinamico di prodotti
+        ORDINI = new Ordine[RIGHE];  // Array dinamico di prodotti
         
         for (int i = 0; i < RIGHE; i++) 
         {
             std::string productID = reply->element[i]->str;
 
             // Recupera il prodotto come hash da Redis
-            orderReply = RedisCommand(c2r, "HGETALL prodottoCarr:%s", productID.c_str());
+            orderReply = RedisCommand(c2r, "HGETALL ordine:%s", productID.c_str());
     
             // Verifica il risultato del recupero...
             if (orderReply->type == REDIS_REPLY_ARRAY && orderReply->elements == 14) // 7 dati Richiesti: ID Ordine, Stato, Data Richiesta, Data Consegna, Totale, Tipo di Pagamento, Indirizzo
@@ -333,7 +333,7 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
     if (!pubblicati) 
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover cart's info\n");
-        return
+        return;
     }
 
     // Connessione a Redis
@@ -370,7 +370,7 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
                 PRODOTTI[i].quantita = std::atoi(productReply->element[11]->str);
             } else {
                 std::cerr << "Errore nel recupero di un indirizzo da Redis" << std::endl;
-                freeReplyObject(addressReply);
+                freeReplyObject(productReply);
                 redisFree(c2r);
                 return;
             }
@@ -416,11 +416,11 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
         return;
     }
     
-    bool pubblicati = recuperaProdotti(email.c_str()) // Immette i prodotti presenti nel carrello nello stream
+    bool pubblicati = recuperaProdotti(email.c_str()); // Immette i prodotti presenti nel carrello nello stream
     if (!pubblicati) 
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover products' info\n");
-        return
+        return;
     }
 
     // Connessione a Redis
@@ -456,7 +456,7 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
                 PRODOTTI[i].fornitore = (productReply->element[9]->str);
             } else {
                 std::cerr << "Errore nel recupero di un indirizzo da Redis" << std::endl;
-                freeReplyObject(addressReply);
+                freeReplyObject(productReply);
                 redisFree(c2r);
                 return;
             }
@@ -492,6 +492,8 @@ void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Htt
         response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
         return;
     }
+    
+    json dati = json::parse(request.body());
 
     if (!dati.contains("quantita") || dati["quantita"].empty())
     {
@@ -618,7 +620,7 @@ void rimuoviCarrello(const Pistache::Rest::Request& request, Pistache::Http::Res
         return;
     }
     int productID = request.param(":productID").as<int>();
-    if (productID.empty() || productID <= 0)
+    if (productID <= 0)
     {
         response.send(Pistache::Http::Code::Bad_Request, "ProductID not provided\n");
         return;
@@ -649,7 +651,7 @@ void annullaOrd(const Pistache::Rest::Request& request, Pistache::Http::Response
         return;
     }
     int ordineID = request.param(":ordineID").as<int>();
-    if (ordineID.empty() || ordineID <= 0)
+    if (ordineID <= 0)
     {
         response.send(Pistache::Http::Code::Bad_Request, "OrdineID not provided\n");
         return;
@@ -723,7 +725,7 @@ void ordina(const Pistache::Rest::Request& request, Pistache::Http::ResponseWrit
         return;
     }
     
-    esito = effettuaOrdine(customerID, pagamento, indirizzo);
+    bool esito = effettuaOrdine(customerID, pagamento.c_str(), indirizzo);
     if (esito) {
         response.send(Pistache::Http::Code::Ok, "Ordine effettuato");
     } else {

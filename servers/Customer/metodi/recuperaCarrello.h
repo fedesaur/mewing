@@ -6,6 +6,7 @@
 #include "../../../lib/con2redis/src/con2redis.h"
 #include <unistd.h>
 #include <cstring>
+#include <iostream>
 
 #define WRITE_STREAM "CustomerW"
 #define READ_STREAM "CustomerR"

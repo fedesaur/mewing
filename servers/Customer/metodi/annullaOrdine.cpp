@@ -8,7 +8,7 @@ bool annullaOrdine(int IDOrdine, int userID)
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Connessione DB
     try
     {
-        sprintf(comando, "SELECT * FROM transord WHERE ordine = %d", IDOrdine;
+        sprintf(comando, "SELECT * FROM transord WHERE ordine = %d", IDOrdine);
         res = db.ExecSQLtuples(comando);
         rows = PQntuples(res);
         if (rows >= 1)
