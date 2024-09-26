@@ -8,7 +8,7 @@ bool effettuaOrdine(int customerID, const char* pagamento, int indirizzo)
     try
     {
         //Inserisce l'ordine nel database
-        sprintf(comando, "INSERT INTO ordine(customer, datarich, pagamento, indirizzo) VALUES (%d, NOW(), '%s', %d) RETURNING id",
+        sprintf(comando, "INSERT INTO ordine(customer, datarich, pagamento, indirizzo) VALUES (%d, NOW(), '%s', %d)",
         customerID, pagamento, indirizzo);
         res = db.ExecSQLcmd(comando);
         PQclear(res);

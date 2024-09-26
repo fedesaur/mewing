@@ -61,3 +61,4 @@ GRANT INSERT, SELECT on prodinord to :customer;
 GRANT SELECT on prodotto to :customer;
 GRANT SELECT on fornitore to :customer;
 GRANT SELECT, INSERT on prodmet to :customer;
+GRANT SELECT on ordineconse to :customer;

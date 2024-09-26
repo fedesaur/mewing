@@ -1,6 +1,6 @@
 #include "recuperaCarrello.h"
 
-bool recuperaCarrello(const char* mail)
+bool recuperaCarrello(int id, const char* mail)
 {
     char comando[1000];
     int rows;
@@ -62,8 +62,7 @@ bool recuperaCarrello(const char* mail)
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
     try
     {
-        sprintf(comando, "SELECT ind.id, ind.via, ind.civico, ind.cap, ind.citta, ind.stato "
-        "FROM indirizzo ind, custadd cst, customers cus WHERE cst.customer = cus.id AND cus.mail = '%s' AND cst.addr = ind.id", mail);
+        sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr. nome AS nomeF, cr.totale, pc.quantita FROM prodotto pr, carrello cr, prodincart pc, fornitore fr WHERE pc.prodotto = pr.id AND pc.carrello=cr.customer AND pr.fornitore=fr.id AND cr.customer=%d", id);
         res = db.ExecSQLtuples(comando);
         rows = PQntuples(res);
         if (rows > 0)

@@ -15,7 +15,7 @@ void defineRoutes(Pistache::Rest::Router& router)
     Pistache::Rest::Routes::Put(router, "/:email/carrello/", Pistache::Rest::Routes::bind(&addProdottoToCarrello));
     Pistache::Rest::Routes::Put(router, "/autentica/", Pistache::Rest::Routes::bind(&creaCustomer));
     Pistache::Rest::Routes::Post(router, "/:email/", Pistache::Rest::Routes::bind(&modificaInfo));
-    Pistache::Rest::Routes::Delete(router, "/:email/carrello/:productID", Pistache::Rest::Routes::bind(&rimuoviCarrello));
+    //Pistache::Rest::Routes::Delete(router, "/:email/carrello/:productID", Pistache::Rest::Routes::bind(&rimuoviCarrello));
     Pistache::Rest::Routes::Delete(router, "/:email/ordini/:ordineID", Pistache::Rest::Routes::bind(&annullaOrd));
 }
 
@@ -329,8 +329,10 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
         return;
     }
     
+    int id=recuperaCustomerID(email);
+    
     // Recupera i prodotti del carrello, eventualmente recuperandoli dal DB se non presenti in Redis
-    bool pubblicati = recuperaCarrello(email.c_str());
+    bool pubblicati = recuperaCarrello(id, email.c_str());
     if (!pubblicati) {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover cart's info\n");
         return;
@@ -375,12 +377,12 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
             // Verifica il risultato del recupero
             if (productReply->type == REDIS_REPLY_ARRAY && productReply->elements == 12) { 
                 // Associa i valori del prodotto recuperato dallo stream Redis all'oggetto Prodotto
-                PRODOTTI[i].ID = std::atoi(productReply->element[1]->str);
-                PRODOTTI[i].descrizione = productReply->element[3]->str;
+                PRODOTTI[i].ID = std::stoi(productReply->element[1]->str);
+                PRODOTTI[i].descrizione = (productReply->element[3]->str);
                 PRODOTTI[i].prezzo = std::atof(productReply->element[5]->str);
-                PRODOTTI[i].nome = productReply->element[7]->str;
-                PRODOTTI[i].fornitore = productReply->element[9]->str;
-                PRODOTTI[i].quantita = std::atoi(productReply->element[11]->str);
+                PRODOTTI[i].nome = (productReply->element[7]->str);
+                PRODOTTI[i].fornitore = (productReply->element[9]->str);
+                PRODOTTI[i].quantita = std::stoi(productReply->element[11]->str);
             } else {
                 std::cerr << "Errore nel recupero dei dettagli del prodotto da Redis" << std::endl;
                 delete[] PRODOTTI;
@@ -390,7 +392,7 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
                 response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to parse product details from Redis");
                 return;
             }
-            freeReplyObject(productReply); // Libera la memoria del productReply
+            //freeReplyObject(productReply); // Libera la memoria del productReply
         }
 
         // Stampa i prodotti
@@ -414,6 +416,7 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
 
     // Libera risorse
     freeReplyObject(reply);
+    freeReplyObject(productReply);
     redisFree(c2r);  // Chiudi la connessione a Redis
 }
 
@@ -499,6 +502,7 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
         response.send(Pistache::Http::Code::Ok, "Nessun prodotto disponibile in Redis\n");
     }
     freeReplyObject(reply);
+    freeReplyObject(productReply);
     redisFree(c2r);  // Chiudi la connessione a Redis
     return;
 }

@@ -10,10 +10,7 @@
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
 #include "../metodi/autenticazione.h"
-#include "../metodi/gestisciCarrello.h"
 #include "../metodi/modificaNome.h"
-#include "../metodi/gestioneIndirizzi.h"
-#include "../metodi/gestisciMetodi.h"
 #include "routes.h"
 #include <vector>
 #include <cassert>

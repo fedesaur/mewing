@@ -59,7 +59,7 @@ bool recuperaProdotti(const char* mail)
         if (rows > 0)
         {
 
-            for (int i = 0; i < RIGHE; i++)
+            for (int i = 0; i < RIGHE; ++i)
             {
             // Recupera gli attributi dei prodotti dalla query sopra svolta...
                 int ID = atoi(PQgetvalue(res, i, PQfnumber(res, "id")));

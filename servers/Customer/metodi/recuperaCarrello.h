@@ -22,6 +22,6 @@
 #define PASSWORD_CUST "customer"
 #define DB_NAME "mewingdb"
 
-bool recuperaCarrello(const char* mail);
+bool recuperaCarrello(int id, const char* mail);
 
 #endif

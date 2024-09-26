@@ -84,7 +84,7 @@ bool recuperaOrdini(const char* mail)
         PQclear(res);
         //... poi quelli consegnati
         sprintf(comando, "SELECT ord.id, ord.datarich, ord.stato, ord.pagamento, ord.indirizzo, ord.totale, cons.datacons"
-        "FROM ordine ord, customers cst, ordineconse cons WHERE ord.customer = cst.id AND cst.mail = '%s' AND ord.id = cons.id", mail);
+        " FROM ordine ord, customers cst, ordineconse cons WHERE ord.customer = cst.id AND cst.mail = '%s' AND ord.id = cons.id", mail);
         res = db.ExecSQLtuples(comando);
         rows = PQntuples(res);
         if (rows > 0)
