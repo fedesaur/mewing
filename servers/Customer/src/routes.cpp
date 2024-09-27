@@ -115,7 +115,7 @@ void creaCustomer(const Pistache::Rest::Request& request, Pistache::Http::Respon
 }
 
 
-//curl -X POST -H "Content-Type: application/json" -d '{"nome": "Fabrizione", "cognome": "Napoli"}' http://localhost:5002/abc@abc.it/
+//curl -X POST -H "Content-Type: application/json" -d '{"nome": "Fabrizione", "cognome": "Napoli"}' http://localhost:5001/abc@abc.it/
 void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     // Recupera l'email del fornitore tra i parametri
@@ -315,7 +315,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
         delete[] ORDINI; // Libera la memoria allocata dinamicamente
     } else {
         // Nessun prodotto trovato in Redis
-        response.send(Pistache::Http::Code::Ok, "Nessun ordine registrato in Redis");
+        response.send(Pistache::Http::Code::Ok, "Nessun ordine registrato in Redis\n");
     }
     freeReplyObject(reply);
     redisFree(c2r);  // Chiudi la connessione a Redis
@@ -422,7 +422,7 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
         delete[] PRODOTTI; // Libera la memoria allocata dinamicamente
     } else {
         // Nessun prodotto trovato in Redis
-        response.send(Pistache::Http::Code::Ok, "Nessun prodotto nel carrello in Redis");
+        response.send(Pistache::Http::Code::Ok, "Nessun prodotto nel carrello in Redis\n");
     }
 
     // Libera risorse
