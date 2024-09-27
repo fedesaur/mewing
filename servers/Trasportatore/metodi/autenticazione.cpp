@@ -8,8 +8,6 @@ int autentica(const char* IVA)
 	int ID;
 	Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
 	
-	// Effettua la connessione a Redis
-	c2r = redisConnect(REDIS_IP, REDIS_PORT);
 	try
 	{
 		// Recupera il fornitore tramite l'email

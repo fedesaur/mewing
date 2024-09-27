@@ -12,7 +12,7 @@ con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
 
 
-all:	con2db con2redis autenticazione ricerca storico ordiniCorrenti registraCorr rimuoviCorr recuperaCorr gestioneCorr prendiOrdine
+all:	con2db con2redis autenticazione prendiOrdine
 
 con2db:
 	$(MAKE) -C ../../../lib/con2db

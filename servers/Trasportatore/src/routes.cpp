@@ -6,8 +6,8 @@ void defineRoutes(Pistache::Rest::Router& router)
 {
     // Registrazione delle rotte con funzioni globali
     Pistache::Rest::Routes::Get(router, "/autentica/:piva", Pistache::Rest::Routes::bind(&autenticaTrasportatore));
-    Pistache::Rest::Routes::Get(router, "/:piva/ricerca/", Pistache::Rest::Routes::bind(&getOrdini));
-    Pistache::Rest::Routes::Post(router, "/:piva/ordini/", Pistache::Rest::Routes::bind(&accettaOrdine));
+    //Pistache::Rest::Routes::Get(router, "/:piva/ricerca/", Pistache::Rest::Routes::bind(&getOrdini));
+    Pistache::Rest::Routes::Put(router, "/:piva/ordini/", Pistache::Rest::Routes::bind(&accettaOrdine));
     Pistache::Rest::Routes::Put(router, "/autentica/", Pistache::Rest::Routes::bind(&creaTrasportatore));
     
 
@@ -130,7 +130,7 @@ void creaTrasportatore(const Pistache::Rest::Request& request, Pistache::Http::R
     }
 }
 
-
+/*
 //curl -X GET http://localhost:5003/32132132132/ricerca/
 void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
@@ -192,7 +192,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
                 }
                 PQclear(res);
             
-            */
+        
         }
         // Pulisci la memoria allocata dinamicamente per gli ordini
         delete[] ORDINI;
@@ -214,7 +214,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
 
 
 }
-
+*/
 //curl -X PUT -H "Content-Type: application/json" -d '{"ordine": 1, "corriere": 1}' http://localhost:5001/32132132132/ordini/
 void accettaOrdine(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
