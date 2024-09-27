@@ -1,5 +1,5 @@
-#ifndef AGGIUNGI_INDIRIZZO_H
-#define AGGIUNGI_INDIRIZZO_H
+#ifndef RIMUOVI_INDIRIZZO_H
+#define RIMUOVI_INDIRIZZO_H
 
 #include <string> // Importa std::string
 #include "../../../lib/con2db/pgsql.h"
@@ -20,6 +20,6 @@
 #define PASSWORD_CUST "customer"
 #define DB_NAME "mewingdb"
 
-bool rimuoviIndirizzo(int userID, int addressID);
+bool rimuoviIndirizzo(int addressID);
 
 #endif

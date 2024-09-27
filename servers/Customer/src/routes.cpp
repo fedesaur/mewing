@@ -6,7 +6,6 @@ void defineRoutes(Pistache::Rest::Router& router)
     // Registrazione delle rotte con funzioni globali
     Pistache::Rest::Routes::Get(router, "/autentica/:email", Pistache::Rest::Routes::bind(&autenticaCustomer));
     Pistache::Rest::Routes::Get(router, "/:email/indirizzi/", Pistache::Rest::Routes::bind(&getIndirizzi));
-    //Pistache::Rest::Routes::Get(router, "/prodotti", Pistache::Rest::Routes::bind(&getProdotti));
     Pistache::Rest::Routes::Get(router, "/:email/ordini/", Pistache::Rest::Routes::bind(&getOrdini));
     Pistache::Rest::Routes::Get(router, "/:email/carrello/", Pistache::Rest::Routes::bind(&getCarrello));
     Pistache::Rest::Routes::Get(router, "/:email/prodotti/", Pistache::Rest::Routes::bind(&getProdotti));
@@ -15,8 +14,9 @@ void defineRoutes(Pistache::Rest::Router& router)
     Pistache::Rest::Routes::Put(router, "/:email/carrello/", Pistache::Rest::Routes::bind(&addProdottoToCarrello));
     Pistache::Rest::Routes::Put(router, "/autentica/", Pistache::Rest::Routes::bind(&creaCustomer));
     Pistache::Rest::Routes::Post(router, "/:email/", Pistache::Rest::Routes::bind(&modificaInfo));
-    //Pistache::Rest::Routes::Delete(router, "/:email/carrello/:productID", Pistache::Rest::Routes::bind(&rimuoviCarrello));
+    Pistache::Rest::Routes::Delete(router, "/:email/carrello/:productID", Pistache::Rest::Routes::bind(&removeCarrello));
     Pistache::Rest::Routes::Delete(router, "/:email/ordini/:ordineID", Pistache::Rest::Routes::bind(&annullaOrd));
+    Pistache::Rest::Routes::Delete(router, "/:email/indirizzi/:addressID", Pistache::Rest::Routes::bind(&removeIndirizzo));
 }
 
 //curl -X GET http://localhost:5001/autentica/abc@abc.it
@@ -156,8 +156,19 @@ void getIndirizzi(const Pistache::Rest::Request& request, Pistache::Http::Respon
         response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
         return;
     }
-    
-    recuperaIndirizzi(email.c_str());
+    // Recupera l'ID del cliente basato sull'email
+    int customerID = recuperaCustomerID(email);
+    if (customerID <= 0) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente\n");
+        return;
+    }
+
+    bool pubblicati = recuperaIndirizzi(email.c_str(), customerID); // Immette i prodotti presenti nel carrello nello stream
+    if (!pubblicati) 
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover addresses' info\n");
+        return;
+    }
 
     // Connessione a Redis
     c2r = redisConnect(REDIS_IP, REDIS_PORT); // Redis su localhost
@@ -635,7 +646,7 @@ void addIndirizzo(const Pistache::Rest::Request& request, Pistache::Http::Respon
 }
 
 //curl -X DELETE http://localhost:5001/abc@abc.it/carrello/1
-void rimuoviCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) 
+void removeCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) 
 {
     // Recupera i parametri dalla richiesta
     std::string email = request.param(":email").as<std::string>();
@@ -696,35 +707,6 @@ void annullaOrd(const Pistache::Rest::Request& request, Pistache::Http::Response
     }
 }
 
-int recuperaCustomerID(std::string email)
-{
-    int ID;
-    PGresult *res;
-    char comando[1000];
-    Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
-
-    // Prepara la query per cercare l'ID cliente tramite l'email
-    sprintf(comando, "SELECT id FROM customers WHERE mail = '%s' ", email.c_str());
-    
-    try
-    {
-        res = db.ExecSQLtuples(comando);
-    	int rows = PQntuples(res);
-		ID = 0;
-    	if (rows > 0) // Se viene trovato un utente con quella mail...
-    	{
-			//...vengono recuperati i suoi dati ed inviati al server tramite Redis
-        	ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
-    	}
-    }
-    catch(...)
-    {
-        ID = -1;
-    }
-    PQclear(res);
-    return ID;
-}
-
 //curl -X PUT -H "Content-Type: application/json" -d '{"pagamento": "contante", "indirizzo": 1}' http://localhost:5001//abc@abc.it/ordini/
 void ordina(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) 
 {
@@ -756,6 +738,58 @@ void ordina(const Pistache::Rest::Request& request, Pistache::Http::ResponseWrit
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore durante l'ordine");
     }
 
+}
+
+//curl -X DELETE http://localhost:5001/abc@abc.it/indirizzi/1
+void removeIndirizzo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) 
+{
+        // Recupera i parametri dalla richiesta
+    std::string email = request.param(":email").as<std::string>();
+    if (email.empty()) {
+        response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
+        return;
+    }
+    int addressID = request.param(":addressID").as<int>();
+    if (addressID <= 0)
+    {
+        response.send(Pistache::Http::Code::Bad_Request, "AddressID not provided\n");
+        return;
+    }
+
+    // Elimina l'indirizzo con l'ID indicato (la rimozione da custaddr avviene in automatico tramite trigger del database)
+    bool esito = rimuoviIndirizzo(addressID);
+    if (esito) {
+        response.send(Pistache::Http::Code::Ok, "Indirizzo rimosso con successo\n");
+    } else {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nella rimozione dell'indirizzo\n");
+    }
+}
+
+int recuperaCustomerID(std::string email)
+{
+    int ID;
+    PGresult *res;
+    char comando[1000];
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
+
+    // Prepara la query per cercare l'ID cliente tramite l'email
+    sprintf(comando, "SELECT id FROM customers WHERE mail = '%s' ", email.c_str());
     
-    
+    try
+    {
+        res = db.ExecSQLtuples(comando);
+    	int rows = PQntuples(res);
+		ID = 0;
+    	if (rows > 0) // Se viene trovato un utente con quella mail...
+    	{
+			//...vengono recuperati i suoi dati ed inviati al server tramite Redis
+        	ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
+    	}
+    }
+    catch(...)
+    {
+        ID = -1;
+    }
+    PQclear(res);
+    return ID;
 }

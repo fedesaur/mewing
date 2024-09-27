@@ -6,7 +6,7 @@ CFLAGS=-std=c++20 -I. -I$(IDIR) -I/usr/include/postgresql -lpq -lm -lhiredis
 con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
 
-all: con2db con2redis autenticazione modificaNome recuperaProdotti aggiungiIndirizzo recuperaCarrello rimuoviCarrello aggiungiCarrello effettuaOrdine annullaOrdine recuperaIndirizzi recuperaOrdini
+all: con2db con2redis autenticazione modificaNome recuperaProdotti aggiungiIndirizzo recuperaCarrello rimuoviCarrello rimuoviIndirizzo aggiungiCarrello effettuaOrdine annullaOrdine recuperaIndirizzi recuperaOrdini
 
 con2db:
 	$(MAKE) -C ../../../lib/con2db
@@ -25,6 +25,9 @@ aggiungiCarrello: aggiungiCarrello.cpp aggiungiCarrello.h
 
 modificaNome: modificaNome.cpp modificaNome.h
 	$(CC) -c -o modificaNome.o $< $(CFLAGS)
+
+rimuoviIndirizzo: rimuoviIndirizzo.cpp rimuoviIndirizzo.h
+	$(CC) -c -o rimuoviIndirizzo.o $< $(CFLAGS)
 
 rimuoviCarrello: rimuoviCarrello.cpp rimuoviCarrello.h
 	$(CC) -c -o rimuoviCarrello.o $< $(CFLAGS)

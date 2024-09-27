@@ -9,6 +9,7 @@
 #include "../../../entities/Ordine.h"
 #include "../metodi/aggiungiIndirizzo.h"
 #include "../metodi/aggiungiCarrello.h"
+#include "../metodi/rimuoviIndirizzo.h"
 #include "../metodi/annullaOrdine.h"
 #include "../metodi/modificaNome.h"
 #include "../metodi/rimuoviCarrello.h"
@@ -35,9 +36,12 @@ void getIndirizzi(const Pistache::Rest::Request& request, Pistache::Http::Respon
 void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void addIndirizzo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-int recuperaCustomerID(std::string email);
+void removeCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void ordina(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void annullaOrd(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void removeIndirizzo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+
+int recuperaCustomerID(std::string email); // Funzioni ausiliaria per il recupero dell'ID del customer dal DB
 
 #endif // ROUTES_H
