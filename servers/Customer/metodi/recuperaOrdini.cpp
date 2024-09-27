@@ -17,10 +17,7 @@ bool recuperaOrdini(const char* mail)
         return false;
     }
 
-
-
-
-    // recupera dal DB
+    // Recupera dal DB
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
     try
     {

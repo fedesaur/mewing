@@ -6,12 +6,7 @@
 #include <sstream>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include "../../../entities/Indirizzo.h"
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <unistd.h>
 #include <cstring>
-#include <cassert>
 
 #define WRITE_STREAM "CustomerW"
 #define READ_STREAM "CustomerR"
@@ -27,6 +22,6 @@
 #define PASSWORD_CUST "customer"
 #define DB_NAME "mewingdb"
 
-std::pair<int, Indirizzo*> recuperaIndirizzi(const char* mail);
+bool recuperaIndirizzi(const char* mail, int userID);
 
-#endif //AUTENTICAZIONE_H
+#endif
