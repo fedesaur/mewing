@@ -46,7 +46,7 @@ def test_recupera_indirizzi(email):
 
 # 3. Test recupera prodotti
 def test_recupera_prodotti(email):
-    response = requests.get(f"{BASE_URL}/{email}/prodotti")
+    response = requests.get(f"{BASE_URL}/{email}/prodotti/")
     if response.status_code == 200:
         print("Prodotti recuperati con successo:")
         increment_success_count()  # Incrementa il contatore in caso di successo
@@ -55,7 +55,7 @@ def test_recupera_prodotti(email):
 
 # 4. Test aggiungi prodotto al carrello
 def test_aggiungi_prodotto_al_carrello(email):
-    response = requests.put(f"{BASE_URL}/{email}/carrello/", json={"quantita": 1, "IDprodotto": 1})
+    response = requests.put(f"{BASE_URL}/{email}/carrello/", json={"quantita": 1, "IDprodotto": 7})
     if response.status_code == 200:
         print(f"Prodotto aggiunto al carrello per l'utente {email} con quantità {quantita}")
         increment_success_count()  # Incrementa il contatore in caso di successo
