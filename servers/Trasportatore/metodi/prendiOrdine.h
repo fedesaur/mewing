@@ -1,14 +1,13 @@
-#ifndef AUTENTICAZIONE_H
-#define AUTENTICAZIONE_H
+#ifndef PRENDI_ORDINE_H
+#define PRENDI_ORDINE_H
 
-#include <string>
+#include <string> // Importa std::string
 #include <iostream>
 #include <sstream>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
 #include <unistd.h>
 #include <cstring>
-#include <cassert>
 
 #define WRITE_STREAM "CourierW"
 #define READ_STREAM "CourierR"
@@ -20,12 +19,10 @@
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
-#define USERNAME "admin"
-#define PASSWORD "admin"
+#define USERNAME_TRAS "courier"
+#define PASSWORD_TRAS "courier"
 #define DB_NAME "mewingdb"
 
-int autentica(const char* IVA);
-bool crea(const char* piva, const char* nome, const char* via, int civico, const char* CAP, const char* city, const char* stato);
+bool prendiOrdine(int courierID, int correre, int ordine);
 
-
-#endif //AUTENTICAZIONE_H
+#endif

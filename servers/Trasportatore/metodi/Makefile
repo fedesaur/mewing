@@ -12,7 +12,7 @@ con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
 
 
-all:	con2db con2redis autenticazione ricerca storico ordiniCorrenti registraCorr rimuoviCorr recuperaCorr gestioneCorr gestioneOrd
+all:	con2db con2redis autenticazione ricerca storico ordiniCorrenti registraCorr rimuoviCorr recuperaCorr gestioneCorr prendiOrdine
 
 con2db:
 	$(MAKE) -C ../../../lib/con2db
@@ -29,8 +29,8 @@ storico: registroOrdini.cpp registroOrdini.h
 ricerca:  ricercaOrdini.cpp ricercaOrdini.h 
 	$(CC) -c -o ricercaOrdini.o $< $(CFLAGS) # Crea il file ricercaOrdini.o
 
-gestioneOrd: gestioneOrdini.cpp gestioneOrdini.h ../../../lib/funzioniAusiliarie.h
-	$(CC) -c -o gestioneOrdini.o $< $(CFLAGS) # Crea il file gestioneOrdini.o
+prendiOrdine: prendiOrdine.cpp prendiOrdine.h
+	$(CC) -c -o prendiOrdine.o $< $(CFLAGS) # Crea il file prendiOrdine.o
 
 ordiniCorrenti: ordiniCorrenti.cpp ordiniCorrenti.h
 	$(CC) -c -o ordiniCorrenti.o $< $(CFLAGS) # Crea il file ordiniCorrenti.o

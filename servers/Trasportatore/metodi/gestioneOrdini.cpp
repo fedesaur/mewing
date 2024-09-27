@@ -98,39 +98,3 @@ void dettagliOrdine(int clientSocket, int ordineID)
     PQclear(res); // Libera lo spazio occupato dai risultati della query
     return;
 }
-
-bool prendiOrdine(int courierID, int corriere, int ordine)
-{
-    int rows;
-    char comando[1000];
-    int RIGHE_CORRIERI;
-    int RIGHE_ORDINI;
-    PGresult *res;
-    Con2DB db(HOSTNAME, DB_PORT, USERNAME_TRAS, PASSWORD_TRAS, DB_NAME); // Effettua la connessione al database
-
-    
-    try
-    {
-        // Prende in carico l'ordine
-        sprintf(comando, "INSERT INTO transord(ordine, trasportatore) VALUES(%d, %d)", ordine, courierID);
-        res = db.ExecSQLcmd(comando);
-        PQclear(res);
-        // Assegna l'ordine ad un corriere
-        sprintf(comando, "INSERT INTO consegna(ordine, corriere) VALUES (%d, %d)", ordine, corriere);
-        res = db.ExecSQLcmd(comando);
-        PQclear(res);
-        // Aggiorna l'ordine indicando che è stato preso in carico
-        sprintf(comando, "UPDATE ordine SET stato = 'accettato' WHERE id = %d", ordine);
-        res = db.ExecSQLcmd(comando);
-        PQclear(res);
-        std::string successo = "L'ordine è stato correttamente preso in carico!\n";
-
-        return true;
-    }
-    catch(...)
-    {
-        std::string errore = "C'è stato un problema con il database\n";
-      
-        return false;
-    }
-}
