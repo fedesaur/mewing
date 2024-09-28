@@ -8,7 +8,7 @@ void defineRoutes(Pistache::Rest::Router& router)
     Pistache::Rest::Routes::Get(router, "/autentica/:piva", Pistache::Rest::Routes::bind(&autenticaTrasportatore));
     Pistache::Rest::Routes::Get(router, "/:piva/ricerca/", Pistache::Rest::Routes::bind(&getOrdini));
     Pistache::Rest::Routes::Get(router, "/:piva/corrieri/", Pistache::Rest::Routes::bind(&getCorrieri));
-    Pistache::Rest::Routes::Put(router, "/:piva/corrieri/", Pistache::Rest::Routes::bind(&registraCorriere));
+    Pistache::Rest::Routes::Put(router, "/:piva/corrieri/", Pistache::Rest::Routes::bind(&putCorriere));
     Pistache::Rest::Routes::Put(router, "/:piva/ordini/", Pistache::Rest::Routes::bind(&accettaOrdine));
     Pistache::Rest::Routes::Put(router, "/autentica/", Pistache::Rest::Routes::bind(&creaTrasportatore));
     Pistache::Rest::Routes::Delete(router, "/:piva/corrieri/:courierID", Pistache::Rest::Routes::bind(&deleteCorriere));
@@ -140,7 +140,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
     redisReply *reply; // reply contiene le risposte da Redis
     redisReply *orderReply;
     Ordine* ORDINI;
-    Indirizzo INDIRIZZI;
+    Indirizzo* INDIRIZZI;
     int RIGHE;
 
     std::string IVA = request.param(":piva").as<std::string>();
@@ -151,7 +151,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
         return;
     }
     
-    bool pubblicati = ricercaOrdini(IVA); // Immette i prodotti presenti nel carrello nello stream
+    bool pubblicati = ricercaOrdini(IVA.c_str()); // Immette i prodotti presenti nel carrello nello stream
     if (!pubblicati) 
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover orders' info\n");
@@ -255,7 +255,7 @@ void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::Respons
         return;
     }
 
-    bool pubblicati = recuperaCorrieri(IVA, trasporterID); // Immette i prodotti presenti nel carrello nello stream
+    bool pubblicati = recuperaCorrieri(IVA.c_str(), trasporterID); // Immette i prodotti presenti nel carrello nello stream
     if (!pubblicati) 
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover orders' info\n");
@@ -318,8 +318,8 @@ void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::Respons
     return;
 }
 
-//curl -X PUT -H "Content-Type: application/json" -d '{"nome": "Eugenio", "cognome": "Montale"}' http://localhost:5003/32132132132132/corrieri/
-void registraCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+//curl -X PUT -H "Content-Type: application/json" -d '{"nome": "Eugenio", "cognome": "Montale"}' http://localhost:5003/32132132132/corrieri/
+void putCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
 
     // Recupera l'email del trasportatore dai parametri
@@ -360,7 +360,7 @@ void registraCorriere(const Pistache::Rest::Request& request, Pistache::Http::Re
         return;
     }
 
-    bool esito = aggiungiFornito(trasporterID, nome.c_str(), cognome.c_str());
+    bool esito = registraCorriere(trasporterID, nome.c_str(), cognome.c_str());
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Courier added to system\n");
     } else {
@@ -443,7 +443,7 @@ void deleteCorriere(const Pistache::Rest::Request& request, Pistache::Http::Resp
         return;
     }
 
-    bool esito = rimuoviCorriere(trasporterID, courierID);
+    bool esito = rimuoviCorriere(trasporterID, ID);
     if (esito) {
         response.send(Pistache::Http::Code::Ok, "Courier deleted from system\n");
     } else {

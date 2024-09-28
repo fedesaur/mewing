@@ -42,7 +42,7 @@ void creaTrasportatore(const Pistache::Rest::Request& request, Pistache::Http::R
 void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void accettaOrdine(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-void registraCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void putCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void deleteCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 int recuperaCourierID(std::string IVA);
 

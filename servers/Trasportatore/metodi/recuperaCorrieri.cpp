@@ -14,6 +14,9 @@ bool recuperaCorrieri(const char* IVA, int trasporterID)
         std::cerr << "Errore nella connessione a Redis" << std::endl;
         return false;
     }
+    reply = RedisCommand(c2r, "DEL corrieri:%s", IVA);
+    assertReply(c2r, reply);
+    freeReplyObject(reply);
 
     // Recupera dal DB
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_TRAS, PASSWORD_TRAS, DB_NAME); // Effettua la connessione al database

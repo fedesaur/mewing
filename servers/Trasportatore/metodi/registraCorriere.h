@@ -1,12 +1,12 @@
 #ifndef REGISTRA_CORRIERE_H
 #define REGISTRA_CORRIERE_H
 
-#include <string> // Importa std::string
+#include <string>
 #include <iostream>
 #include <sstream>
-#include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
+#include <unistd.h>
 #include <cstring>
 
 #define WRITE_STREAM "CourierW"
