@@ -19,6 +19,7 @@
 #include "../metodi/prendiOrdine.h"
 #include "../metodi/registroOrdini.h"
 #include "../metodi/ricercaOrdini.h"
+#include "../metodi/consegnaOrdine.h"
 
 #include <pistache/http.h>
 #include <pistache/endpoint.h>

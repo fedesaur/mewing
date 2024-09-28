@@ -1,30 +1,6 @@
 #include "gestioneOrdini.h"
 
 
-bool consegnaOrdine(int clientSocket, int ordineID)
-{
-    char comando[1000];
-    PGresult *res;
-    Con2DB db(HOSTNAME, DB_PORT, USERNAME_TRAS, PASSWORD_TRAS, DB_NAME); // Effettua la connessione al database
-    try
-    {
-        sprintf(comando, "INSERT INTO ordineconse(id, datacons) VALUES (%d, NOW())", ordineID);
-        res = db.ExecSQLcmd(comando);
-        std::string request = "Consegna effettuata!";
-	    send(clientSocket, request.c_str(), request.length(), 0);
-        PQclear(res);
-        return true; 
-    }
-    catch(...)
-    {
-        std::string errore = "C'è stato un errore nel database\n";
-		send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
-        PQclear(res);
-        return false;
-    }
-    
-}
-
 void dettagliOrdine(int clientSocket, int ordineID)  
 {
     int rows;

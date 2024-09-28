@@ -11,6 +11,7 @@ void defineRoutes(Pistache::Rest::Router& router)
     Pistache::Rest::Routes::Put(router, "/:piva/corrieri/", Pistache::Rest::Routes::bind(&putCorriere));
     Pistache::Rest::Routes::Put(router, "/:piva/ordini/", Pistache::Rest::Routes::bind(&accettaOrdine));
     Pistache::Rest::Routes::Put(router, "/autentica/", Pistache::Rest::Routes::bind(&creaTrasportatore));
+    Pistache::Rest::Routes::Post(router, "/:piva/ordini/:orderID", Pistache::Rest::Routes::bind(&consegna));
     Pistache::Rest::Routes::Delete(router, "/:piva/corrieri/:courierID", Pistache::Rest::Routes::bind(&deleteCorriere));
 }
 
@@ -316,6 +317,36 @@ void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::Respons
     freeReplyObject(reply);
     redisFree(c2r);  // Chiudi la connessione a Redis
     return;
+}
+
+//curl -X POST http://localhost:5003/32132132132/corrieri/1
+void consegna(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+    // Recupera l'email dal percorso
+    std::string IVA = request.param(":piva").as<std::string>();
+    std::string orderID = request.param(":orderID").as<std::string>();
+
+    // Controlla che i parametri richiesti siano stati forniti
+    if (IVA.empty()) {
+        response.send(Pistache::Http::Code::Bad_Request, "IVA not provided\n");
+        return;
+    } else if (orderID.empty() ){
+        response.send(Pistache::Http::Code::Bad_Request, "OrderID not provided\n");
+        return;
+    }
+    int ID = stoi(orderID);
+    int trasporterID = recuperaCourierID(IVA);
+    if (trasporterID <= 0) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID del Trasportatore\n");
+        return;
+    }
+
+    bool esito = consegnaOrdine(orderID);
+    if (esito) {
+        response.send(Pistache::Http::Code::Ok, "Ordine consegnato\n");
+    } else {
+        response.send(Pistache::Http::Code::Unauthorized, "C'è stato un errore nella consegna\n");
+    }
 }
 
 //curl -X PUT -H "Content-Type: application/json" -d '{"nome": "Eugenio", "cognome": "Montale"}' http://localhost:5003/32132132132/corrieri/
