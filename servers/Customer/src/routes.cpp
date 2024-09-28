@@ -308,7 +308,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
                 << " Stato Ordine: " << ORDINI[i].Stato
                 << " Metodo Pagamento: " << ORDINI[i].Pagamento
                 << " Totale Ordine: " << ORDINI[i].Totale
-                << " ID Indirizz: " << ORDINI[i].Indirizzo << "\n";
+                << " ID Indirizzo: " << ORDINI[i].Indirizzo << "\n";
         }
         // Invia la risposta con i prodotti
         response.send(Pistache::Http::Code::Ok, ss.str());

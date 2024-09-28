@@ -7,11 +7,7 @@
 #include <algorithm>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <unistd.h>
 #include <cstring>
-#include <cassert>
 
 #define WRITE_STREAM "CourierW"
 #define READ_STREAM "CourierR"
@@ -27,6 +23,6 @@
 #define PASSWORD_TRAS "courier"
 #define DB_NAME "mewingdb"
 
-bool rimuoviCorriere(int clientSocket, int courierID);
+bool rimuoviCorriere(int trasporterID, int courierID);
 
 #endif

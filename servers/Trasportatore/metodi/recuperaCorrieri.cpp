@@ -1,82 +1,53 @@
 #include "recuperaCorrieri.h"
 
-std::pair<int, Corriere*> recuperaCorrieri(int clientSocket)
+bool recuperaCorrieri(const char* IVA, int trasporterID)
 {
-    int COURIER_ID;
     char comando[1000];
-    std::pair<int,Corriere*> risultato;
+    int rows;
+    redisReply* reply;
+    redisContext *c2r;
     PGresult *res;
-    redisContext *c2r; // c2r contiene le info sul contesto
-	redisReply *reply; // reply contiene le risposte da Redis
 
-	c2r = redisConnect(REDIS_IP, REDIS_PORT); // Effettua la connessione a Redis
-	Con2DB db(HOSTNAME, DB_PORT, USERNAME_TRAS, PASSWORD_TRAS, DB_NAME); // Effettua la connessione al database
-
-    reply = RedisCommand(c2r, "XREVRANGE %s + - COUNT 1", READ_STREAM);
-    if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY || reply->elements == 0)
-    {
-        std::cerr << "Errore nel comando Redis o stream vuoto" << std::endl;
+    // Connessione a Redis
+    c2r = redisConnect(REDIS_IP, REDIS_PORT);  // Redis su localhost
+    if (c2r == nullptr || c2r->err) {
+        std::cerr << "Errore nella connessione a Redis" << std::endl;
+        return false;
     }
-    std::string id = reply->element[0]->element[1]->element[1]->str; 
-    COURIER_ID = atoi(id.c_str()); // ID Corriere
 
+    // Recupera dal DB
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME_TRAS, PASSWORD_TRAS, DB_NAME); // Effettua la connessione al database
     try
     {
-        sprintf(comando, "SELECT id, nome, cognome FROM corriere WHERE azienda = %d", COURIER_ID);        
+        // Prima recuperiamo gli ordini NON consegnati
+        sprintf(comando, "SELECT id, nome, cognome FROM corriere WHERE azienda = %d", trasporterID);        
         res = db.ExecSQLtuples(comando);
-        int RIGHE = PQntuples(res);
-        if (RIGHE > 0)
+        rows = PQntuples(res);
+        if (rows > 0)
         {
-            Corriere* corrieriRegistrati = new Corriere[RIGHE];
-            for (int i = 0; i < RIGHE; i++)
+            for (int i = 0; i < rows; i++)
             {
                 int ID = atoi(PQgetvalue(res, i, PQfnumber(res, "id")));
                 const char* nome = PQgetvalue(res, i, PQfnumber(res, "nome"));
                 const char* cognome = PQgetvalue(res, i, PQfnumber(res, "cognome"));
 
-                corrieriRegistrati[i].ID = ID;
-                corrieriRegistrati[i].nome = nome;
-                corrieriRegistrati[i].cognome = cognome;
-            }
-            risultato.first = RIGHE;
-            risultato.second = corrieriRegistrati;
-        } else {
-            risultato.first = 0;
-            risultato.second = nullptr;
-        }
-    }
-    catch(...)
-    {
-        std::string errore = "C'è stato un errore nel database\n";
-		send(clientSocket, errore.c_str(), errore.length(), 0); // Invia il messaggio pre-impostato all'utente
-        risultato.first = -1;
-        risultato.second = nullptr;
-    }
-    PQclear(res);
-    return risultato;
-}
+                // Memorizza il corriere in Redis come hash
+                redisCommand(c2r, "HMSET corriere:%d id %d nome %s cognome %s", ID, ID, nome, cognome);
 
-void mostraCorrieri(int clientSocket, int righe, Corriere* corrieri)
-{
-    if (righe > 0)
-    {
-        std::string request = "\nCORRIERI REGISTRATI:\n"; //... e lo stampa
-	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
-        for (int i = 0; i < righe; i++)
-        {
-            // Recupera gli attributi dei prodotti dal carrello...
-            int ID = corrieri[i].ID;
-            const char* nome = corrieri[i].nome;
-            const char* cognome = corrieri[i].cognome;
-            // ...e li invia all'utente così che possa visualizzarli ed effettuarci operazioni
-            std::string corr = std::to_string(i+1) + ") ID Corriere: " + std::to_string(ID) +
-             " Nome Corriere: " + nome + 
-             " Cognome Corriere: " + cognome + "\n";
-	        send(clientSocket, corr.c_str(), corr.length(), 0);
+                // Aggiungi l'ID del corriere alla lista associata all'IVA
+                redisCommand(c2r, "RPUSH corrieri:%s %d", IVA, ID);
+            }
+
         }
-    } else {
-        std::string request = "Non ci sono corrieri registrati!\n"; //... e lo stampa
-	    send(clientSocket, request.c_str(), request.length(), 0); // Invia il messaggio pre-impostato all'utente
+        PQclear(res);
+        redisFree(c2r);
+        return true;
     }
-    return;
+    catch (...) 
+    {
+        PQclear(res);
+        redisFree(c2r);
+        return false;
+    }
+
 }

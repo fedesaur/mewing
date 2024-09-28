@@ -12,7 +12,7 @@ con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
 
 
-all:	con2db con2redis autenticazione prendiOrdine
+all:	con2db con2redis autenticazione prendiOrdine ricerca registraCorr rimuoviCorr recuperaCorr
 
 con2db:
 	$(MAKE) -C ../../../lib/con2db
@@ -43,9 +43,6 @@ rimuoviCorr: rimuoviCorriere.cpp rimuoviCorriere.h
 
 recuperaCorr: recuperaCorrieri.cpp recuperaCorrieri.h
 	$(CC) -c -o recuperaCorrieri.o $< $(CFLAGS) # Crea il file recuperaCorrieri.o
-
-gestioneCorr: gestisciCorrieri.cpp gestisciCorrieri.h ../../../lib/funzioniAusiliarie.h
-	$(CC) -c -o gestisciCorrieri.o $< $(CFLAGS) # Crea il file gestisciCorrieri.o
 
 .PHONY: clean
 

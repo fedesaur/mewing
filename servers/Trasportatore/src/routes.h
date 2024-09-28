@@ -5,13 +5,21 @@
 #include <pistache/router.h>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
+// Entità utilizzate
 #include "../../../entities/Indirizzo.h"
 #include "../../../entities/Ordine.h"
+#include "../../../entities/Corriere.h"
+// Metodi per l'autenticazione
 #include "../metodi/autenticazione.h"
-#include "../metodi/gestisciCorrieri.h"
+// Metodi per i corrieri
+#include "../metodi/recuperaCorrieri.h"
+#include "../metodi/registraCorriere.h"
+#include "../metodi/rimuoviCorriere.h"
+// Metodi per gli ordini
 #include "../metodi/prendiOrdine.h"
 #include "../metodi/registroOrdini.h"
 #include "../metodi/ricercaOrdini.h"
+
 #include <pistache/http.h>
 #include <pistache/endpoint.h>
 #include <iostream>
@@ -32,6 +40,10 @@ void defineRoutes(Pistache::Rest::Router& router);
 void autenticaTrasportatore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void creaTrasportatore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void accettaOrdine(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-int recuperaCourierID(std::string PIVA);
+void registraCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void deleteCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+int recuperaCourierID(std::string IVA);
+
 #endif // ROUTES_H
