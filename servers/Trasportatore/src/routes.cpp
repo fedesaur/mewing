@@ -421,7 +421,7 @@ void accettaOrdine(const Pistache::Rest::Request& request, Pistache::Http::Respo
     }
 }
 
-//curl -X DELETE http://localhost:5003/32132132132132/corrieri/1
+//curl -X DELETE http://localhost:5003/32132132132/corrieri/1
 void deleteCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     // Recupera l'email dal percorso
