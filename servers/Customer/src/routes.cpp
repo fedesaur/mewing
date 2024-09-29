@@ -304,7 +304,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
         {
             ss << i+1 << ") ID Ordine: " << ORDINI[i].ID
                 << " Data Richiesta: " << ORDINI[i].DataRichiesta
-                << " Data Consegna (0 se non ancora effettuata) " << ORDINI[i].DataConsegna
+                << " Data Consegna: (0 se non ancora effettuata) " << ORDINI[i].DataConsegna
                 << " Stato Ordine: " << ORDINI[i].Stato
                 << " Metodo Pagamento: " << ORDINI[i].Pagamento
                 << " Totale Ordine: " << ORDINI[i].Totale
@@ -733,9 +733,9 @@ void ordina(const Pistache::Rest::Request& request, Pistache::Http::ResponseWrit
     
     bool esito = effettuaOrdine(customerID, pagamento.c_str(), indirizzo);
     if (esito) {
-        response.send(Pistache::Http::Code::Ok, "Ordine effettuato");
+        response.send(Pistache::Http::Code::Ok, "Ordine effettuato\n");
     } else {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore durante l'ordine");
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore durante l'ordine\n");
     }
 
 }

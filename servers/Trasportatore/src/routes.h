@@ -49,6 +49,7 @@ void getDettagli(const Pistache::Rest::Request& request, Pistache::Http::Respons
 void accettaOrdine(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void putCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void deleteCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void consegna(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 int recuperaCourierID(std::string IVA);
 
 #endif // ROUTES_H

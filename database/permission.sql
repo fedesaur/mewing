@@ -31,6 +31,7 @@ GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO :courier;
 
 GRANT SELECT on customers to :courier;
 GRANT SELECT on fornitore to :courier;
+GRANT SELECT on prodotto to :courier;
 GRANT SELECT on trasportatore to :courier;
 GRANT SELECT, UPDATE on ordine to :courier;
 GRANT INSERT, UPDATE, SELECT on transord to :courier;

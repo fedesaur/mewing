@@ -340,7 +340,7 @@ void getDettagli(const Pistache::Rest::Request& request, Pistache::Http::Respons
             << " Data Richiesta: " << ORDINE.DataRichiesta
             << " Metodo Pagamento: " << ORDINE.Pagamento
             << " Totale Ordine: " << ORDINE.Totale
-            << " Via della Consegna: " << ORDINE.via
+            << " Via della Consegna: " << INDIRIZZO.via
             << " Civico: " << INDIRIZZO.civico
             << " CAP: " << INDIRIZZO.CAP
             << " Città della Consegna: " << INDIRIZZO.citta 
@@ -476,7 +476,7 @@ void consegna(const Pistache::Rest::Request& request, Pistache::Http::ResponseWr
         return;
     }
 
-    bool esito = consegnaOrdine(orderID);
+    bool esito = consegnaOrdine(ID);
     if (esito) {
         response.send(Pistache::Http::Code::Ok, "Ordine consegnato\n");
     } else {

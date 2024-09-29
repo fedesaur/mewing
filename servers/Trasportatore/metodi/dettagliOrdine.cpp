@@ -23,7 +23,7 @@ bool dettagliOrdine(int orderID)
     try
     {
         // Prima recuperiamo gli ordini NON consegnati
-        sprintf(comando, "SELECT cst.mail, ord.datarich, ord.stato, ord.pagamento, ind.via, ind.civico, ind.cap, ind.città, ind.stato AS statoIND, ord.totale"
+        sprintf(comando, "SELECT cst.mail, ord.datarich, ord.stato, ord.pagamento, ind.via, ind.civico, ind.cap, ind.citta, ind.stato AS statoIND, ord.totale "
         "FROM indirizzo ind, customers cst, ordine ord "
         "WHERE ind.id = ord.indirizzo AND ord.customer = cst.id AND ord.id = %d", orderID);
         res = db.ExecSQLtuples(comando);
@@ -31,7 +31,7 @@ bool dettagliOrdine(int orderID)
         
         // Recupera gli attributi dell'ordine...
         const char* mail = PQgetvalue(res, 0, PQfnumber(res, "mail"));
-        unsigned char* data = (unsigned char*) PQgetvalue(res, i, PQfnumber(res, "datarich"));
+        unsigned char* data = (unsigned char*) PQgetvalue(res, 0, PQfnumber(res, "datarich"));
         time_t time = static_cast<time_t>(std::stoll(reinterpret_cast<char*>(data))); // Converte il timestamp in time_t
         std::string tempo = std::to_string(time); // Converte il tempo in una stringa
         const char* statoOrd = PQgetvalue(res, 0, PQfnumber(res, "stato"));
