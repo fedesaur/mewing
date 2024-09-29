@@ -1,25 +1,39 @@
-#include "gestioneOrdini.h"
+#include "dettagliOrdine.h"
 
-
-void dettagliOrdine(int clientSocket, int ordineID)  
+bool dettagliOrdine(int orderID)
 {
-    int rows;
     char comando[1000];
+    int rows;
+    redisReply* reply;
+    redisContext *c2r;
     PGresult *res;
-	Con2DB db(HOSTNAME, DB_PORT, USERNAME_TRAS, PASSWORD_TRAS, DB_NAME); // Effettua la connessione al database
 
+    // Connessione a Redis
+    c2r = redisConnect(REDIS_IP, REDIS_PORT);  // Redis su localhost
+    if (c2r == nullptr || c2r->err) {
+        std::cerr << "Errore nella connessione a Redis" << std::endl;
+        return false;
+    }
+    reply = RedisCommand(c2r, "DEL dettaglio:%d", orderID);
+    assertReply(c2r, reply);
+    freeReplyObject(reply);
+
+    // Recupera dal DB
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME_TRAS, PASSWORD_TRAS, DB_NAME); // Effettua la connessione al database
     try
     {
-        //Recupera tutti gli ordini presi in carico dal trasportatore e non ancora consegnati
+        // Prima recuperiamo gli ordini NON consegnati
         sprintf(comando, "SELECT cst.mail, ord.datarich, ord.stato, ord.pagamento, ind.via, ind.civico, ind.cap, ind.città, ind.stato AS statoIND, ord.totale"
         "FROM indirizzo ind, customers cst, ordine ord "
-        "WHERE ind.id = ord.indirizzo AND ord.customer = cst.id AND ord.id = %d", ordineID);
+        "WHERE ind.id = ord.indirizzo AND ord.customer = cst.id AND ord.id = %d", orderID);
         res = db.ExecSQLtuples(comando);
-        if (PQntuples(res) == 0) return;
+        if (PQntuples(res) == 0) return false;
+        
         // Recupera gli attributi dell'ordine...
         const char* mail = PQgetvalue(res, 0, PQfnumber(res, "mail"));
-        unsigned char* data = (unsigned char*) PQgetvalue(res, 0, PQfnumber(res, "datarich"));
+        unsigned char* data = (unsigned char*) PQgetvalue(res, i, PQfnumber(res, "datarich"));
         time_t time = static_cast<time_t>(std::stoll(reinterpret_cast<char*>(data))); // Converte il timestamp in time_t
+        std::string tempo = std::to_string(time); // Converte il tempo in una stringa
         const char* statoOrd = PQgetvalue(res, 0, PQfnumber(res, "stato"));
         const char* paga = PQgetvalue(res, 0, PQfnumber(res, "pagamento"));
         
@@ -30,24 +44,18 @@ void dettagliOrdine(int clientSocket, int ordineID)
         const char* city = PQgetvalue(res, 0, PQfnumber(res, "citta"));
         const char* stato = PQgetvalue(res, 0, PQfnumber(res, "statoIND"));
         double totale = atof(PQgetvalue(res, 0, PQfnumber(res, "totale")));
+        
+        redisCommand(c2r, "HMSET ordine:%d id %d mail %s data %s statoOrd %s totale %f pagamento %s via %s civico %d CAP %s city %s stato %s", 
+                            orderID, orderID, mail, tempo.c_str(), statoOrd, totale, paga, via, civico, CAP, city, stato);
 
-        std::string ordine = "ID Ordine: " + std::to_string(ordineID) +
-             " Mail Customer: " + mail + 
-             " Data Richiesta: " + std::to_string(time) + 
-             " Metodo Pagamento: " + paga +
-             " Totale Ordine: " + std::to_string(totale) + "\n" + 
-             " Da consegnare in: " + via + " " + std::to_string(civico) + ", " + city + " (CAP : " + CAP + "), " + stato + "\n";
-	    send(clientSocket, ordine.c_str(), ordine.length(), 0);
+        // Aggiungi l'ID del prodotto alla lista associata all'ID del prodotto
+        redisCommand(c2r, "RPUSH dettaglio:%d %d", orderID, orderID);
         PQclear(res);
-        //Poi recupera le informazioni dei prodotti al suo interno
-
         sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF, pn.quantita "
             "FROM prodotto pr, prodinord pn, fornitore fr WHERE pn.prodotto = pr.id "
-            "AND pr.fornitore = fr.id AND pn.ordine = %d", ordineID);
+            "AND pr.fornitore = fr.id AND pn.ordine = %d", orderID);
         res = db.ExecSQLtuples(comando);
         rows = PQntuples(res); // Si presume ci siano prodotti nell'ordine
-        std::string premessa = "PRODOTTI PRESENTI NELL'ORDINE:\n";
-	    send(clientSocket, premessa.c_str(), premessa.length(), 0);
         for (int j = 0; j < rows; j++)
         {
             int IDProd = atoi(PQgetvalue(res, j, PQfnumber(res, "id")));
@@ -57,20 +65,20 @@ void dettagliOrdine(int clientSocket, int ordineID)
             const char* fornitore = PQgetvalue(res, j, PQfnumber(res, "nomeF"));
             int quantita = atoi(PQgetvalue(res, j, PQfnumber(res, "quantita")));
 
-            std::string prodotto = "\t" + std::to_string(j+1) + ") ID Prodotto: " + std::to_string(IDProd) +
-                " Nome Prodotto: " + nome + 
-                " Descrizione: " + descrizione + 
-                " Fornitore: " + fornitore + 
-                " Prezzo Prodotto: " + std::to_string(prezzo) + 
-                " Quantità :" + std::to_string(quantita) + "\n";
-	            send(clientSocket, prodotto.c_str(), prodotto.length(), 0);
+            redisCommand(c2r, "HMSET prodotto:%d id %d nome %s descrizione %s fornitore %s prezzo %f quantita %d", IDProd, IDProd, nome, descrizione, fornitore, prezzo, quantita);
+
+            // Aggiungi l'ID del prodotto alla lista associata all'ID dell'ordine
+            redisCommand(c2r, "RPUSH dettaglio:%d %d", orderID, IDProd);
         }
+        PQclear(res);
+        redisFree(c2r);
+        return true;
     }
-    catch(...)
+    catch (...) 
     {
-        std::string errore = "C'è stato un problema con il database\n";
-        send(clientSocket, errore.c_str(), errore.length(), 0);
+        PQclear(res);
+        redisFree(c2r);
+        return false;
     }
-    PQclear(res); // Libera lo spazio occupato dai risultati della query
-    return;
+
 }
