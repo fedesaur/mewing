@@ -17,8 +17,10 @@ bool recuperaProdotti(const char* mail)
         return false;
     }
 
-
-    //recupera dal DB e li immette nello stream
+    reply = RedisCommand(c2r, "DEL prodottiRic:%s", mail);
+    assertReply(c2r, reply);
+    freeReplyObject(reply);
+    
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
     try
     {
@@ -56,6 +58,7 @@ bool recuperaProdotti(const char* mail)
     }
 }
 
+/*
 std::pair<int, Prodotto*> recuperaProdottiPerNome(int clientSocket, std::string nome)
 {
     char buffer[1024] = {0};
@@ -110,3 +113,4 @@ std::pair<int, Prodotto*> recuperaProdottiPerNome(int clientSocket, std::string 
     PQclear(res);
     return risultato; 
 }
+*/

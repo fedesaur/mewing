@@ -18,6 +18,9 @@ bool recuperaCarrello(int id, const char* mail)
         return false;
     }
 
+    reply = RedisCommand(c2r, "DEL carrello:%s", mail);
+    assertReply(c2r, reply);
+    freeReplyObject(reply);
   
     //recupera dal DB e li immette nello stream
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database

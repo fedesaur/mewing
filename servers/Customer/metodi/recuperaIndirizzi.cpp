@@ -15,7 +15,10 @@ bool recuperaIndirizzi(const char* mail, int userID)
         return false;
     }
 
-    // recupera dal DB
+    reply = RedisCommand(c2r, "DEL indirizzi:%s", mail);
+    assertReply(c2r, reply);
+    freeReplyObject(reply);
+    
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
     try
     {

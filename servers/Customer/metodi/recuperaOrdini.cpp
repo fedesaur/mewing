@@ -17,7 +17,10 @@ bool recuperaOrdini(const char* mail)
         return false;
     }
 
-    // Recupera dal DB
+    reply = RedisCommand(c2r, "DEL ordini:%s", mail);
+    assertReply(c2r, reply);
+    freeReplyObject(reply);
+
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_CUST, PASSWORD_CUST, DB_NAME); // Effettua la connessione al database
     try
     {

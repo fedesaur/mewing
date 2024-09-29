@@ -15,7 +15,10 @@ bool ricercaOrdini(const char* piva)
         return false;
     }
 
-    // Recupera dal DB
+    reply = RedisCommand(c2r, "DEL ordini:%s", piva);
+    assertReply(c2r, reply);
+    freeReplyObject(reply);
+    
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_TRAS, PASSWORD_TRAS, DB_NAME); // Effettua la connessione al database
     try
     {
