@@ -9,6 +9,7 @@
 #include "../../../entities/Indirizzo.h"
 #include "../../../entities/Ordine.h"
 #include "../../../entities/Corriere.h"
+#include "../../../entities/Prodotto.h"
 // Metodi per l'autenticazione
 #include "../metodi/autenticazione.h"
 // Metodi per i corrieri
@@ -20,6 +21,7 @@
 #include "../metodi/registroOrdini.h"
 #include "../metodi/ricercaOrdini.h"
 #include "../metodi/consegnaOrdine.h"
+#include "../metodi/dettagliOrdine.h"
 
 #include <pistache/http.h>
 #include <pistache/endpoint.h>
@@ -30,6 +32,7 @@
 #define READ_STREAM "CourierR"
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
+
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
 #define USERNAME_TRAS "courier"
@@ -42,6 +45,7 @@ void autenticaTrasportatore(const Pistache::Rest::Request& request, Pistache::Ht
 void creaTrasportatore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void getDettagli(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void accettaOrdine(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void putCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void deleteCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);

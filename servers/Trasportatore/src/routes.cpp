@@ -8,6 +8,7 @@ void defineRoutes(Pistache::Rest::Router& router)
     Pistache::Rest::Routes::Get(router, "/autentica/:piva", Pistache::Rest::Routes::bind(&autenticaTrasportatore));
     Pistache::Rest::Routes::Get(router, "/:piva/ricerca/", Pistache::Rest::Routes::bind(&getOrdini));
     Pistache::Rest::Routes::Get(router, "/:piva/corrieri/", Pistache::Rest::Routes::bind(&getCorrieri));
+    Pistache::Rest::Routes::Get(router, "/:piva/ordini/:orderID", Pistache::Rest::Routes::bind(&getDettagli));
     Pistache::Rest::Routes::Put(router, "/:piva/corrieri/", Pistache::Rest::Routes::bind(&putCorriere));
     Pistache::Rest::Routes::Put(router, "/:piva/ordini/", Pistache::Rest::Routes::bind(&accettaOrdine));
     Pistache::Rest::Routes::Put(router, "/autentica/", Pistache::Rest::Routes::bind(&creaTrasportatore));
@@ -21,7 +22,7 @@ void autenticaTrasportatore(const Pistache::Rest::Request& request, Pistache::Ht
     // Recupera l'email dal percorso
     std::string IVA = request.param(":piva").as<std::string>();
 
-    if (IVA.empty()) {
+    if (IVA.empty() || IVA.length() != 11) {
         response.send(Pistache::Http::Code::Bad_Request, "IVA not provided");
         return;
     }
@@ -147,7 +148,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
     std::string IVA = request.param(":piva").as<std::string>();
     
     // Controlla che i parametri richiesti siano stati forniti
-    if (IVA.empty()) {
+    if (IVA.empty() || IVA.length() != 11) {
         response.send(Pistache::Http::Code::Bad_Request, "IVA not provided\n");
         return;
     }
@@ -232,6 +233,140 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
     return;
 }
 
+//curl -X GET http://localhost:5003/32132132132/ordini/1
+void getDettagli(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+    std::stringstream ss;
+    redisContext *c2r; // c2r contiene le info sul contesto
+    redisReply *reply; // reply contiene le risposte da Redis
+    redisReply *orderReply;
+    Ordine ORDINE;
+    Indirizzo INDIRIZZO;
+    Prodotto* PRODOTTI;
+    int RIGHE;
+
+    // Recupera l'email dal percorso
+    std::string IVA = request.param(":piva").as<std::string>();
+    std::string orderID = request.param(":orderID").as<std::string>();
+    // Controlla che i parametri richiesti siano stati forniti
+    if (IVA.empty() || IVA.length() != 11) {
+        response.send(Pistache::Http::Code::Bad_Request, "IVA not provided\n");
+        return;
+    } else if (orderID.empty()){
+        response.send(Pistache::Http::Code::Bad_Request, "OrderID not provided\n");
+        return;
+    }
+    int ID = stoi(orderID);
+    int trasporterID = recuperaCourierID(IVA);
+    if (trasporterID <= 0) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID del Trasportatore\n");
+        return;
+    }
+    
+    bool pubblicati = dettagliOrdine(ID); // Immette i prodotti presenti nel carrello nello stream
+    if (!pubblicati) 
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover orders' info\n");
+        return;
+    }
+
+    // Connessione a Redis
+    c2r = redisConnect(REDIS_IP, REDIS_PORT); // Redis su localhost
+    if (c2r == nullptr || c2r->err) {
+        std::cerr << "Errore nella connessione a Redis" << std::endl;
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to connect to Redis");
+        return;
+    }
+
+    // Recupera la lista degli ordini da Redis
+    reply = RedisCommand(c2r, "LRANGE dettagli:%d 0 -1", ID);
+    if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera gli indirizzi da Redis
+    {
+        RIGHE = reply->elements;
+        PRODOTTI = new Prodotto[RIGHE-1];
+        
+        for (int i = 0; i < RIGHE; i++) 
+        {
+            std::string orderID = reply->element[i]->str;
+            /* Su Redis ora sono immagazzinati due tipi di oggetti nella stessa chiave:
+                -Le informazioni dell'ordine;
+                -I prodotti presenti nell'ordine;
+                Per prima cosa recuperiamo le informazioni sull'ordine (eseguendo i controlli opportuni)...
+            */
+            orderReply = RedisCommand(c2r, "HGETALL ordine:%s", orderID.c_str());
+            if (i == 0)
+            {
+                if (orderReply->type == REDIS_REPLY_ARRAY && orderReply->elements == 22)
+                {
+                    ORDINE.ID = std::atoi(orderReply->element[1]->str);
+                    ORDINE.MailCustomer = (orderReply->element[3]->str);
+                    ORDINE.DataRichiesta = (orderReply->element[5]->str);
+                    ORDINE.Stato = (orderReply->element[7]->str);
+                    ORDINE.Totale = std::atof(orderReply->element[9]->str);
+                    ORDINE.Pagamento = (orderReply->element[11]->str);
+                        
+                    INDIRIZZO.via = (orderReply->element[13]->str);
+                    INDIRIZZO.civico = std::atoi(orderReply->element[15]->str);
+                    INDIRIZZO.CAP = (orderReply->element[17]->str);
+                    INDIRIZZO.citta = (orderReply->element[19]->str);
+                    INDIRIZZO.stato = (orderReply->element[21]->str);
+                    freeReplyObject(orderReply);
+                } else {
+                std::cerr << "Errore nel recupero di un ordine da Redis" << std::endl;
+                freeReplyObject(orderReply);
+                redisFree(c2r);
+                return;
+                }
+            } else { //...poi recuperiamo le informazioni dei prodotti da Redis
+                if (orderReply->type == REDIS_REPLY_ARRAY && orderReply->elements == 12)
+                {
+                    PRODOTTI[i-1].ID = std::atoi(orderReply->element[1]->str);
+                    PRODOTTI[i-1].nome = (orderReply->element[3]->str);
+                    PRODOTTI[i-1].descrizione = (orderReply->element[5]->str);
+                    PRODOTTI[i-1].fornitore = (orderReply->element[7]->str);
+                    PRODOTTI[i-1].prezzo = std::atof(orderReply->element[9]->str);
+                    PRODOTTI[i-1].quantita = std::atoi(orderReply->element[11]->str);
+                } else {
+                std::cerr << "Errore nel recupero di un ordine da Redis" << std::endl;
+                freeReplyObject(orderReply);
+                redisFree(c2r);
+                return;
+                }
+           }
+        }
+        // Stampa gli ordini disponibili
+        ss << "ID Ordine: " << ORDINE.ID
+            << " Mail Customer: " << ORDINE.MailCustomer
+            << " Data Richiesta: " << ORDINE.DataRichiesta
+            << " Metodo Pagamento: " << ORDINE.Pagamento
+            << " Totale Ordine: " << ORDINE.Totale
+            << " Via della Consegna: " << ORDINE.via
+            << " Civico: " << INDIRIZZO.civico
+            << " CAP: " << INDIRIZZO.CAP
+            << " Città della Consegna: " << INDIRIZZO.citta 
+            << " Stato della Città: " << INDIRIZZO.stato << "\n"
+            << " Nell'ordine sono presenti i seguenti prodotti:\n";
+        for (int i = 0; i < RIGHE-1; i++) 
+        {
+            ss << "\t" << i+1 << ") ID Prodotto: " << PRODOTTI[i].ID
+                << " Nome Prodotto: " << PRODOTTI[i].nome
+                << " Descrizione Prodotto: " << PRODOTTI[i].descrizione
+                << " Prezzo del Prodotto: " << PRODOTTI[i].prezzo
+                << " Quantità del Prodotto: " << PRODOTTI[i].quantita
+                << " Nome del Fornitore: " << PRODOTTI[i].fornitore << "\n";
+        }
+        // Invia la risposta con i prodotti
+        response.send(Pistache::Http::Code::Ok, ss.str());
+        delete[] PRODOTTI; // Libera la memoria allocata dinamicamente
+    } else {
+        // Nessun prodotto trovato in Redis
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover order's info\n");   
+    }
+    freeReplyObject(reply);
+    redisFree(c2r);  // Chiudi la connessione a Redis
+    return;
+}
+
 //curl -X GET http://localhost:5003/32132132132/corrieri/
 void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
@@ -245,7 +380,7 @@ void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::Respons
     std::string IVA = request.param(":piva").as<std::string>();
     
     // Controlla che i parametri richiesti siano stati forniti
-    if (IVA.empty()) {
+    if (IVA.empty() || IVA.length() != 11) {
         response.send(Pistache::Http::Code::Bad_Request, "IVA not provided\n");
         return;
     }
@@ -319,7 +454,7 @@ void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::Respons
     return;
 }
 
-//curl -X POST http://localhost:5003/32132132132/corrieri/1
+//curl -X POST http://localhost:5003/32132132132/ordini/1
 void consegna(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     // Recupera l'email dal percorso
@@ -327,7 +462,7 @@ void consegna(const Pistache::Rest::Request& request, Pistache::Http::ResponseWr
     std::string orderID = request.param(":orderID").as<std::string>();
 
     // Controlla che i parametri richiesti siano stati forniti
-    if (IVA.empty()) {
+    if (IVA.empty() || IVA.length() != 11) {
         response.send(Pistache::Http::Code::Bad_Request, "IVA not provided\n");
         return;
     } else if (orderID.empty() ){
@@ -355,7 +490,7 @@ void putCorriere(const Pistache::Rest::Request& request, Pistache::Http::Respons
 
     // Recupera l'email del trasportatore dai parametri
     std::string IVA = request.param(":piva").as<std::string>();
-    if (IVA.empty()) {
+    if (IVA.empty() || IVA.length() != 11) {
         response.send(Pistache::Http::Code::Bad_Request, "IVA not provided");
         return;
     }
@@ -405,7 +540,7 @@ void accettaOrdine(const Pistache::Rest::Request& request, Pistache::Http::Respo
 
     std::string IVA = request.param(":piva").as<std::string>();
 
-    if (IVA.empty()) {
+    if (IVA.empty() || IVA.length() != 11) {
         response.send(Pistache::Http::Code::Bad_Request, "IVA not provided");
         return;
     }
@@ -460,10 +595,11 @@ void deleteCorriere(const Pistache::Rest::Request& request, Pistache::Http::Resp
     std::string courierID = request.param(":courierID").as<std::string>();
 
     // Controlla che i parametri richiesti siano stati forniti
-    if (IVA.empty()) {
+    if (IVA.empty() || IVA.length() != 11) {
         response.send(Pistache::Http::Code::Bad_Request, "IVA not provided\n");
         return;
-    } else if (courierID.empty() ){
+    } 
+    if (courierID.empty() ){
         response.send(Pistache::Http::Code::Bad_Request, "CourierID not provided\n");
         return;
     }

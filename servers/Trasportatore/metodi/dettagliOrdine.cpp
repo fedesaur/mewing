@@ -14,7 +14,7 @@ bool dettagliOrdine(int orderID)
         std::cerr << "Errore nella connessione a Redis" << std::endl;
         return false;
     }
-    reply = RedisCommand(c2r, "DEL dettaglio:%d", orderID);
+    reply = RedisCommand(c2r, "DEL dettagli:%d", orderID);
     assertReply(c2r, reply);
     freeReplyObject(reply);
 
@@ -49,7 +49,7 @@ bool dettagliOrdine(int orderID)
                             orderID, orderID, mail, tempo.c_str(), statoOrd, totale, paga, via, civico, CAP, city, stato);
 
         // Aggiungi l'ID del prodotto alla lista associata all'ID del prodotto
-        redisCommand(c2r, "RPUSH dettaglio:%d %d", orderID, orderID);
+        redisCommand(c2r, "RPUSH dettagli:%d %d", orderID, orderID);
         PQclear(res);
         sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF, pn.quantita "
             "FROM prodotto pr, prodinord pn, fornitore fr WHERE pn.prodotto = pr.id "
@@ -68,7 +68,7 @@ bool dettagliOrdine(int orderID)
             redisCommand(c2r, "HMSET prodotto:%d id %d nome %s descrizione %s fornitore %s prezzo %f quantita %d", IDProd, IDProd, nome, descrizione, fornitore, prezzo, quantita);
 
             // Aggiungi l'ID del prodotto alla lista associata all'ID dell'ordine
-            redisCommand(c2r, "RPUSH dettaglio:%d %d", orderID, IDProd);
+            redisCommand(c2r, "RPUSH dettagli:%d %d", orderID, IDProd);
         }
         PQclear(res);
         redisFree(c2r);
