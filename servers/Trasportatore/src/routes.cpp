@@ -184,7 +184,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
             orderReply = RedisCommand(c2r, "HGETALL ordine:%s", orderID.c_str());
     
             // Verifica il risultato del recupero...
-            if (orderReply->type == REDIS_REPLY_ARRAY && orderReply->elements == 20) // 7 dati Richiesti: ID Ordine, Stato, Data Richiesta, Data Consegna, Totale, Tipo di Pagamento, Indirizzo
+            if (orderReply->type == REDIS_REPLY_ARRAY) // 7 dati Richiesti: ID Ordine, Stato, Data Richiesta, Data Consegna, Totale, Tipo di Pagamento, Indirizzo
             { //... e asssocia i valori dell'indirizzo recuperato dallo stream Redis ad un oggetto Indirizzo 
             
                 ORDINI[i].ID = std::atoi(orderReply->element[1]->str);
@@ -296,7 +296,7 @@ void getDettagli(const Pistache::Rest::Request& request, Pistache::Http::Respons
             orderReply = RedisCommand(c2r, "HGETALL ordine:%s", orderID.c_str());
             if (i == 0)
             {
-                if (orderReply->type == REDIS_REPLY_ARRAY && orderReply->elements == 22)
+                if (orderReply->type == REDIS_REPLY_ARRAY)
                 {
                     ORDINE.ID = std::atoi(orderReply->element[1]->str);
                     ORDINE.MailCustomer = (orderReply->element[3]->str);
@@ -318,7 +318,7 @@ void getDettagli(const Pistache::Rest::Request& request, Pistache::Http::Respons
                 return;
                 }
             } else { //...poi recuperiamo le informazioni dei prodotti da Redis
-                if (orderReply->type == REDIS_REPLY_ARRAY && orderReply->elements == 12)
+                if (orderReply->type == REDIS_REPLY_ARRAY)
                 {
                     PRODOTTI[i-1].ID = std::atoi(orderReply->element[1]->str);
                     PRODOTTI[i-1].nome = (orderReply->element[3]->str);

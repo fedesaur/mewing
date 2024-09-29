@@ -33,6 +33,7 @@ GRANT SELECT on customers to :courier;
 GRANT SELECT on fornitore to :courier;
 GRANT SELECT on prodotto to :courier;
 GRANT SELECT on trasportatore to :courier;
+GRANT SELECT on prodinord to :courier;
 GRANT SELECT, UPDATE on ordine to :courier;
 GRANT INSERT, UPDATE, SELECT on transord to :courier;
 GRANT INSERT, UPDATE, SELECT on consegna to :courier;
