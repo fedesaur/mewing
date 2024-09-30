@@ -22,6 +22,7 @@
 #include "../metodi/ricercaOrdini.h"
 #include "../metodi/consegnaOrdine.h"
 #include "../metodi/dettagliOrdine.h"
+#include "../metodi/ordiniCorrenti.h"
 
 #include <pistache/http.h>
 #include <pistache/endpoint.h>
@@ -44,6 +45,7 @@ void defineRoutes(Pistache::Rest::Router& router);
 void autenticaTrasportatore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void creaTrasportatore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void getCorrenti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void getDettagli(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void accettaOrdine(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
