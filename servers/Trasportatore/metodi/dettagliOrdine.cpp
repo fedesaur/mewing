@@ -51,26 +51,6 @@ bool dettagliOrdine(int orderID)
         // Aggiungi l'ID del prodotto alla lista associata all'ID del prodotto
         redisCommand(c2r, "RPUSH dettagli:%d %d", orderID, orderID);
         PQclear(res);
-        sprintf(comando, "SELECT pr.id, pr.descrizione, pr.nome, pr.prezzo, fr.nome AS nomeF, pn.quantita "
-            "FROM prodotto pr, prodinord pn, fornitore fr WHERE pn.prodotto = pr.id "
-            "AND pr.fornitore = fr.id AND pn.ordine = %d", orderID);
-        res = db.ExecSQLtuples(comando);
-        rows = PQntuples(res); // Si presume ci siano prodotti nell'ordine
-        for (int j = 0; j < rows; j++)
-        {
-            int IDProd = atoi(PQgetvalue(res, j, PQfnumber(res, "id")));
-            const char* descrizione = PQgetvalue(res, j, PQfnumber(res, "descrizione"));
-            double prezzo = atof(PQgetvalue(res, j, PQfnumber(res, "prezzo")));
-            const char* nome = PQgetvalue(res, j, PQfnumber(res, "nome"));
-            const char* fornitore = PQgetvalue(res, j, PQfnumber(res, "nomeF"));
-            int quantita = atoi(PQgetvalue(res, j, PQfnumber(res, "quantita")));
-
-            redisCommand(c2r, "HMSET dettaglio:%d id %d nome %s descrizione %s fornitore %s prezzo %f quantita %d", IDProd, IDProd, nome, descrizione, fornitore, prezzo, quantita);
-
-            // Aggiungi l'ID del prodotto alla lista associata all'ID dell'ordine
-            redisCommand(c2r, "RPUSH dettagli:%d %d", orderID, IDProd);
-        }
-        PQclear(res);
         redisFree(c2r);
         return true;
     }

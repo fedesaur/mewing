@@ -366,9 +366,11 @@ void getDettagli(const Pistache::Rest::Request& request, Pistache::Http::Respons
         return;
     }
     
-    bool pubblicati = dettagliOrdine(ID); // Immette i prodotti presenti nel carrello nello stream
-    if (!pubblicati) 
+    if (!dettagliOrdine(ID)) // Immette i prodotti presenti nel carrello nello stream
     {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover orders' info\n");
+        return;
+    } else if (!prodottiOrdine(ID)) {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover orders' info\n");
         return;
     }
