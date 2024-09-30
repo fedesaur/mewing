@@ -45,7 +45,7 @@ bool ordiniCorrenti(const char* piva, int trasporterID)
                 const char* cognome = PQgetvalue(res, i, PQfnumber(res, "cognome"));
 
                 //...e li condivide sullo stream Redis
-                redisCommand(c2r, "HMSET ordine:%d id %d mail %s data %s totale %f pagamento %s stato %s IDCor %d nomeCor %s cognomeCor %s", 
+                redisCommand(c2r, "HMSET corrente:%d id %d mail %s data %s totale %f pagamento %s stato %s IDCor %d nomeCor %s cognomeCor %s", 
                             ID, ID, mail, tempo.c_str(), totale, paga, statoOrd, IDCor, nome, cognome);
                 
                 // Aggiungi l'ID del prodotto alla lista associata all'email

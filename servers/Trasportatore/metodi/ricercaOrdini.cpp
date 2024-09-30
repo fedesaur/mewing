@@ -23,7 +23,7 @@ bool ricercaOrdini(const char* piva)
     try
     {
         // Prima recuperiamo gli ordini NON consegnati
-        sprintf(comando, "SELECT ord.id, cst.mail, ord.datarich, ord.stato, ord.pagamento, ind.via, ind.civico, ind.cap, ind.citta, ind.stato AS statoIND, ord.totale "
+        sprintf(comando, "SELECT ord.id, cst.mail, ord.datarich, ord.pagamento, ord.totale, ind.via, ind.civico, ind.cap, ind.citta, ind.stato AS statoIND "
         "FROM indirizzo ind, customers cst, ordine ord "
         "WHERE ind.id = ord.indirizzo AND ord.customer = cst.id AND ord.id NOT IN (SELECT ordine FROM transord) "
         "AND ord.stato = 'pendente' ORDER BY ord.datarich");

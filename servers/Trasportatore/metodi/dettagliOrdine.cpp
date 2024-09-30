@@ -45,7 +45,7 @@ bool dettagliOrdine(int orderID)
         const char* stato = PQgetvalue(res, 0, PQfnumber(res, "statoIND"));
         double totale = atof(PQgetvalue(res, 0, PQfnumber(res, "totale")));
         
-        redisCommand(c2r, "HMSET ordine:%d id %d mail %s data %s statoOrd %s totale %f pagamento %s via %s civico %d CAP %s city %s stato %s", 
+        redisCommand(c2r, "HMSET dettaglio:%d id %d mail %s data %s statoOrd %s totale %f pagamento %s via %s civico %d CAP %s city %s stato %s", 
                             orderID, orderID, mail, tempo.c_str(), statoOrd, totale, paga, via, civico, CAP, city, stato);
 
         // Aggiungi l'ID del prodotto alla lista associata all'ID del prodotto
@@ -65,7 +65,7 @@ bool dettagliOrdine(int orderID)
             const char* fornitore = PQgetvalue(res, j, PQfnumber(res, "nomeF"));
             int quantita = atoi(PQgetvalue(res, j, PQfnumber(res, "quantita")));
 
-            redisCommand(c2r, "HMSET prodotto:%d id %d nome %s descrizione %s fornitore %s prezzo %f quantita %d", IDProd, IDProd, nome, descrizione, fornitore, prezzo, quantita);
+            redisCommand(c2r, "HMSET dettaglio:%d id %d nome %s descrizione %s fornitore %s prezzo %f quantita %d", IDProd, IDProd, nome, descrizione, fornitore, prezzo, quantita);
 
             // Aggiungi l'ID del prodotto alla lista associata all'ID dell'ordine
             redisCommand(c2r, "RPUSH dettagli:%d %d", orderID, IDProd);
