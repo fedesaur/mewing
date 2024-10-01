@@ -55,7 +55,6 @@ bool registroOrdini(const char* piva, int trasporterID)
             }
         }
         PQclear(res);
-        freeReplyObject(reply);
         // Recupera gli ordini consegnati
         sprintf(comando, "SELECT ord.id, cst.mail, ord.datarich, orc.datacons, ord.stato, ord.pagamento, ord.totale, cor.id AS CorID, cor.nome, cor.cognome "
         "FROM customers cst, ordine ord, consegna cons, corriere cor, ordineconse orc WHERE ord.id = cons.ordine "

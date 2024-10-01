@@ -5,6 +5,7 @@
 #include <pistache/router.h>
 #include "../../../lib/con2db/pgsql.h"
 #include "../../../lib/con2redis/src/con2redis.h"
+#include "../../../lib/funzioniAusiliarie.h"
 // Entità utilizzate
 #include "../../../entities/Indirizzo.h"
 #include "../../../entities/Ordine.h"
@@ -21,7 +22,6 @@
 #include "../metodi/registroOrdini.h"
 #include "../metodi/ricercaOrdini.h"
 #include "../metodi/consegnaOrdine.h"
-#include "../metodi/dettagliOrdine.h"
 #include "../metodi/ordiniCorrenti.h"
 #include "../metodi/prodottiOrdine.h"
 

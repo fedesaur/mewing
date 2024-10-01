@@ -392,7 +392,7 @@ void getRegistrati(const Pistache::Rest::Request& request, Pistache::Http::Respo
             orderReply = RedisCommand(c2r, "HGETALL ordineRegistrato:%s", orderID.c_str());
     
             // Verifica il risultato del recupero...
-            if (orderReply->type == REDIS_REPLY_ARRAY && courierReply->elements == 20)
+            if (orderReply->type == REDIS_REPLY_ARRAY && orderReply->elements == 20)
             { //... e asssocia i valori dell'indirizzo recuperato dallo stream Redis ad un oggetto Indirizzo 
             
                 ORDINI[i].ID = std::atoi(orderReply->element[1]->str);
@@ -415,7 +415,7 @@ void getRegistrati(const Pistache::Rest::Request& request, Pistache::Http::Respo
             }
         }
         // Stampa gli ordini disponibili
-        ss << "\nORDINI IN CORSO:\n";
+        ss << "\nORDINI REGISTRATI:\n";
         for (int i = 0; i < RIGHE; i++) 
         {
             ss << i+1 << ") ID Ordine: " << ORDINI[i].ID
@@ -469,7 +469,8 @@ void getProdottiOrdine(const Pistache::Rest::Request& request, Pistache::Http::R
         return;
     }
     
-    if (!prodottiOrdine(ID)) {
+    bool pubblicato = prodottiOrdine(ID);
+    if (!pubblicato) {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover orders' info\n");
         return;
     }
@@ -490,11 +491,6 @@ void getProdottiOrdine(const Pistache::Rest::Request& request, Pistache::Http::R
         for (int i = 0; i < RIGHE; i++) 
         {
             std::string orderID = reply->element[i]->str;
-            /* Su Redis ora sono immagazzinati due tipi di oggetti nella stessa chiave:
-                -Le informazioni dell'ordine;
-                -I prodotti presenti nell'ordine;
-                Per prima cosa recuperiamo le informazioni sull'ordine (eseguendo i controlli opportuni)...
-            */
             orderReply = RedisCommand(c2r, "HGETALL prodotto:%s", orderID.c_str());
             if (orderReply->type == REDIS_REPLY_ARRAY)
             {

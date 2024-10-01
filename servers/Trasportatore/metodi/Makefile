@@ -12,7 +12,7 @@ con2db_OBJ=$(wildcard ../../../lib/con2db/*.o)
 con2redis_OBJ=$(wildcard ../../../lib/con2redis/obj/*.o)
 
 
-all:	con2db con2redis autenticazione prendiOrdine ricerca registraCorr rimuoviCorr recuperaCorr consegna dettagli prodotti ordiniCorrenti registro
+all:	con2db con2redis autenticazione prendiOrdine ricerca registraCorr rimuoviCorr recuperaCorr consegna prodotti ordiniCorrenti registro
 
 con2db:
 	$(MAKE) -C ../../../lib/con2db
@@ -46,9 +46,6 @@ recuperaCorr: recuperaCorrieri.cpp recuperaCorrieri.h
 
 consegna: consegnaOrdine.cpp consegnaOrdine.h
 	$(CC) -c -o consegnaOrdine.o $< $(CFLAGS) # Crea il file consegnaOrdine.o
-
-dettagli: dettagliOrdine.cpp dettagliOrdine.h
-	$(CC) -c -o dettagliOrdine.o $< $(CFLAGS) # Crea il file dettagliOrdine.o
 
 ordiniCorrenti: ordiniCorrenti.cpp ordiniCorrenti.h
 	$(CC) -c -o ordiniCorrenti.o $< $(CFLAGS) # Crea il file ordiniCorrenti.o
