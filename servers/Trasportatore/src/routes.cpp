@@ -8,8 +8,9 @@ void defineRoutes(Pistache::Rest::Router& router)
     Pistache::Rest::Routes::Get(router, "/autentica/:piva", Pistache::Rest::Routes::bind(&autenticaTrasportatore));
     Pistache::Rest::Routes::Get(router, "/:piva/ricerca/", Pistache::Rest::Routes::bind(&getOrdini));
     Pistache::Rest::Routes::Get(router, "/:piva/corrieri/", Pistache::Rest::Routes::bind(&getCorrieri));
-    Pistache::Rest::Routes::Get(router, "/:piva/ordini/:orderID", Pistache::Rest::Routes::bind(&getDettagli));
+    Pistache::Rest::Routes::Get(router, "/:piva/ordini/:orderID", Pistache::Rest::Routes::bind(&getProdottiOrdine));
     Pistache::Rest::Routes::Get(router, "/:piva/correnti/", Pistache::Rest::Routes::bind(&getCorrenti));
+    Pistache::Rest::Routes::Get(router, "/:piva/registrati/", Pistache::Rest::Routes::bind(&getRegistrati));
     Pistache::Rest::Routes::Put(router, "/:piva/corrieri/", Pistache::Rest::Routes::bind(&putCorriere));
     Pistache::Rest::Routes::Put(router, "/:piva/ordini/", Pistache::Rest::Routes::bind(&accettaOrdine));
     Pistache::Rest::Routes::Put(router, "/autentica/", Pistache::Rest::Routes::bind(&creaTrasportatore));
@@ -234,7 +235,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
     return;
 }
 
-//curl -X GET http://localhost:5003/32132132132/correnti
+//curl -X GET http://localhost:5003/32132132132/correnti/
 void getCorrenti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     std::stringstream ss;
@@ -336,15 +337,117 @@ void getCorrenti(const Pistache::Rest::Request& request, Pistache::Http::Respons
     return;
 }
 
-//curl -X GET http://localhost:5003/32132132132/ordini/1
-void getDettagli(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+//curl -X GET http://localhost:5003/32132132132/registrati/
+void getRegistrati(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     std::stringstream ss;
     redisContext *c2r; // c2r contiene le info sul contesto
     redisReply *reply; // reply contiene le risposte da Redis
     redisReply *orderReply;
-    Ordine ORDINE;
-    Indirizzo INDIRIZZO;
+    Ordine* ORDINI;
+    Corriere* CORRIERI;
+    int RIGHE;
+
+    std::string IVA = request.param(":piva").as<std::string>();
+    
+    // Controlla che i parametri richiesti siano stati forniti
+    if (IVA.empty() || IVA.length() != 11) {
+        response.send(Pistache::Http::Code::Bad_Request, "IVA not provided\n");
+        return;
+    }
+    int trasporterID = recuperaCourierID(IVA);
+    if (trasporterID <= 0) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID del Trasportatore\n");
+        return;
+    }
+
+    bool pubblicati = registroOrdini(IVA.c_str(), trasporterID); // Immette i prodotti presenti nel carrello nello stream
+    if (!pubblicati) 
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover orders' info\n");
+        return;
+    }
+
+    // Connessione a Redis
+    c2r = redisConnect(REDIS_IP, REDIS_PORT); // Redis su localhost
+    if (c2r == nullptr || c2r->err) {
+        std::cerr << "Errore nella connessione a Redis" << std::endl;
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to connect to Redis");
+        return;
+    }
+
+    // Recupera la lista degli ordini da Redis
+    reply = RedisCommand(c2r, "LRANGE registroOrdini:%s 0 -1", IVA.c_str());
+    if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera gli indirizzi da Redis
+    {
+        RIGHE = reply->elements;
+        ORDINI = new Ordine[RIGHE];  // Array dinamico di ordini
+        CORRIERI = new Corriere[RIGHE];
+        
+        for (int i = 0; i < RIGHE; i++) 
+        {
+            std::string orderID = reply->element[i]->str;
+
+            // Recupera il prodotto come hash da Redis
+            orderReply = RedisCommand(c2r, "HGETALL ordineRegistrato:%s", orderID.c_str());
+    
+            // Verifica il risultato del recupero...
+            if (orderReply->type == REDIS_REPLY_ARRAY && courierReply->elements == 20)
+            { //... e asssocia i valori dell'indirizzo recuperato dallo stream Redis ad un oggetto Indirizzo 
+            
+                ORDINI[i].ID = std::atoi(orderReply->element[1]->str);
+                ORDINI[i].MailCustomer = (orderReply->element[3]->str);
+                ORDINI[i].Stato = (orderReply->element[5]->str);
+                ORDINI[i].DataRichiesta = (orderReply->element[7]->str);
+                ORDINI[i].DataConsegna = (orderReply->element[9]->str);
+                ORDINI[i].Totale = std::atof(orderReply->element[11]->str);
+                ORDINI[i].Pagamento = (orderReply->element[13]->str);
+
+                CORRIERI[i].ID = std::atoi(orderReply->element[15]->str);
+                CORRIERI[i].nome = (orderReply->element[17]->str);
+                CORRIERI[i].cognome = (orderReply->element[19]->str);
+            } else {
+                std::cerr << "Errore nel recupero di un ordine da Redis" << std::endl;
+                response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero degli ordini\n");
+                freeReplyObject(orderReply);
+                redisFree(c2r);
+                return;
+            }
+        }
+        // Stampa gli ordini disponibili
+        ss << "\nORDINI IN CORSO:\n";
+        for (int i = 0; i < RIGHE; i++) 
+        {
+            ss << i+1 << ") ID Ordine: " << ORDINI[i].ID
+                << " Mail Customer: " << ORDINI[i].MailCustomer
+                << " Data Richiesta: " << ORDINI[i].DataRichiesta
+                << " Data Consegna: (0 se non consegnato) " << ORDINI[i].DataConsegna
+                << " Metodo Pagamento: " << ORDINI[i].Pagamento
+                << " Totale Ordine: " << ORDINI[i].Totale
+                << " Stato dell'Ordine: " << ORDINI[i].Stato
+                << "\n Preso in carico da : " << CORRIERI[i].nome << " " 
+                << CORRIERI[i].cognome << " (ID : " << CORRIERI[i].ID << ")\n";
+        }
+        // Invia la risposta con gli ordini
+        response.send(Pistache::Http::Code::Ok, ss.str());
+        delete[] ORDINI; // Libera la memoria allocata dinamicamente
+        delete[] CORRIERI; // Libera la memoria allocata dinamicamente
+    } else {
+        // Nessun prodotto trovato in Redis
+        response.send(Pistache::Http::Code::Ok, "Nessun ordine in archivio!\n");
+    }
+    freeReplyObject(reply);
+    redisFree(c2r);  // Chiudi la connessione a Redis
+    return;
+}
+
+//curl -X GET http://localhost:5003/32132132132/ordini/1
+void getProdottiOrdine(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+{
+    std::stringstream ss;
+    redisContext *c2r; // c2r contiene le info sul contesto
+    redisReply *reply; // reply contiene le risposte da Redis
+    redisReply *orderReply;
     Prodotto* PRODOTTI;
     int RIGHE;
 
@@ -366,11 +469,7 @@ void getDettagli(const Pistache::Rest::Request& request, Pistache::Http::Respons
         return;
     }
     
-    if (!dettagliOrdine(ID)) // Immette i prodotti presenti nel carrello nello stream
-    {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover orders' info\n");
-        return;
-    } else if (!prodottiOrdine(ID)) {
+    if (!prodottiOrdine(ID)) {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover orders' info\n");
         return;
     }
@@ -382,35 +481,6 @@ void getDettagli(const Pistache::Rest::Request& request, Pistache::Http::Respons
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to connect to Redis");
         return;
     }
-
-    // Recupera la lista degli ordini da Redis
-    reply = RedisCommand(c2r, "LRANGE dettagli:%d 0 -1", ID);
-    if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera l'ordine da Redis
-    {
-        std::string orderID = reply->element[0]->str;
-        orderReply = RedisCommand(c2r, "HGETALL dettaglio:%s", orderID.c_str());
-        if (orderReply->type == REDIS_REPLY_ARRAY)
-        {
-            ORDINE.ID = std::atoi(orderReply->element[1]->str);
-            ORDINE.MailCustomer = (orderReply->element[3]->str);
-            ORDINE.DataRichiesta = (orderReply->element[5]->str);
-            ORDINE.Stato = (orderReply->element[7]->str);
-            ORDINE.Totale = std::atof(orderReply->element[9]->str);
-            ORDINE.Pagamento = (orderReply->element[11]->str);
-                        
-            INDIRIZZO.via = (orderReply->element[13]->str);
-            INDIRIZZO.civico = std::atoi(orderReply->element[15]->str);
-            INDIRIZZO.CAP = (orderReply->element[17]->str);
-            INDIRIZZO.citta = (orderReply->element[19]->str);
-            INDIRIZZO.stato = (orderReply->element[21]->str);
-        } else {
-            std::cerr << "Errore nel recupero di un ordine da Redis" << std::endl;
-            freeReplyObject(orderReply);
-            redisFree(c2r);
-            return;
-        }
-    }
-    freeReplyObject(reply);
     reply = RedisCommand(c2r, "LRANGE prodottiOrdine:%d 0 -1", ID);
     if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera i prodotti nell'ordine da Redis
     {
@@ -441,22 +511,17 @@ void getDettagli(const Pistache::Rest::Request& request, Pistache::Http::Respons
                 return;
             }
         }
+    } else {
+        std::cerr << "Errore nel recupero di un ordine da Redis" << std::endl;
+        freeReplyObject(orderReply);
+        redisFree(c2r);
+        return;
     }
-        // Stampa l'ordine
-    ss << "ID Ordine: " << ORDINE.ID
-            << " Mail Customer: " << ORDINE.MailCustomer
-            << " Data Richiesta: " << ORDINE.DataRichiesta
-            << " Metodo Pagamento: " << ORDINE.Pagamento
-            << " Totale Ordine: " << ORDINE.Totale
-            << " Via della Consegna: " << INDIRIZZO.via
-            << " Civico: " << INDIRIZZO.civico
-            << " CAP: " << INDIRIZZO.CAP
-            << " Città della Consegna: " << INDIRIZZO.citta 
-            << " Stato della Città: " << INDIRIZZO.stato << "\n"
-            << " Nell'ordine sono presenti i seguenti prodotti:\n";
+    //Stampa i prodotti nell'ordine
+    ss << "\nPRODOTTI NELL'ORDINE:\n";
     for (int i = 0; i < RIGHE; i++) //... e i prodotti al suo intero
     {
-            ss << "\t" << i+1 << ") ID Prodotto: " << PRODOTTI[i].ID
+            ss << i+1 << ") ID Prodotto: " << PRODOTTI[i].ID
                 << " Nome Prodotto: " << PRODOTTI[i].nome
                 << " Descrizione Prodotto: " << PRODOTTI[i].descrizione
                 << " Prezzo del Prodotto: " << PRODOTTI[i].prezzo
@@ -464,8 +529,8 @@ void getDettagli(const Pistache::Rest::Request& request, Pistache::Http::Respons
                 << " Nome del Fornitore: " << PRODOTTI[i].fornitore << "\n";
     }
         // Invia la risposta con i prodotti
-    response.send(Pistache::Http::Code::Ok, ss.str());
     delete[] PRODOTTI; // Libera la memoria allocata dinamicamente
+    response.send(Pistache::Http::Code::Ok, ss.str());
     freeReplyObject(reply);
     redisFree(c2r);  // Chiudi la connessione a Redis
     return;

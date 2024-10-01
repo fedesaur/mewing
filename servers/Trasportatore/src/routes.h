@@ -48,7 +48,8 @@ void creaTrasportatore(const Pistache::Rest::Request& request, Pistache::Http::R
 void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void getCorrenti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-void getDettagli(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void getRegistrati(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+void getProdottiOrdine(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void accettaOrdine(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void putCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void deleteCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
