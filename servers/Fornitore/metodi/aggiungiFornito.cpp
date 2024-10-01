@@ -1,5 +1,6 @@
 #include "aggiungiFornito.h"
 
+using namespace std::chrono_literals;
 using Clock = std::chrono::system_clock;
 
 bool aggiungiFornito(int supplierID, const char* nomeProdotto, const char* descrizioneProdotto, double prezzoProdotto)
@@ -7,7 +8,7 @@ bool aggiungiFornito(int supplierID, const char* nomeProdotto, const char* descr
     PGresult *res;
     char comando[1000];
 	Con2DB db(HOSTNAME, DB_PORT, USERNAMEP, PASSWORDP, DB_NAME);
-    auto timeLimit = Clock::now() + 1s;
+    auto timeLimit = Clock::now() + 5ms;
     auto start = std::chrono::high_resolution_clock::now();
     while (Clock::now() < timeLimit)
     {
