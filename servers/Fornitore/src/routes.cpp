@@ -59,7 +59,7 @@ void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::
     if (ID > 0) {
         response.send(Pistache::Http::Code::Ok, "Supplier authenticated\n");
     } else {
-        response.send(Pistache::Http::Code::Unauthorized, "Authentication failed\n");
+        response.send(Pistache::Http::Code::Unauthorized, "Autenticazione fallita\n Il fornitore potrebbe non essere nel sistema\n");
     }
 }
 
@@ -121,13 +121,20 @@ void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
     std::string nomeProdotto = dati["nomeProdotto"];
     std::string descrizioneProdotto = dati["descrizioneProdotto"];
     double prezzoProdotto = dati["prezzoProdotto"];
+    int supplierID = recuperaSupplierID(email);
+    if (supplierID <= 0)
+    {
+        response.send(Pistache::Http::Code::Unauthorized, "Il fornitore non è nel sistema!\n");
+        return;
+    }
 
-    bool esito = aggiungiFornito(email.c_str(), nomeProdotto.c_str(), descrizioneProdotto.c_str(), prezzoProdotto);
+    bool esito = aggiungiFornito(supplierID, nomeProdotto.c_str(), descrizioneProdotto.c_str(), prezzoProdotto);
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Product added to system\n");
     } else {
         response.send(Pistache::Http::Code::Unauthorized, "Failed to add the product to system\n");
     }
+    return;
 }
 
 //curl -X DELETE http://localhost:5002/prova1@prova1.it/prodotti/1
@@ -145,8 +152,14 @@ void eliminaProdotto(const Pistache::Rest::Request& request, Pistache::Http::Res
         response.send(Pistache::Http::Code::Bad_Request, "Product ID not provided\n");
         return;
     }
-    int ID = stoi(id);
-    bool esito = rimuoviFornito(email.c_str(), ID); // Ora chiama la funzione autentica
+    int productID = stoi(id);
+    int supplierID = recuperaSupplierID(email);
+    if (supplierID <= 0)
+    {
+        response.send(Pistache::Http::Code::Unauthorized, "Il fornitore non è nel sistema!\n");
+        return;
+    }
+    bool esito = rimuoviFornito(supplierID, productID); // Ora chiama la funzione autentica
     if (esito) {
         response.send(Pistache::Http::Code::Ok, "Product deleted from system\n");
     } else {
@@ -181,30 +194,13 @@ void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
     double prezzoProdotto = dati["prezzoProdotto"];
     int ID = stoi(id);
     
-    int supID = recuperaSupplierID(email);
-    
-    // Connetti a Redis
-    redisContext *c2r = redisConnect(REDIS_IP, REDIS_PORT);
-    if (c2r == nullptr || c2r->err) {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Unable to connect to Redis");
+    int supplierID = recuperaSupplierID(email); //Controlla che l'utente è nel sistema
+    if (supplierID <= 0)
+    {
+        response.send(Pistache::Http::Code::Unauthorized, "Il fornitore non è nel sistema!\n");
         return;
     }
-
-    // Prepara il comando per aggiungere l'email allo stream
-    redisReply* reply = static_cast<redisReply*>(redisCommand(c2r, "XADD %s * id %d", WRITE_STREAM, supID));
-
-    // Controlla l'esito del comando Redis
-    if (reply == nullptr || reply->type != REDIS_REPLY_STRING) {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Error writing id to Redis stream");
-        redisFree(c2r);
-        return;
-    }
-
-    // Pulisci la risposta di Redis
-    freeReplyObject(reply);
-    redisFree(c2r);
-
-    bool esito = modificaFornito(email.c_str(), nomeProdotto.c_str(), descrizioneProdotto.c_str(), prezzoProdotto, ID);
+    bool esito = modificaFornito(nomeProdotto.c_str(), descrizioneProdotto.c_str(), prezzoProdotto, ID);
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Product's attributes modified from system\n");
     } else {
@@ -216,93 +212,82 @@ void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
 void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     std::stringstream ss;
+    redisContext *c2r; // c2r contiene le info sul contesto
+    redisReply *reply; // reply contiene le risposte da Redis
+    redisReply *productReply;
+    Prodotto* FORNITI;
     int RIGHE;
 
-    std::string email = request.param(":email").as<std::string>();
+    std::string MAIL = request.param(":email").as<std::string>();
     
     // Controlla che i parametri richiesti siano stati forniti
-    if (email.empty()) {
+    if (MAIL.empty()) {
         response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
         return;
     }
-    recuperaForniti(email.c_str());
+    
+    bool pubblicati = recuperaForniti(MAIL.c_str()); // Immette i prodotti presenti nel carrello nello stream
+    if (!pubblicati) 
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover products' info\n");
+        return;
+    }
 
     // Connessione a Redis
-    redisContext *redis = redisConnect(REDIS_IP, REDIS_PORT);  // Redis su localhost
-    if (redis == nullptr || redis->err) {
+    c2r = redisConnect(REDIS_IP, REDIS_PORT); // Redis su localhost
+    if (c2r == nullptr || c2r->err) {
         std::cerr << "Errore nella connessione a Redis" << std::endl;
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to connect to Redis");
         return;
     }
 
-    // Recupera la lista di ID prodotti per l'email dal Redis
-    redisReply* reply = (redisReply*)redisCommand(redis, "LRANGE prodotti:%s 0 -1", email.c_str());
-    if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) {
-        RIGHE = reply->elements;
-        Prodotto* forniti = new Prodotto[RIGHE];  // Array dinamico di prodotti
-        // Recupera i prodotti da Redis
-    for (int i = 0; i < RIGHE; i++) 
+    // Recupera la lista degli ordini da Redis
+    reply = RedisCommand(c2r, "LRANGE prodottiForniti:%s 0 -1", MAIL.c_str());
+    if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera gli indirizzi da Redis
     {
-        std::string prodottoID = reply->element[i]->str;
-
-        // Debug: Stampa l'ID del prodotto che stai per recuperare
-        std::cout << "Recuperando prodotto con ID: " << prodottoID << std::endl;
-
-        // Recupera il prodotto come hash da Redis
-        redisReply* prodottoReply = (redisReply*)redisCommand(redis, "HGETALL prodotto:%s", prodottoID.c_str());
-    
-        // Verifica il risultato del recupero
-        if (prodottoReply->type == REDIS_REPLY_ARRAY && prodottoReply->elements == 8) 
-        {
-        // Associa i valori del prodotto a un oggetto Prodotto
-            forniti[i].ID = std::stoi(prodottoReply->element[1]->str);
+        RIGHE = reply->elements;
+        FORNITI = Prodotto[RIGHE];
         
-        // Debug: Stampa il prodotto recuperato
-            std::cout << "Prodotto recuperato: ID " << forniti[i].ID << ", Nome: " << prodottoReply->element[3]->str << std::endl;
+        for (int i = 0; i < RIGHE; i++) 
+        {
+            std::string productID = reply->element[i]->str;
 
-        // Copia i valori delle stringhe in buffer di memoria allocati dinamicamente
-        // Nome
-            std::string nomeTemp = prodottoReply->element[3]->str;
-            forniti[i].nome = new char[nomeTemp.length() + 1];
-            std::strcpy(const_cast<char*>(forniti[i].nome), nomeTemp.c_str());
-
-        // Descrizione
-            std::string descrizioneTemp = prodottoReply->element[5]->str;
-            forniti[i].descrizione = new char[descrizioneTemp.length() + 1];
-            std::strcpy(const_cast<char*>(forniti[i].descrizione), descrizioneTemp.c_str());
-
-        // Prezzo
-        forniti[i].prezzo = std::stod(prodottoReply->element[7]->str);
-        } else {
-            std::cerr << "Errore nel recupero di un prodotto da Redis" << std::endl;
-            freeReplyObject(prodottoReply);
-            redisFree(redis);
-            return;
+            // Recupera il prodotto come hash da Redis
+            productReply = RedisCommand(c2r, "HGETALL prodottoFornito:%s", productID.c_str());
+            // Verifica il risultato del recupero...
+            if (productReply->type == REDIS_REPLY_ARRAY && productReply->elements == 8)
+            { //... e asssocia i valori dell'indirizzo recuperato dallo stream Redis ad un oggetto Indirizzo 
+            
+                FORNITI[i].ID = std::atoi(orderReply->element[1]->str);
+                FORNITI[i].nome = (orderReply->element[3]->str);
+                FORNITI[i].descrizione = (orderReply->element[5]->str);
+                FORNITI[i].prezzo = std::atof(orderReply->element[7]->str);
+            } else {
+                std::cerr << "Errore nel recupero di un prodotto da Redis" << std::endl;
+                freeReplyObject(productReply);
+                redisFree(c2r);
+                return;
+            }
         }
-
-    
-    }
-        // Stampa i prodotti
+        // Stampa gli ordini disponibili
         ss << "\nPRODOTTI FORNITI:\n";
         for (int i = 0; i < RIGHE; i++) 
         {
-            ss << i + 1 << ") ID Prodotto: " << forniti[i].ID
-               << " Nome Prodotto: " << forniti[i].nome
-               << " Descrizione: " << forniti[i].descrizione
-               << " Prezzo Prodotto: " << forniti[i].prezzo
-               <<  "\n";
+            ss << i+1 << ") ID Prodotto: " << FORNITI[i].ID
+                << " Nome Prodotto: " << FORNITI[i].nome
+                << " Descrizione Prodotto: " << FORNITI[i].descrizione
+                << " Prezzo Prodotto: " << FORNITI[i].prezzo << "\n";
         }
-
         // Invia la risposta con i prodotti
         response.send(Pistache::Http::Code::Ok, ss.str());
-        delete[] forniti; // Libera la memoria allocata dinamicamente
+        delete[] FORNITI; // Libera la memoria allocata dinamicamente
     } else {
         // Nessun prodotto trovato in Redis
-        response.send(Pistache::Http::Code::Ok, "Nessun prodotto disponibile in Redis");
+        response.send(Pistache::Http::Code::Ok, "Nessun prodotto fornito!\n");
     }
-
     freeReplyObject(reply);
-    redisFree(redis);  // Chiudi la connessione a Redis
+    redisFree(c2r);  // Chiudi la connessione a Redis
+    return;
 }
 
 
