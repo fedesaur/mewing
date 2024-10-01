@@ -246,7 +246,7 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
     if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera gli indirizzi da Redis
     {
         RIGHE = reply->elements;
-        FORNITI = Prodotto[RIGHE];
+        FORNITI = new Prodotto[RIGHE];
         
         for (int i = 0; i < RIGHE; i++) 
         {
@@ -258,10 +258,10 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
             if (productReply->type == REDIS_REPLY_ARRAY && productReply->elements == 8)
             { //... e asssocia i valori dell'indirizzo recuperato dallo stream Redis ad un oggetto Indirizzo 
             
-                FORNITI[i].ID = std::atoi(orderReply->element[1]->str);
-                FORNITI[i].nome = (orderReply->element[3]->str);
-                FORNITI[i].descrizione = (orderReply->element[5]->str);
-                FORNITI[i].prezzo = std::atof(orderReply->element[7]->str);
+                FORNITI[i].ID = std::atoi(productReply->element[1]->str);
+                FORNITI[i].nome = (productReply->element[3]->str);
+                FORNITI[i].descrizione = (productReply->element[5]->str);
+                FORNITI[i].prezzo = std::atof(productReply->element[7]->str);
             } else {
                 std::cerr << "Errore nel recupero di un prodotto da Redis" << std::endl;
                 freeReplyObject(productReply);

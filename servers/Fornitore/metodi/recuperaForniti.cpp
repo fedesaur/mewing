@@ -36,10 +36,10 @@ bool recuperaForniti(const char* mail)
                 const char* nome = PQgetvalue(res, i, PQfnumber(res, "nome"));
 
                 // Memorizza il prodotto in Redis come hash
-                redisCommand(redis, "HMSET prodottoFornito:%d id %d nome %s descrizione %s prezzo %f", ID, ID, nome, descrizione, prezzo);
+                redisCommand(c2r, "HMSET prodottoFornito:%d id %d nome %s descrizione %s prezzo %f", ID, ID, nome, descrizione, prezzo);
 
                 // Aggiungi l'ID del prodotto alla lista associata all'email
-                redisCommand(redis, "RPUSH prodottiForniti:%s %d", mail, ID);
+                redisCommand(c2r, "RPUSH prodottiForniti:%s %d", mail, ID);
             }
 
         }
