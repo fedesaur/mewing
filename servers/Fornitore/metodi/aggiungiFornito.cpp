@@ -1,21 +1,35 @@
 #include "aggiungiFornito.h"
 
+using Clock = std::chrono::system_clock;
+
 bool aggiungiFornito(int supplierID, const char* nomeProdotto, const char* descrizioneProdotto, double prezzoProdotto)
 {
     PGresult *res;
     char comando[1000];
 	Con2DB db(HOSTNAME, DB_PORT, USERNAMEP, PASSWORDP, DB_NAME);
-    try
+    auto timeLimit = Clock::now() + 1s;
+    auto start = std::chrono::high_resolution_clock::now();
+    while (Clock::now() < timeLimit)
     {
-        sprintf(comando, "INSERT INTO prodotto(descrizione, prezzo, nome, fornitore) VALUES('%s', %f, '%s', %d)",
-        descrizioneProdotto, prezzoProdotto, nomeProdotto, supplierID);
-        res = db.ExecSQLcmd(comando);
-        PQclear(res);
-        return true;
+        try
+        {
+            sprintf(comando, "INSERT INTO prodotto(descrizione, prezzo, nome, fornitore) VALUES('%s', %f, '%s', %d)",
+            descrizioneProdotto, prezzoProdotto, nomeProdotto, supplierID);
+            res = db.ExecSQLcmd(comando);
+            PQclear(res);
+            auto finish = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::milli> elapsed = finish - start;
+            std::cout << "Elapsed Time: " << elapsed.count() << " seconds" << std::endl;
+            return true;
+        }
+        catch(...)
+        {
+            PQclear(res);
+            return false;
+        }
     }
-    catch(...)
-    {
-        PQclear(res);
-        return false;
-    }
+    std::cout << "Timer scattato" << std::endl;
+    return false;
+
+
 }
