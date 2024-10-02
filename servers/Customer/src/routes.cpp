@@ -22,14 +22,11 @@ void defineRoutes(Pistache::Rest::Router& router)
 //curl -X GET http://localhost:5001/autentica/abc@abc.it
 void autenticaCustomer(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
-    // Recupera l'email dal percorso
-    std::string email = request.param(":email").as<std::string>();
-
+    std::string email = request.param(":email").as<std::string>(); // Recupera l'email dal percorso
     if (email.empty()) {
         response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
         return;
     }
-
     // Ora chiama la funzione autentica
     int ID = autentica(email.c_str());
 
@@ -118,6 +115,11 @@ void creaCustomer(const Pistache::Rest::Request& request, Pistache::Http::Respon
 //curl -X POST -H "Content-Type: application/json" -d '{"nome": "Fabrizione", "cognome": "Napoli"}' http://localhost:5001/abc@abc.it/
 void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    int ID;
+    PGresult *res;
+    char comando[1000];
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME_HANDLER, PASSWORD_HANDLER, LOG_DB_NAME); // Effettua la connessione al database dei log
+    
     // Recupera l'email del fornitore tra i parametri
     std::string email = request.param(":email").as<std::string>();
     json dati = json::parse(request.body());
@@ -129,12 +131,39 @@ void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::Respon
     std::string cognome = dati["cognome"];
     if (nome.length() > 20) response.send(Pistache::Http::Code::Bad_Request, "Name length is above 20 characters\n");
     if (cognome.length() > 20) response.send(Pistache::Http::Code::Bad_Request, "Surname length is above 20 characters\n");
+    try
+    {
+        sprintf(comando, "INSERT INTO cliente(User_Id, TipoUser, OperationTipe, Data_inizio) VALUES(%d, 'customer', 'Modifica delle informazioni personali', NOW())", customerID);
+        res = db.ExecSQLcmd(comando);
+        PQclear(res);
+    }
+    catch(...)
+    {
+        PQclear(res);
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+        return;
+    }
 
     bool esito = modificaInfoCustomer(email.c_str(), nome.c_str(), cognome.c_str());
-    if (esito) {
-        response.send(Pistache::Http::Code::Created, "Info changed\n");
-    } else {
-        response.send(Pistache::Http::Code::Unauthorized, "Failed to change your info\n");
+
+    try
+    {
+        if (esito) {
+            response.send(Pistache::Http::Code::Created, "Info changed\n");
+            sprintf(comando, "UPDATE cliente SET Data_termine = NOW(), Esito = 'Fallito' WHERE User_Id = %d AND TipoUser = 'customer' AND Data_inizio =  VALUES(%d, 'customer', 'Modifica delle informazioni personali', NOW())", customerID);
+            res = db.ExecSQLcmd(comando);
+        } else {
+            response.send(Pistache::Http::Code::Unauthorized, "Failed to change your info\n");
+        }
+        PQclear(res);
+        return;
+        
+    }
+    catch(...)
+    {
+        PQclear(res);
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+        return;
     }
 }
 

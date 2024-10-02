@@ -26,6 +26,12 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 
+#define HOSTNAME "localhost"
+#define DB_PORT "5432"
+#define USERNAME_HANDLER "handler"
+#define PASSWORD_HANDLER "handler"
+#define LOG_DB_NAME "mewinglogdb"
+
 void defineRoutes(Pistache::Rest::Router& router);
 
 void autenticaCustomer(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);

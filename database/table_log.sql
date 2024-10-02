@@ -6,7 +6,7 @@ CREATE TABLE cliente(User_Id integer not null,
 		     TipoUser TipoUtenteType not null,
 		     OperationTipe varchar(50) not null,
 		     Data_inizio timestamp not null,
-	   	     Data_ternime timestamp,
+	   	     Data_termine timestamp,
 	 	     Esito EsitoType,
 		     
 			PRIMARY KEY (User_Id,TipoUser,Data_inizio),
