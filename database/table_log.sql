@@ -12,7 +12,7 @@ CREATE TABLE cliente(Id integer not null DEFAULT nextval('Cliente_id_sequence'::
 	 	     Esito EsitoType,
 		     
 			PRIMARY KEY (Id),
-			UNIQUE(User_Id,TipoUser,Data_inizio),
+			contraint unique Log UNIQUE(User_Id,TipoUser,Data_inizio),
 			CONSTRAINT check_tempo_inizio_fine check(Data_termine IS NULL OR Data_termine>=Data_inizio)
 			);
 
