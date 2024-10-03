@@ -28,9 +28,14 @@
 
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
+
 #define USERNAME_HANDLER "handler"
 #define PASSWORD_HANDLER "handler"
 #define LOG_DB_NAME "mewinglogdb"
+
+#define USERNAME "admin"
+#define PASSWORD "admin"
+#define DB_NAME "mewingdb"
 
 void defineRoutes(Pistache::Rest::Router& router);
 
@@ -49,5 +54,10 @@ void annullaOrd(const Pistache::Rest::Request& request, Pistache::Http::Response
 void removeIndirizzo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
 int recuperaCustomerID(std::string email); // Funzioni ausiliaria per il recupero dell'ID del customer dal DB
+
+//Operazione con il Database dei Log
+int inserimentoOperazione(int customerID, const char* operazione);
+bool successoOperazione(int logID);
+bool fallimentoOperazione(int logID);
 
 #endif // ROUTES_H
