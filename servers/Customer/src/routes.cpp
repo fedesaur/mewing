@@ -116,7 +116,6 @@ void creaCustomer(const Pistache::Rest::Request& request, Pistache::Http::Respon
 void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     int logID;
-    bool successo;
     // Recupera l'email del fornitore tra i parametri
     std::string email = request.param(":email").as<std::string>();
     json dati = json::parse(request.body());
@@ -135,7 +134,7 @@ void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::Respon
         return;
     }
 
-    logID = inserimentoOperazione(customerID, 'Aggiornamento informazioni personali');
+    logID = inserimentoOperazione(customerID, "Aggiornamento informazioni personali");
     if (logID == -1)
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
@@ -146,15 +145,10 @@ void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::Respon
 
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Info changed\n");
-        successo = successoOperazione(logID);
+        successoOperazione(logID);
     } else {
         response.send(Pistache::Http::Code::Unauthorized, "Failed to change your info\n");
-        successo = fallimentoOperazione(logID);
-    }
-    
-    if (!successo)
-    {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+        fallimentoOperazione(logID);
     }
     return;
 }
@@ -184,7 +178,7 @@ void getIndirizzi(const Pistache::Rest::Request& request, Pistache::Http::Respon
         return;
     }
 
-    logID = inserimentoOperazione(customerID, 'Recupero degli Indirizzi registrati');
+    logID = inserimentoOperazione(customerID, "Recupero degli Indirizzi registrati");
     if (logID == -1)
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
@@ -261,7 +255,7 @@ void getIndirizzi(const Pistache::Rest::Request& request, Pistache::Http::Respon
     }
     freeReplyObject(reply);
     redisFree(c2r);  // Chiudi la connessione a Redis
-    if (!successoOperazione(logID)) response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+    successoOperazione(logID);
     return;
 }
 
@@ -283,8 +277,14 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
         response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
         return;
     }
+    // Recupera l'ID del cliente basato sull'email
+    int customerID = recuperaCustomerID(email);
+    if (customerID <= 0) {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente\n");
+        return;
+    }
 
-    logID = inserimentoOperazione(customerID, 'Recupero degli Ordini effettuati');
+    logID = inserimentoOperazione(customerID, "Recupero degli Ordini effettuati");
     if (logID == -1)
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
@@ -362,7 +362,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
     }
     freeReplyObject(reply);
     redisFree(c2r);  // Chiudi la connessione a Redis
-    if (!successoOperazione(logID)) response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+    successoOperazione(logID);
     return;
 }
 
@@ -391,7 +391,7 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
         return;
     }
 
-    logID = inserimentoOperazione(customerID, 'Recupero del Carrello');
+    logID = inserimentoOperazione(customerID, "Recupero del Carrello");
     if (logID == -1)
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
@@ -411,7 +411,7 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
     if (c2r == nullptr || c2r->err) {
         std::cerr << "Errore nella connessione a Redis: " << (c2r ? c2r->errstr : "null") << std::endl;
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to connect to Redis");
-        if (c2r) redisFree(c2r);  // Chiudi connessione Redis in caso di errore
+        fallimentoOperazione(logID);
         return;
     }
 
@@ -489,7 +489,7 @@ void getCarrello(const Pistache::Rest::Request& request, Pistache::Http::Respons
     freeReplyObject(reply);
     freeReplyObject(productReply);
     redisFree(c2r);  // Chiudi la connessione a Redis
-    if (!successoOperazione(logID)) response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+    successoOperazione(logID);
     return;
 }
 
@@ -519,7 +519,7 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
         return;
     }
 
-    logID = inserimentoOperazione(customerID, 'Recupero dei Prodotti disponibili');
+    logID = inserimentoOperazione(customerID, "Recupero dei Prodotti disponibili");
     if (logID == -1)
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
@@ -594,7 +594,7 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
     freeReplyObject(reply);
     freeReplyObject(productReply);
     redisFree(c2r);  // Chiudi la connessione a Redis
-    if (!successoOperazione(logID)) response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+    successoOperazione(logID);
     return;
 }
 
@@ -642,8 +642,8 @@ void addProdottoToCarrello(const Pistache::Rest::Request& request, Pistache::Htt
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente\n");
         return;
     }
-    sprintf(comando, "Aggiunta del prodotto con ID %d al carrello", prodottoID);
-    logID = inserimentoOperazione(customerID, comando.c_str());
+    sprintf(comando, "Aggiunta del prodotto con ID = %d al carrello", prodottoID);
+    logID = inserimentoOperazione(customerID, comando);
     if (logID == -1)
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
@@ -727,7 +727,7 @@ void addIndirizzo(const Pistache::Rest::Request& request, Pistache::Http::Respon
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente\n");
         return;
     }
-    logID = inserimentoOperazione(customerID, 'Aggiunta di un indirizzo');
+    logID = inserimentoOperazione(customerID, "Aggiunta di un indirizzo");
     if (logID == -1)
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
@@ -750,6 +750,7 @@ void addIndirizzo(const Pistache::Rest::Request& request, Pistache::Http::Respon
 void removeCarrello(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) 
 {
     int logID;
+    char comando[100];
     // Recupera i parametri dalla richiesta
     std::string email = request.param(":email").as<std::string>();
     if (email.empty()) {
@@ -769,8 +770,8 @@ void removeCarrello(const Pistache::Rest::Request& request, Pistache::Http::Resp
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente\n");
         return;
     }
-    sprintf(comando, "Rimozione del prodotto con ID %d dal carrello", productID);
-    logID = inserimentoOperazione(customerID, comando.c_str());
+    sprintf(comando, "Rimozione del prodotto con ID = %d dal carrello", productID);
+    logID = inserimentoOperazione(customerID, comando);
     if (logID == -1)
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
@@ -791,6 +792,7 @@ void removeCarrello(const Pistache::Rest::Request& request, Pistache::Http::Resp
 void annullaOrd(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) 
 {
     int logID;
+    char comando[100];
     // Recupera i parametri dalla richiesta
     std::string email = request.param(":email").as<std::string>();
     if (email.empty()) {
@@ -810,8 +812,8 @@ void annullaOrd(const Pistache::Rest::Request& request, Pistache::Http::Response
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente\n");
         return;
     }
-    sprintf(comando, "Annullamento dell'ordine con ID %d", ordineID);
-    logID = inserimentoOperazione(customerID, comando.c_str());
+    sprintf(comando, "Annullamento dell'ordine con ID = %d", ordineID);
+    logID = inserimentoOperazione(customerID, comando);
     if (logID == -1)
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
@@ -852,7 +854,7 @@ void ordina(const Pistache::Rest::Request& request, Pistache::Http::ResponseWrit
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente");
         return;
     }
-    logID = inserimentoOperazione(customerID, 'Richiesta di un ordine');
+    logID = inserimentoOperazione(customerID, "Richiesta di un ordine");
     if (logID == -1)
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
@@ -872,6 +874,8 @@ void ordina(const Pistache::Rest::Request& request, Pistache::Http::ResponseWrit
 //curl -X DELETE http://localhost:5001/abc@abc.it/indirizzi/1
 void removeIndirizzo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response) 
 {
+    int logID;
+    char comando[100];
         // Recupera i parametri dalla richiesta
     std::string email = request.param(":email").as<std::string>();
     if (email.empty()) {
@@ -891,7 +895,7 @@ void removeIndirizzo(const Pistache::Rest::Request& request, Pistache::Http::Res
         return;
     }
     sprintf(comando, "Rimozione dell'indirizzo con ID = %d", addressID);
-    logID = inserimentoOperazione(customerID, comando.c_str());
+    logID = inserimentoOperazione(customerID, comando);
     if (logID == -1)
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
@@ -947,7 +951,7 @@ int inserimentoOperazione(int customerID, const char* operazione)
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_HANDLER, PASSWORD_HANDLER, LOG_DB_NAME); // Effettua la connessione al database dei log
     try
     {
-        sprintf(comando, "INSERT INTO cliente(User_Id, TipoUser, OperationType, Data_inizio) VALUES(%d, 'customer', '%s', NOW()) RETURNING Id", customerID, operazione);
+        sprintf(comando, "INSERT INTO cliente(Cliente_Id, TipoUser, OperationType, Data_inizio) VALUES(%d, 'customer', '%s', NOW()) RETURNING Id", customerID, operazione);
         res = db.ExecSQLtuples(comando);
         logID = atoi(PQgetvalue(res, 0, PQfnumber(res, "Id")));
         PQclear(res);
@@ -955,8 +959,8 @@ int inserimentoOperazione(int customerID, const char* operazione)
     }
     catch(...)
     {
+        std::cerr << "Errore nel database dei log\n";
         PQclear(res);
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
         return -1;
     }
 }
@@ -975,6 +979,7 @@ bool successoOperazione(int logID)
     }
     catch(...)
     {
+        std::cerr << "Errore nel database dei log\n";
         PQclear(res);
         return false;
     }
@@ -995,6 +1000,7 @@ bool fallimentoOperazione(int logID)
     }
     catch(...)
     {
+        std::cerr << "Errore nel database dei log\n";
         PQclear(res);
         return false;
     }
