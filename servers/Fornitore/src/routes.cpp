@@ -1,5 +1,7 @@
 #include "routes.h"
 using json = nlohmann::json; // Abbreviazione per il json
+using namespace std::chrono_literals; // Namespace per utilizzare il timer
+using Clock = std::chrono::system_clock;
 
 void defineRoutes(Pistache::Rest::Router& router) 
 {
@@ -46,7 +48,9 @@ int recuperaSupplierID(const std::string& email)
 void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     // Recupera l'email dal percorso
+    auto start = std::chrono::high_resolution_clock::now();
     std::string email = request.param(":email").as<std::string>();
+
 
     if (email.empty()) {
         response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
@@ -56,6 +60,14 @@ void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::
     // Ora chiama la funzione autentica
     int ID = autentica(email.c_str());
 
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsed = finish - start;
+    std::cout << elased.count() << std::endl;
+    if (elapsed.count() < 300ms)
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        return;
+    }
     if (ID > 0) {
         response.send(Pistache::Http::Code::Ok, "Supplier authenticated\n");
     } else {
