@@ -63,7 +63,7 @@ void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::
     auto finish = std::chrono::high_resolution_clock::now();
     double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
     std::cout << elapsed << std::endl;
-    if (elapsed > 1)
+    if (elapsed > TEMPO_LIMITE)
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
         return;

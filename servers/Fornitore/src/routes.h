@@ -27,6 +27,7 @@
 #define USERNAMEP "producer"
 #define PASSWORDP "producer"
 #define DB_NAME "mewingdb"
+#define TEMPO_LIMITE 1 // Si considera come tempo limite un secondo
 
 void defineRoutes(Pistache::Rest::Router& router);
 void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
