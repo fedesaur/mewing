@@ -48,9 +48,8 @@ int recuperaSupplierID(const std::string& email)
 void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     // Recupera l'email dal percorso
-    auto start = std::chrono::high_resolution_clock::now();
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
     std::string email = request.param(":email").as<std::string>();
-
 
     if (email.empty()) {
         response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
@@ -60,10 +59,10 @@ void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::
     // Ora chiama la funzione autentica
     int ID = autentica(email.c_str());
 
-    auto finish = std::chrono::high_resolution_clock::now();
+    auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
     double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
     std::cout << elapsed << std::endl;
-    if (elapsed > TEMPO_LIMITE)
+    if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
         return;
@@ -79,6 +78,7 @@ void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::
 //curl -X PUT -H "Content-Type: application/json" -d '{"nome": "nome", "IVA": "12312312312", "telefono": "1234567890", "email" : "simy@email.com", "via" : "Via lotteria", "civico": 12, "cap" : "12345", "city" : "Palermo", "stato" : "Repubblica delle Banane"}' http://localhost:5002/autentica/
 void creaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
     json dati = json::parse(request.body());
     // Controlla se i dati forniti dall'utente sono presenti e corretti
     if (!dati.contains("email") || dati["email"].empty()) response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
@@ -112,6 +112,15 @@ void creaFornitore(const Pistache::Rest::Request& request, Pistache::Http::Respo
     
     //Chiama la funzione per creare il nuovo Fornitore
     bool esito = crea(email.c_str(), nome.c_str(), IVA.c_str(), telefono.c_str(), via.c_str(), civico, CAP.c_str(), city.c_str(), stato.c_str());
+    auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+    double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+    std::cout << elapsed << std::endl;
+    if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        return;
+    }
+    
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Supplier created\n");
     } else {
@@ -122,6 +131,7 @@ void creaFornitore(const Pistache::Rest::Request& request, Pistache::Http::Respo
 //curl -X PUT -H "Content-Type: application/json" -d '{"nomeProdotto": "nome", "descrizioneProdotto": "descrizione", "prezzoProdotto": 1.23345}' http://localhost:5002/prova1@prova1.it/prodotti/
 void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
     // Recupera l'email del fornitore tra i parametri
     std::string email = request.param(":email").as<std::string>();
     json dati = json::parse(request.body());
@@ -141,6 +151,14 @@ void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
     }
 
     bool esito = aggiungiFornito(supplierID, nomeProdotto.c_str(), descrizioneProdotto.c_str(), prezzoProdotto);
+    auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+    double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+    std::cout << elapsed << std::endl;
+    if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        return;
+    }
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Product added to system\n");
     } else {
@@ -152,6 +170,7 @@ void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
 //curl -X DELETE http://localhost:5002/prova1@prova1.it/prodotti/1
 void eliminaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
     // Recupera l'email dal percorso
     std::string email = request.param(":email").as<std::string>();
     std::string id = request.param(":idProdotto").as<std::string>();
@@ -172,6 +191,14 @@ void eliminaProdotto(const Pistache::Rest::Request& request, Pistache::Http::Res
         return;
     }
     bool esito = rimuoviFornito(supplierID, productID); // Ora chiama la funzione autentica
+    auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+    double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+    std::cout << elapsed << std::endl;
+    if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        return;
+    }
     if (esito) {
         response.send(Pistache::Http::Code::Ok, "Product deleted from system\n");
     } else {
@@ -182,6 +209,8 @@ void eliminaProdotto(const Pistache::Rest::Request& request, Pistache::Http::Res
 //curl -X POST -H "Content-Type: application/json" -d '{"nomeProdotto": "nome", "descrizioneProdotto": "descrizione", "prezzoProdotto": 1.23345}' http://localhost:5002/prova1@prova1.it/prodotti/1
 void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
+
     // Recupera l'email del fornitore tra i parametri
     std::string email = request.param(":email").as<std::string>();
     std::string id = request.param(":idProdotto").as<std::string>(); 
@@ -213,6 +242,14 @@ void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
         return;
     }
     bool esito = modificaFornito(nomeProdotto.c_str(), descrizioneProdotto.c_str(), prezzoProdotto, ID);
+    auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+    double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+    std::cout << elapsed << std::endl;
+    if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        return;
+    }
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Product's attributes modified from system\n");
     } else {
@@ -223,6 +260,7 @@ void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
 //curl -X GET http://localhost:5002/prova1@prova1.it/prodotti/
 void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
     std::stringstream ss;
     redisContext *c2r; // c2r contiene le info sul contesto
     redisReply *reply; // reply contiene le risposte da Redis
@@ -290,9 +328,17 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
                 << " Descrizione Prodotto: " << FORNITI[i].descrizione
                 << " Prezzo Prodotto: " << FORNITI[i].prezzo << "\n";
         }
-        // Invia la risposta con i prodotti
-        response.send(Pistache::Http::Code::Ok, ss.str());
         delete[] FORNITI; // Libera la memoria allocata dinamicamente
+        auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+        double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+        std::cout << elapsed << std::endl;
+        if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
+        {
+            response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+            return;
+        }
+        response.send(Pistache::Http::Code::Ok, ss.str()); // Invia la risposta con i prodotti
+
     } else {
         // Nessun prodotto trovato in Redis
         response.send(Pistache::Http::Code::Ok, "Nessun prodotto fornito!\n");
@@ -307,6 +353,7 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
 void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
     // Recupera l'email del fornitore tra i parametri
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
     std::string email = request.param(":email").as<std::string>();
     json dati = json::parse(request.body());
     // Controlla se i dati forniti dall'utente sono presenti e corretti
@@ -322,6 +369,11 @@ void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::Respon
     if (telefono.length() > 15 || telefono.length() < 10 || !isNumber(telefono)) response.send(Pistache::Http::Code::Bad_Request, "Telephone must be a string a 10-15 numbers\n");
 
     bool esito = modificaInfoF(email.c_str(), nome.c_str(), IVA.c_str(), telefono.c_str());
+    if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        return;
+    }
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Info changes\n");
     } else {
