@@ -1,41 +1,4 @@
-python3 couriertests.py
-FFRisposta: Ordine consegnato
-
-.FRisposta: Courier deleted from system
-
-.EE
-======================================================================
-ERROR: test_get_corrieri (__main__.TestAPI.test_get_corrieri)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/usr/lib/python3/dist-packages/requests/models.py", line 960, in json
-    return complexjson.loads(self.content.decode(encoding), **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
-    return _default_decoder.decode(s)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
-    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
-    raise JSONDecodeError("Expecting value", s, err.value) from None
-json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/home/federica/mewing/test/couriertests.py", line 40, in test_get_corrieri
-    corrieri_data = response.json()
-                    ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3/dist-packages/requests/models.py", line 968, in json
-    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
-requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
-
-======================================================================
-ERROR: test_get_ordini (__main__.TestAPI.test_get_ordini)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/usr/lib/python3/dist-packages/requests/models.py", line 960, in json
+File "/usr/lib/python3/dist-packages/requests/models.py", line 960, in json
     return complexjson.loads(self.content.decode(encoding), **kwargs)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
@@ -51,42 +14,12 @@ json.decoder.JSONDecodeError: Expecting value: line 2 column 1 (char 1)
 During handling of the above exception, another exception occurred:
 
 Traceback (most recent call last):
-  File "/home/federica/mewing/test/couriertests.py", line 31, in test_get_ordini
+  File "/home/federica/mewing/test/couriertests.py", line 69, in <module>
+    test_get_ordini()
+  File "/home/federica/mewing/test/couriertests.py", line 28, in test_get_ordini
     ordini_data = response.json()
                   ^^^^^^^^^^^^^^^
   File "/usr/lib/python3/dist-packages/requests/models.py", line 968, in json
     raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
 requests.exceptions.JSONDecodeError: Expecting value: line 2 column 1 (char 1)
-
-======================================================================
-FAIL: test_accetta_ordine (__main__.TestAPI.test_accetta_ordine)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/home/federica/mewing/test/couriertests.py", line 50, in test_accetta_ordine
-    self.assertEqual(response.status_code, 200)
-AssertionError: 400 != 200
-
-======================================================================
-FAIL: test_autentica_trasportatore (__main__.TestAPI.test_autentica_trasportatore)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/home/federica/mewing/test/couriertests.py", line 23, in test_autentica_trasportatore
-    self.assertEqual(response.text, "Autenticazione avvenuta con successo.")
-AssertionError: 'Trasporter authenticated\n' != 'Autenticazione avvenuta con successo.'
-+ Autenticazione avvenuta con successo.
-- Trasporter authenticated
-- 
-
-
-======================================================================
-FAIL: test_crea_trasportatore (__main__.TestAPI.test_crea_trasportatore)
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/home/federica/mewing/test/couriertests.py", line 73, in test_crea_trasportatore
-    self.assertEqual(response.status_code, 200)
-AssertionError: 400 != 200
-
-----------------------------------------------------------------------
-Ran 7 tests in 1.339s
-
 
