@@ -1,97 +1,77 @@
+import unittest
 import requests
 import random
-import json
 
-# Dati di configurazione
-HOST = "127.0.0.1"
-PORT = 5003
-BASE_URL = f"http://{HOST}:{PORT}"
+# Configurazione di base
+BASE_URL = "http://127.0.0.1:5003"
 
-# Lista di PIVA per i trasportatori esistenti nel sistema
+# Lista di PIVA esistenti
 piva_list = ["32132132132", "45645645645", "78978978978"]
 
-# Variabile per contare i test riusciti
-success_count = 0
-total_tests = 3 * len(piva_list)  # Numero totale di test da eseguire
+# Test class
+class TestAPI(unittest.TestCase):
 
-# Funzione per ottenere una PIVA casuale dal sistema
-def get_random_piva():
-    return random.choice(piva_list)
+    # Funzione per ottenere una PIVA casuale
+    def get_random_piva(self):
+        return random.choice(piva_list)
 
-### Test per ciascuna rotta ###
-
-# 1. Test autentica trasportatore
-def test_autentica_trasportatore(piva):
-    global success_count
-    try:
-        response = requests.post(f"{BASE_URL}/autentica/{piva}")
+    # Test autenticazione trasportatore
+    def test_autentica_trasportatore(self):
+        piva = self.get_random_piva()
+        response = requests.get(f"{BASE_URL}/autentica/{piva}")
         if response.status_code == 200:
-            print(f"Autenticazione avvenuta con successo per PIVA {piva}")
-            success_count += 1  # Incrementa il contatore in caso di successo
-        elif response.status_code == 401:
-            print(f"Autenticazione fallita per PIVA {piva}: Non autorizzato.")
+            self.assertEqual(response.text, "Autenticazione avvenuta con successo.")
         else:
-            print(f"Errore durante l'autenticazione per PIVA {piva}. Status code: {response.status_code}")
-    except requests.exceptions.RequestException as e:
-        print(f"Errore di connessione durante il test di autenticazione per PIVA {piva}: {e}")
+            self.assertEqual(response.status_code, 401)
 
-# 2. Test recupera ordini
-def test_get_ordini():
-    global success_count
-    try:
-        response = requests.get(f"{BASE_URL}/ordini/")
-        if response.status_code == 200:
-            print("Ordini recuperati con successo:")
-            print(response.text)
-            success_count += 1  # Incrementa il contatore in caso di successo
-            return None
-        elif response.status_code == 500:
-            print("Errore interno nel recupero degli ordini.")
-        else:
-            print(f"Errore nel recupero degli ordini. Status code: {response.status_code}")
-    except requests.exceptions.RequestException as e:
-        print(f"Errore di connessione durante il test di recupero ordini: {e}")
-    return None  # In caso di errore, ritorna None
+    # Test recupera ordini
+    def test_get_ordini(self):
+        response = requests.get(f"{BASE_URL}/{self.get_random_piva()}/ricerca/")
+        self.assertEqual(response.status_code, 200)
+        ordini_data = response.json()
+        self.assertIsInstance(ordini_data, list)
+        print(f"Ordini: {ordini_data}")
 
-# 3. Test prendere in carico un ordine
-def test_accetta_ordine(piva, ordine_id, corriere_id):
-    global success_count
-    try:
-        response = requests.post(f"{BASE_URL}/accetta/{piva}/{ordine_id}/{corriere_id}")
-        if response.status_code == 200:
-            print(f"Ordine {ordine_id} preso in carico con successo per PIVA {piva}")
-            success_count += 1  # Incrementa il contatore in caso di successo
-        else:
-            print(f"Errore nel prendere in carico l'ordine {ordine_id}. Status code: {response.status_code}")
-    except requests.exceptions.RequestException as e:
-        print(f"Errore di connessione durante il test di presa in carico ordine {ordine_id}: {e}")
+    # Test recupera corrieri
+    def test_get_corrieri(self):
+        piva = self.get_random_piva()
+        response = requests.get(f"{BASE_URL}/{piva}/corrieri/")
+        self.assertEqual(response.status_code, 200)
+        corrieri_data = response.json()
+        self.assertIsInstance(corrieri_data, list)
+        print(f"Corrieri: {corrieri_data}")
 
-### Funzione principale per eseguire tutti i test ###
-def run_all_tests():
-    print("Esecuzione dei test automatici...\n")
+    # Test accettazione ordine
+    def test_accetta_ordine(self):
+        piva = self.get_random_piva()
+        ordine_id = 1  # Simuliamo l'ordine con ID 1
+        corriere_id = 1  # Simuliamo il corriere con ID 1
+        response = requests.put(f"{BASE_URL}/{piva}/ordini/", json={"ordineID": ordine_id, "corriereID": corriere_id})
+        self.assertEqual(response.status_code, 200)
+        print(f"Risposta: {response.text}")
 
-    # Esegui il test per ogni PIVA
-    for piva in piva_list:
-        print(f"\n--- Test Autentica Trasportatore (PIVA: {piva}) ---")
-        test_autentica_trasportatore(piva)
+    # Test consegna ordine
+    def test_consegna_ordine(self):
+        piva = self.get_random_piva()
+        ordine_id = 1  # Simuliamo l'ordine con ID 1
+        response = requests.post(f"{BASE_URL}/{piva}/ordini/{ordine_id}")
+        self.assertEqual(response.status_code, 200)
+        print(f"Risposta: {response.text}")
 
-        print("\n--- Test Recupera Ordini ---")
-        ordini_data = test_get_ordini()
-        
-        test_accetta_ordine(piva, 5, 1)
-        """
-        if ordini_data and len(ordini_data) > 0:
-            # Assumiamo che l'ID del corriere sia sempre valido (es. 1), e prendiamo il primo ordine disponibile
-            ordine_id = ordini_data[0]['ID']  # Ottieni l'ID del primo ordine
-            corriere_id = 1  # Può essere sostituito con un ID corriere valido se necessario
+    # Test eliminazione corriere
+    def test_delete_corriere(self):
+        piva = self.get_random_piva()
+        corriere_id = 1  # Simuliamo il corriere con ID 1
+        response = requests.delete(f"{BASE_URL}/{piva}/corrieri/{corriere_id}")
+        self.assertEqual(response.status_code, 200)
+        print(f"Risposta: {response.text}")
 
-            print(f"\n--- Test Prendi in carico Ordine (ID Ordine: {ordine_id}, PIVA: {piva}) ---")
-            test_accetta_ordine(piva, ordine_id, corriere_id)
-        else:
-            print("Nessun ordine disponibile da prendere in carico.") """
-
-    # Stampa dei risultati finali
-    print(f"\nTest automatici completati: {success_count} su {total_tests} test sono andati a buon fine.")
+    # Test creazione trasportatore
+    def test_crea_trasportatore(self):
+        nuova_piva = "12312312312"  # Nuova PIVA
+        response = requests.put(f"{BASE_URL}/autentica/", json={"piva": nuova_piva})
+        self.assertEqual(response.status_code, 200)
+        print(f"Risposta: {response.text}")
 
 if __name__ == "__main__":
-    run_all_tests()
+    unittest.main()
