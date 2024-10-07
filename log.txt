@@ -1,18 +1,92 @@
-In file included from ../metodi/modificaNome.h:16,
-                 from routes.h:13,
-                 from routes.cpp:1:
-/usr/include/pistache/router.h: In instantiation of ‘Pistache::Rest::Route::Handler Pistache::Rest::Routes::bind(Result (*)(Args ...)) [with Result = bool; Args = {int, int}; Pistache::Rest::Route::Handler = std::function<Pistache::Rest::Route::Result(Pistache::Rest::Request, Pistache::Http::ResponseWriter)>]’:
-routes.cpp:18:103:   required from here
-/usr/include/pistache/router.h:437:21: error: cannot convert ‘const Pistache::Rest::Request’ to ‘int’ in argument passing
-  437 |                 func(request, std::move(response));
-      |                 ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/usr/include/pistache/router.h: In instantiation of ‘struct Pistache::Rest::Routes::details::BindChecks<int, int>’:
-/usr/include/pistache/router.h:403:70:   required from ‘constexpr void Pistache::Rest::Routes::details::static_checks() [with Checks = BindChecks; Args = {int, int}]’
-/usr/include/pistache/router.h:434:65:   required from ‘Pistache::Rest::Route::Handler Pistache::Rest::Routes::bind(Result (*)(Args ...)) [with Result = bool; Args = {int, int}; Pistache::Rest::Route::Handler = std::function<Pistache::Rest::Route::Result(Pistache::Rest::Request, Pistache::Http::ResponseWriter)>]’
-routes.cpp:18:103:   required from here
-/usr/include/pistache/router.h:377:21: error: static assertion failed: Function should accept (const Rest::Request&, HttpResponseWriter)
-  377 |                     request_check && response_check,
-      |                     ^~~~~~~~~~~~~
-/usr/include/pistache/router.h:377:21: note: ‘Pistache::Rest::Routes::details::BindChecks<int, int>::request_check’ evaluates to false
-make: *** [Makefile:45: api] Errore 1
+python3 couriertests.py
+FFRisposta: Ordine consegnato
+
+.FRisposta: Courier deleted from system
+
+.EE
+======================================================================
+ERROR: test_get_corrieri (__main__.TestAPI.test_get_corrieri)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/requests/models.py", line 960, in json
+    return complexjson.loads(self.content.decode(encoding), **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/federica/mewing/test/couriertests.py", line 40, in test_get_corrieri
+    corrieri_data = response.json()
+                    ^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/requests/models.py", line 968, in json
+    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_get_ordini (__main__.TestAPI.test_get_ordini)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/requests/models.py", line 960, in json
+    return complexjson.loads(self.content.decode(encoding), **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 2 column 1 (char 1)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/federica/mewing/test/couriertests.py", line 31, in test_get_ordini
+    ordini_data = response.json()
+                  ^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/requests/models.py", line 968, in json
+    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+requests.exceptions.JSONDecodeError: Expecting value: line 2 column 1 (char 1)
+
+======================================================================
+FAIL: test_accetta_ordine (__main__.TestAPI.test_accetta_ordine)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/federica/mewing/test/couriertests.py", line 50, in test_accetta_ordine
+    self.assertEqual(response.status_code, 200)
+AssertionError: 400 != 200
+
+======================================================================
+FAIL: test_autentica_trasportatore (__main__.TestAPI.test_autentica_trasportatore)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/federica/mewing/test/couriertests.py", line 23, in test_autentica_trasportatore
+    self.assertEqual(response.text, "Autenticazione avvenuta con successo.")
+AssertionError: 'Trasporter authenticated\n' != 'Autenticazione avvenuta con successo.'
++ Autenticazione avvenuta con successo.
+- Trasporter authenticated
+- 
+
+
+======================================================================
+FAIL: test_crea_trasportatore (__main__.TestAPI.test_crea_trasportatore)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/federica/mewing/test/couriertests.py", line 73, in test_crea_trasportatore
+    self.assertEqual(response.status_code, 200)
+AssertionError: 400 != 200
+
+----------------------------------------------------------------------
+Ran 7 tests in 1.339s
+
 
