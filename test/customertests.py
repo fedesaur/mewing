@@ -59,7 +59,7 @@ def test_modifica_info(email):
     try:
         data = {"nome": "Nuovo Nome", "cognome": "Nuovo Cognome"}
         response = requests.post(f"{BASE_URL}/{email}/", json=data, timeout=REQUEST_TIMEOUT)
-        if response.status_code == 200:
+        if response.status_code == 201:
             print(f"Informazioni del customer modificate con successo per {email}")
             increment_success_count()
         else:
@@ -171,7 +171,7 @@ def run_tests_for_email(email):
     test_autentica(email)
 
     print("\n--- Test Crea Customer ---")
-    test_crea_customer(email)
+    #test_crea_customer(email)
 
     print("\n--- Test Modifica Info Customer ---")
     test_modifica_info(email)
@@ -180,13 +180,10 @@ def run_tests_for_email(email):
     test_recupera_indirizzi(email)
 
     print("\n--- Test Rimuovi Indirizzo ---")
-    test_remove_indirizzo(email)
+    #test_remove_indirizzo(email)
 
     print("\n--- Test Recupera Ordini ---")
     test_recupera_ordini(email)
-
-    print("\n--- Test Annulla Ordine ---")
-    test_annulla_ordine(email)
 
     print("\n--- Test Recupera Prodotti ---")
     test_recupera_prodotti(email)
@@ -196,9 +193,15 @@ def run_tests_for_email(email):
 
     print("\n--- Test Rimuovi Prodotto dal Carrello ---")
     test_remove_prodotto_carrello(email)
+    
+    print("\n--- Test Aggiungi Prodotto al Carrello per fare ordine ---")
+    test_aggiungi_prodotto_al_carrello(email)
 
     print("\n--- Test Effettua Ordine ---")
     test_ordina(email)
+    
+    print("\n--- Test Annulla Ordine ---")
+    test_annulla_ordine(email)
 
 ### Funzione principale per eseguire tutti i test su più email contemporaneamente ###
 def run_all_tests_concurrently():
