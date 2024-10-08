@@ -18,6 +18,9 @@ lock = threading.Lock()
 success_count = 0
 total_tests = 6 * len(email_list)  # Numero totale di test da eseguire
 
+# Timeout per le richieste
+REQUEST_TIMEOUT = 10  # Timeout di 10 secondi
+
 # Funzione per aggiornare il contatore dei successi in modo thread-safe
 def increment_success_count():
     global success_count
@@ -28,58 +31,76 @@ def increment_success_count():
 
 # 1. Test autentica
 def test_autentica(email):
-    response = requests.get(f"{BASE_URL}/autentica/{email}")
-    if response.status_code == 200:
-        print(f"Autenticazione avvenuta con successo per {email}")
-        increment_success_count()  # Incrementa il contatore in caso di successo
-    else:
-        print(f"Errore durante l'autenticazione per {email}. Status code: {response.status_code}")
+    try:
+        response = requests.get(f"{BASE_URL}/autentica/{email}", timeout=REQUEST_TIMEOUT)
+        if response.status_code == 200:
+            print(f"Autenticazione avvenuta con successo per {email}")
+            increment_success_count()  # Incrementa il contatore in caso di successo
+        else:
+            print(f"Errore durante l'autenticazione per {email}. Status code: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Errore nella richiesta per l'autenticazione: {e}")
 
 # 2. Test recupera indirizzi
 def test_recupera_indirizzi(email):
-    response = requests.get(f"{BASE_URL}/{email}/indirizzi/")
-    if response.status_code == 200:
-        print(f"Indirizzi recuperati con successo per {email}")
-        increment_success_count()  # Incrementa il contatore in caso di successo
-    else:
-        print(f"Errore durante il recupero degli indirizzi per {email}. Status code: {response.status_code}")
+    try:
+        response = requests.get(f"{BASE_URL}/{email}/indirizzi/", timeout=REQUEST_TIMEOUT)
+        if response.status_code == 200:
+            print(f"Indirizzi recuperati con successo per {email}")
+            increment_success_count()  # Incrementa il contatore in caso di successo
+        else:
+            print(f"Errore durante il recupero degli indirizzi per {email}. Status code: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Errore nella richiesta per il recupero degli indirizzi: {e}")
 
 # 3. Test recupera prodotti
 def test_recupera_prodotti(email):
-    response = requests.get(f"{BASE_URL}/{email}/prodotti/")
-    if response.status_code == 200:
-        print("Prodotti recuperati con successo")
-        increment_success_count()  # Incrementa il contatore in caso di successo
-    else:
-        print(f"Errore nel recupero dei prodotti. Status code: {response.status_code}")
+    try:
+        response = requests.get(f"{BASE_URL}/{email}/prodotti/", timeout=REQUEST_TIMEOUT)
+        if response.status_code == 200:
+            print("Prodotti recuperati con successo")
+            increment_success_count()  # Incrementa il contatore in caso di successo
+        else:
+            print(f"Errore nel recupero dei prodotti. Status code: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Errore nella richiesta per il recupero dei prodotti: {e}")
 
 # 4. Test aggiungi prodotto al carrello
-def test_aggiungi_prodotto_al_carrello(email):
-    response = requests.put(f"{BASE_URL}/{email}/carrello/", json={"quantita": 1, "IDprodotto": 3})
-    if response.status_code == 200:
-        print(f"Prodotto aggiunto al carrello per l'utente {email} con quantità {quantita}")
-        increment_success_count()  # Incrementa il contatore in caso di successo
-    else:
-        print(f"Errore nell'aggiunta del prodotto al carrello per {email}. Status code: {response.status_code}")
+def test_aggiungi_prodotto_al_carrello(email, quantita=1, IDprodotto=3):
+    try:
+        response = requests.put(f"{BASE_URL}/{email}/carrello/", json={"quantita": quantita, "IDprodotto": IDprodotto}, timeout=REQUEST_TIMEOUT)
+        if response.status_code == 200:
+            print(f"Prodotto aggiunto al carrello per l'utente {email} con quantità {quantita} e IDprodotto {IDprodotto}")
+            increment_success_count()  # Incrementa il contatore in caso di successo
+        else:
+            print(f"Errore nell'aggiunta del prodotto al carrello per {email}. Status code: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Errore nella richiesta per l'aggiunta del prodotto al carrello: {e}")
 
 # 5. Test visualizza carrello
 def test_visualizza_carrello(email):
-    response = requests.get(f"{BASE_URL}/{email}/carrello/")
-    if response.status_code == 200:
-        print(f"Carrello recuperato per {email}:")
-        print(response.text)
-        increment_success_count()  # Incrementa il contatore in caso di successo
-    else:
-        print(f"Errore nel recupero del carrello per {email}. Status code: {response.status_code}")
+    try:
+        response = requests.get(f"{BASE_URL}/{email}/carrello/", timeout=REQUEST_TIMEOUT)
+        if response.status_code == 200:
+            print(f"Carrello recuperato per {email}:")
+            print(response.text)
+            increment_success_count()  # Incrementa il contatore in caso di successo
+        else:
+            print(f"Errore nel recupero del carrello per {email}. Status code: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Errore nella richiesta per il recupero del carrello: {e}")
 
 # 6. Test effettua ordine
 def test_ordina(email):
-    response = requests.put(f"{BASE_URL}/{email}/ordini/", json={"pagamento": 'bancomat', "indirizzo": 1})
-    if response.status_code == 200:
-        print(f"Ordine effettuato con successo per {email}")
-        increment_success_count()  # Incrementa il contatore in caso di successo
-    else:
-        print(f"Errore durante l'ordine per {email}. Status code: {response.status_code}")
+    try:
+        response = requests.put(f"{BASE_URL}/{email}/ordini/", json={"pagamento": 'bancomat', "indirizzo": 1}, timeout=REQUEST_TIMEOUT)
+        if response.status_code == 200:
+            print(f"Ordine effettuato con successo per {email}")
+            increment_success_count()  # Incrementa il contatore in caso di successo
+        else:
+            print(f"Errore durante l'ordine per {email}. Status code: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Errore nella richiesta per l'effettuazione dell'ordine: {e}")
 
 ### Funzione per eseguire tutti i test per una specifica email ###
 def run_tests_for_email(email):
