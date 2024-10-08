@@ -17,7 +17,7 @@ bool recuperaOrdini(const char* mail)
         return false;
     }
 
-    reply = RedisCommand(c2r, "DEL ordini:%s", mail);
+    reply = RedisCommand(c2r, "DEL ordiniUtente:%s", mail);
     assertReply(c2r, reply);
     freeReplyObject(reply);
 
@@ -44,11 +44,11 @@ bool recuperaOrdini(const char* mail)
                 int indirizzo = atoi(PQgetvalue(res, i, PQfnumber(res, "indirizzo")));
 
                 // Memorizza il prodotto in Redis come hash
-                redisCommand(c2r, "HMSET ordine:%d id %d stato %s data %s consegna 0 totale %f pagamento %s indirizzo %d", 
+                redisCommand(c2r, "HMSET ordineUtente:%d id %d stato %s data %s consegna 0 totale %f pagamento %s indirizzo %d", 
                             ID, ID, stato, tempo.c_str(), totale, pagamento, indirizzo);
 
                 // Aggiungi l'ID del prodotto alla lista associata all'email
-                redisCommand(c2r, "RPUSH ordini:%s %d", mail, ID);
+                redisCommand(c2r, "RPUSH ordiniUtente:%s %d", mail, ID);
             }
 
         }
@@ -76,11 +76,11 @@ bool recuperaOrdini(const char* mail)
                 int indirizzo = atoi(PQgetvalue(res, i, PQfnumber(res, "indirizzo")));
 
                 // Memorizza il prodotto in Redis come hash
-                redisCommand(c2r, "HMSET ordine:%d id %d stato %s data %s consegna %d totale %f pagamento %s indirizzo %d", 
+                redisCommand(c2r, "HMSET ordineUtente:%d id %d stato %s data %s consegna %d totale %f pagamento %s indirizzo %d", 
                             ID, ID, stato, tempo.c_str(), tempo2.c_str(), totale, pagamento);
 
                 // Aggiungi l'ID del prodotto alla lista associata all'email
-                redisCommand(c2r, "RPUSH ordini:%s %d", mail, ID);
+                redisCommand(c2r, "RPUSH ordiniUtente:%s %d", mail, ID);
             }
 
         }

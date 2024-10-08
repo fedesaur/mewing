@@ -309,7 +309,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
     }
 
     // Recupera la lista di ID prodotti per l'email dal Redis
-    reply = RedisCommand(c2r, "LRANGE ordini:%s 0 -1", email.c_str());
+    reply = RedisCommand(c2r, "LRANGE ordiniUtente:%s 0 -1", email.c_str());
     if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera gli indirizzi da Redis
     {
         RIGHE = reply->elements;
@@ -320,7 +320,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
             std::string productID = reply->element[i]->str;
 
             // Recupera il prodotto come hash da Redis
-            orderReply = RedisCommand(c2r, "HGETALL ordine:%s", productID.c_str());
+            orderReply = RedisCommand(c2r, "HGETALL ordineUtente:%s", productID.c_str());
     
             // Verifica il risultato del recupero...
             if (orderReply->type == REDIS_REPLY_ARRAY && orderReply->elements == 14) // 7 dati Richiesti: ID Ordine, Stato, Data Richiesta, Data Consegna, Totale, Tipo di Pagamento, Indirizzo
