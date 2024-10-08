@@ -19,7 +19,7 @@ BEGIN
 	IF EXISTS(
 			SELECT 1
 				FROM cliente
-				WHERE NEW.User_Id=client.User_Id
+				WHERE NEW.Cliente_id=cliente.Cliente_id
 				AND (cliente.Data_termine IS NULL OR NEW.Data_inizio <= cliente.Data_termine)
 		)	IS TRUE THEN
 				RAISE EXCEPTION 'connessione file descriptor non chiusa';
