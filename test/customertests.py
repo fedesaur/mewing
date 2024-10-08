@@ -48,14 +48,14 @@ def test_recupera_indirizzi(email):
 def test_recupera_prodotti(email):
     response = requests.get(f"{BASE_URL}/{email}/prodotti/")
     if response.status_code == 200:
-        print("Prodotti recuperati con successo:")
+        print("Prodotti recuperati con successo")
         increment_success_count()  # Incrementa il contatore in caso di successo
     else:
         print(f"Errore nel recupero dei prodotti. Status code: {response.status_code}")
 
 # 4. Test aggiungi prodotto al carrello
 def test_aggiungi_prodotto_al_carrello(email):
-    response = requests.put(f"{BASE_URL}/{email}/carrello/", json={"quantita": 1, "IDprodotto": 7})
+    response = requests.put(f"{BASE_URL}/{email}/carrello/", json={"quantita": 1, "IDprodotto": 3})
     if response.status_code == 200:
         print(f"Prodotto aggiunto al carrello per l'utente {email} con quantità {quantita}")
         increment_success_count()  # Incrementa il contatore in caso di successo
