@@ -866,7 +866,7 @@ void ordina(const Pistache::Rest::Request& request, Pistache::Http::ResponseWrit
         response.send(Pistache::Http::Code::Ok, "Ordine effettuato\n");
         successoOperazione(logID);
     } else {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore durante l'ordine\n");
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore durante l'ordine\n Verificare siano presenti prodotti nel carrello!\n");
         fallimentoOperazione(logID);
     }
 }

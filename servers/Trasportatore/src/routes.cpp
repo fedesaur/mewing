@@ -645,7 +645,7 @@ void consegna(const Pistache::Rest::Request& request, Pistache::Http::ResponseWr
     if (esito) {
         response.send(Pistache::Http::Code::Ok, "Ordine consegnato\n");
     } else {
-        response.send(Pistache::Http::Code::Unauthorized, "C'è stato un errore nella consegna\n");
+        response.send(Pistache::Http::Code::Unauthorized, "C'è stato un errore nella consegna\n (Controllare che l'ordine non sia già stato consegnato!)\n");
     }
 }
 

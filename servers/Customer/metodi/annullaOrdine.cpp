@@ -10,13 +10,10 @@ bool annullaOrdine(int IDOrdine, int userID)
     {
         sprintf(comando, "SELECT * FROM transord WHERE ordine = %d", IDOrdine);
         res = db.ExecSQLtuples(comando);
-        rows = PQntuples(res);
-        if (rows >= 1)
-        {
-            PQclear(res);
-            return false;
-        }
+        if (PQntuples(res) > 0) return false; //Se l'ordine è già stato preso in carico, non si può annullare
         PQclear(res);
+        
+        // Annulla l'ordine
         sprintf(comando, "UPDATE ordine SET stato = 'annullato' WHERE id = %d AND customer = %d", IDOrdine, userID);
         res = db.ExecSQLcmd(comando);
         PQclear(res);
