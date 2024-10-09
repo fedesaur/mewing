@@ -1,6 +1,7 @@
 #include "routes.h"
-
-using json = nlohmann::json;
+using json = nlohmann::json; // Abbreviazione per il json
+using namespace std::chrono_literals; // Namespace per utilizzare il timer
+using Clock = std::chrono::system_clock;
 
 void defineRoutes(Pistache::Rest::Router& router) 
 {
@@ -8,7 +9,6 @@ void defineRoutes(Pistache::Rest::Router& router)
     Pistache::Rest::Routes::Get(router, "/autentica/:piva", Pistache::Rest::Routes::bind(&autenticaTrasportatore));
     Pistache::Rest::Routes::Get(router, "/:piva/ricerca/", Pistache::Rest::Routes::bind(&getOrdini));
     Pistache::Rest::Routes::Get(router, "/:piva/corrieri/", Pistache::Rest::Routes::bind(&getCorrieri));
-    Pistache::Rest::Routes::Get(router, "/:piva/ordini/:orderID", Pistache::Rest::Routes::bind(&getProdottiOrdine));
     Pistache::Rest::Routes::Get(router, "/:piva/correnti/", Pistache::Rest::Routes::bind(&getCorrenti));
     Pistache::Rest::Routes::Get(router, "/:piva/registrati/", Pistache::Rest::Routes::bind(&getRegistrati));
     Pistache::Rest::Routes::Put(router, "/:piva/corrieri/", Pistache::Rest::Routes::bind(&putCorriere));
@@ -21,6 +21,7 @@ void defineRoutes(Pistache::Rest::Router& router)
 //curl -X GET http://localhost:5003/autentica/32132132132
 void autenticaTrasportatore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
     // Recupera l'email dal percorso
     std::string IVA = request.param(":piva").as<std::string>();
 
@@ -30,7 +31,14 @@ void autenticaTrasportatore(const Pistache::Rest::Request& request, Pistache::Ht
     }
     // Ora chiama la funzione autentica
     int ID = autentica(IVA.c_str());
-
+    auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+    double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+    std::cout << elapsed << std::endl;
+    if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        return;
+    }
     if (ID > 0) {
         response.send(Pistache::Http::Code::Ok, "Trasporter authenticated\n");
     } else if (ID == 0) {
@@ -43,6 +51,7 @@ void autenticaTrasportatore(const Pistache::Rest::Request& request, Pistache::Ht
 //curl -X PUT -H "Content-Type: application/json" -d '{"nome": "AmaZZon", "piva": "12345678912", "via" : "Via del Denaro", "civico": 7, "cap" : "77777", "city" : "Napoli", "stato" : "Montecarlo"}' http://localhost:5003/autentica/
 void creaTrasportatore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
     json dati = json::parse(request.body());
     
     // Controlla se i dati forniti dall'utente sono presenti, non null e corretti
@@ -127,7 +136,14 @@ void creaTrasportatore(const Pistache::Rest::Request& request, Pistache::Http::R
 
     // Chiama la funzione per creare il nuovo Trasportatore
     bool esito = crea(piva.c_str(), nome.c_str(), via.c_str(), civico, CAP.c_str(), city.c_str(), stato.c_str());
-    
+    auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+    double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+    std::cout << elapsed << std::endl;
+    if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        return;
+    }
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Trasporter created\n");
     } else {
@@ -139,6 +155,8 @@ void creaTrasportatore(const Pistache::Rest::Request& request, Pistache::Http::R
 //curl -X GET http://localhost:5003/32132132132/ricerca/
 void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
+    int logID;
     std::stringstream ss;
     redisContext *c2r; // c2r contiene le info sul contesto
     redisReply *reply; // reply contiene le risposte da Redis
@@ -154,11 +172,23 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
         response.send(Pistache::Http::Code::Bad_Request, "IVA not provided\n");
         return;
     }
-    
+    int trasporterID = recuperaCourierID(IVA) //Controlla che l'utente è nel sistema
+    if (trasporterID <= 0)
+    {
+        response.send(Pistache::Http::Code::Unauthorized, "Il Trasportatore non è nel sistema!\n");
+        return;
+    }
+    logID = inserimentoOperazione(trasporterID , "Ricerca degli ordini disponibili");
+    if (logID == -1)
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+        return;
+    }
     bool pubblicati = ricercaOrdini(IVA.c_str()); // Immette i prodotti presenti nel carrello nello stream
     if (!pubblicati) 
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover orders' info\n");
+        fallimentoOperazione(logID);
         return;
     }
 
@@ -167,6 +197,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
     if (c2r == nullptr || c2r->err) {
         std::cerr << "Errore nella connessione a Redis" << std::endl;
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to connect to Redis");
+        fallimentoOperazione(logID);
         return;
     }
 
@@ -201,7 +232,10 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
                 INDIRIZZI[i].citta = (orderReply->element[17]->str);
                 INDIRIZZI[i].stato = (orderReply->element[19]->str);
             } else {
+                delete[] ORDINI; // Libera la memoria allocata dinamicamente
+                delete[] INDIRIZZI; // Libera la memoria allocata dinamicamente
                 std::cerr << "Errore nel recupero di un ordine da Redis" << std::endl;
+                fallimentoOperazione(logID);
                 freeReplyObject(orderReply);
                 redisFree(c2r);
                 return;
@@ -230,6 +264,16 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
         // Nessun prodotto trovato in Redis
         response.send(Pistache::Http::Code::Ok, "Nessun ordine disponibile!\n");
     }
+    auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+    double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+    std::cout << elapsed << std::endl;
+    if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        fallimentoOperazione(logID);
+        return;
+    }
+    successoOperazione(logID);
     freeReplyObject(reply);
     redisFree(c2r);  // Chiudi la connessione a Redis
     return;
@@ -238,6 +282,8 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
 //curl -X GET http://localhost:5003/32132132132/correnti/
 void getCorrenti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
+    int logID;
     std::stringstream ss;
     redisContext *c2r; // c2r contiene le info sul contesto
     redisReply *reply; // reply contiene le risposte da Redis
@@ -258,11 +304,17 @@ void getCorrenti(const Pistache::Rest::Request& request, Pistache::Http::Respons
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID del Trasportatore\n");
         return;
     }
-
+    logID = inserimentoOperazione(trasporterID, "Recupero degli ordini in corso");
+    if (logID == -1)
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+        return;
+    }
     bool pubblicati = ordiniCorrenti(IVA.c_str(), trasporterID); // Immette i prodotti presenti nel carrello nello stream
     if (!pubblicati) 
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover orders' info\n");
+        fallimentoOperazione(logID);
         return;
     }
 
@@ -271,6 +323,7 @@ void getCorrenti(const Pistache::Rest::Request& request, Pistache::Http::Respons
     if (c2r == nullptr || c2r->err) {
         std::cerr << "Errore nella connessione a Redis" << std::endl;
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to connect to Redis");
+        fallimentoOperazione(logID);
         return;
     }
 
@@ -305,7 +358,10 @@ void getCorrenti(const Pistache::Rest::Request& request, Pistache::Http::Respons
                 CORRIERI[i].cognome = (orderReply->element[17]->str);
             } else {
                 std::cerr << "Errore nel recupero di un ordine da Redis" << std::endl;
+                delete[] ORDINI; // Libera la memoria allocata dinamicamente
+                delete[] CORRIERI; // Libera la memoria allocata dinamicamente
                 response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero degli ordini\n");
+                fallimentoOperazione(logID);
                 freeReplyObject(orderReply);
                 redisFree(c2r);
                 return;
@@ -325,13 +381,31 @@ void getCorrenti(const Pistache::Rest::Request& request, Pistache::Http::Respons
                 << CORRIERI[i].cognome << " (ID : " << CORRIERI[i].ID << ")\n";
         }
         // Invia la risposta con gli ordini
-        response.send(Pistache::Http::Code::Ok, ss.str());
         delete[] ORDINI; // Libera la memoria allocata dinamicamente
         delete[] CORRIERI; // Libera la memoria allocata dinamicamente
+        auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+        double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+        std::cout << elapsed << std::endl;
+        if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
+        {
+            response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+            fallimentoOperazione(logID);
+            return;
+        }
+        response.send(Pistache::Http::Code::Ok, ss.str());
     } else {
-        // Nessun prodotto trovato in Redis
-        response.send(Pistache::Http::Code::Ok, "Nessun ordine in corso!\n");
+        response.send(Pistache::Http::Code::Ok, "Nessun ordine in corso!\n"); // Nessun prodotto trovato in Redis
     }
+    auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+    double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+    std::cout << elapsed << std::endl;
+    if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        fallimentoOperazione(logID);
+        return;
+    }
+    successoOperazione(logID)
     freeReplyObject(reply);
     redisFree(c2r);  // Chiudi la connessione a Redis
     return;
@@ -340,6 +414,8 @@ void getCorrenti(const Pistache::Rest::Request& request, Pistache::Http::Respons
 //curl -X GET http://localhost:5003/32132132132/registrati/
 void getRegistrati(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
+    int logID;
     std::stringstream ss;
     redisContext *c2r; // c2r contiene le info sul contesto
     redisReply *reply; // reply contiene le risposte da Redis
@@ -360,11 +436,18 @@ void getRegistrati(const Pistache::Rest::Request& request, Pistache::Http::Respo
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID del Trasportatore\n");
         return;
     }
+    logID = inserimentoOperazione(trasporterID, "Recupero degli ordini registrati");
+    if (logID == -1)
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+        return;
+    }
 
     bool pubblicati = registroOrdini(IVA.c_str(), trasporterID); // Immette i prodotti presenti nel carrello nello stream
     if (!pubblicati) 
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover orders' info\n");
+        fallimentoOperazione(logID);
         return;
     }
 
@@ -373,6 +456,7 @@ void getRegistrati(const Pistache::Rest::Request& request, Pistache::Http::Respo
     if (c2r == nullptr || c2r->err) {
         std::cerr << "Errore nella connessione a Redis" << std::endl;
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to connect to Redis");
+        fallimentoOperazione(logID);
         return;
     }
 
@@ -407,8 +491,11 @@ void getRegistrati(const Pistache::Rest::Request& request, Pistache::Http::Respo
                 CORRIERI[i].nome = (orderReply->element[17]->str);
                 CORRIERI[i].cognome = (orderReply->element[19]->str);
             } else {
+                delete[] ORDINI; // Libera la memoria allocata dinamicamente
+                delete[] CORRIERI; // Libera la memoria allocata dinamicamente
                 std::cerr << "Errore nel recupero di un ordine da Redis" << std::endl;
                 response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero degli ordini\n");
+                fallimentoOperazione(logID);
                 freeReplyObject(orderReply);
                 redisFree(c2r);
                 return;
@@ -433,100 +520,18 @@ void getRegistrati(const Pistache::Rest::Request& request, Pistache::Http::Respo
         delete[] ORDINI; // Libera la memoria allocata dinamicamente
         delete[] CORRIERI; // Libera la memoria allocata dinamicamente
     } else {
-        // Nessun prodotto trovato in Redis
-        response.send(Pistache::Http::Code::Ok, "Nessun ordine in archivio!\n");
+        response.send(Pistache::Http::Code::Ok, "Nessun ordine in archivio!\n"); // Nessun prodotto trovato in Redis
     }
-    freeReplyObject(reply);
-    redisFree(c2r);  // Chiudi la connessione a Redis
-    return;
-}
-
-//curl -X GET http://localhost:5003/32132132132/ordini/1
-void getProdottiOrdine(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
-{
-    std::stringstream ss;
-    redisContext *c2r; // c2r contiene le info sul contesto
-    redisReply *reply; // reply contiene le risposte da Redis
-    redisReply *orderReply;
-    Prodotto* PRODOTTI;
-    int RIGHE;
-
-    // Recupera l'email dal percorso
-    std::string IVA = request.param(":piva").as<std::string>();
-    std::string orderID = request.param(":orderID").as<std::string>();
-    // Controlla che i parametri richiesti siano stati forniti
-    if (IVA.empty() || IVA.length() != 11) {
-        response.send(Pistache::Http::Code::Bad_Request, "IVA not provided\n");
-        return;
-    } else if (orderID.empty()){
-        response.send(Pistache::Http::Code::Bad_Request, "OrderID not provided\n");
-        return;
-    }
-    int ID = stoi(orderID);
-    int trasporterID = recuperaCourierID(IVA);
-    if (trasporterID <= 0) {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID del Trasportatore\n");
-        return;
-    }
-    
-    bool pubblicato = prodottiOrdine(ID);
-    if (!pubblicato) {
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover orders' info\n");
-        return;
-    }
-
-    // Connessione a Redis
-    c2r = redisConnect(REDIS_IP, REDIS_PORT); // Redis su localhost
-    if (c2r == nullptr || c2r->err) {
-        std::cerr << "Errore nella connessione a Redis" << std::endl;
-        response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to connect to Redis");
-        return;
-    }
-    reply = RedisCommand(c2r, "LRANGE prodottiOrdine:%d 0 -1", ID);
-    if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0) // Recupera i prodotti nell'ordine da Redis
+    auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+    double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+    std::cout << elapsed << std::endl;
+    if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
     {
-        RIGHE = reply->elements;
-        PRODOTTI = new Prodotto[RIGHE];
-        
-        for (int i = 0; i < RIGHE; i++) 
-        {
-            std::string orderID = reply->element[i]->str;
-            orderReply = RedisCommand(c2r, "HGETALL prodotto:%s", orderID.c_str());
-            if (orderReply->type == REDIS_REPLY_ARRAY)
-            {
-                    PRODOTTI[i].ID = std::atoi(orderReply->element[1]->str);
-                    PRODOTTI[i].nome = (orderReply->element[3]->str);
-                    PRODOTTI[i].descrizione = (orderReply->element[5]->str);
-                    PRODOTTI[i].fornitore = (orderReply->element[7]->str);
-                    PRODOTTI[i].prezzo = std::atof(orderReply->element[9]->str);
-                    PRODOTTI[i].quantita = std::atoi(orderReply->element[11]->str);
-            } else {
-                std::cerr << "Errore nel recupero di un ordine da Redis" << std::endl;
-                freeReplyObject(orderReply);
-                redisFree(c2r);
-                return;
-            }
-        }
-    } else {
-        std::cerr << "Errore nel recupero di un ordine da Redis" << std::endl;
-        freeReplyObject(orderReply);
-        redisFree(c2r);
+        response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        fallimentoOperazione(logID);
         return;
     }
-    //Stampa i prodotti nell'ordine
-    ss << "\nPRODOTTI NELL'ORDINE:\n";
-    for (int i = 0; i < RIGHE; i++) //... e i prodotti al suo intero
-    {
-            ss << i+1 << ") ID Prodotto: " << PRODOTTI[i].ID
-                << " Nome Prodotto: " << PRODOTTI[i].nome
-                << " Descrizione Prodotto: " << PRODOTTI[i].descrizione
-                << " Prezzo del Prodotto: " << PRODOTTI[i].prezzo
-                << " Quantità del Prodotto: " << PRODOTTI[i].quantita
-                << " Nome del Fornitore: " << PRODOTTI[i].fornitore << "\n";
-    }
-        // Invia la risposta con i prodotti
-    delete[] PRODOTTI; // Libera la memoria allocata dinamicamente
-    response.send(Pistache::Http::Code::Ok, ss.str());
+    successoOperazione(logID);
     freeReplyObject(reply);
     redisFree(c2r);  // Chiudi la connessione a Redis
     return;
@@ -535,6 +540,8 @@ void getProdottiOrdine(const Pistache::Rest::Request& request, Pistache::Http::R
 //curl -X GET http://localhost:5003/32132132132/corrieri/
 void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
+    int logID;
     std::stringstream ss;
     redisContext *c2r; // c2r contiene le info sul contesto
     redisReply *reply; // reply contiene le risposte da Redis
@@ -555,11 +562,17 @@ void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::Respons
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID del Trasportatore\n");
         return;
     }
-
+    logID = inserimentoOperazione(trasporterID, "Recupero dei corrieri registrati");
+    if (logID == -1)
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+        return;
+    }
     bool pubblicati = recuperaCorrieri(IVA.c_str(), trasporterID); // Immette i prodotti presenti nel carrello nello stream
     if (!pubblicati) 
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to recover orders' info\n");
+        fallimentoOperazione(logID);
         return;
     }
 
@@ -568,6 +581,7 @@ void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::Respons
     if (c2r == nullptr || c2r->err) {
         std::cerr << "Errore nella connessione a Redis" << std::endl;
         response.send(Pistache::Http::Code::Internal_Server_Error, "Failed to connect to Redis");
+        fallimentoOperazione(logID);
         return;
     }
 
@@ -593,7 +607,9 @@ void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::Respons
                 CORRIERI[i].nome = (courierReply->element[3]->str);
                 CORRIERI[i].cognome = (courierReply->element[5]->str);
             } else {
+                delete[] CORRIERI; // Libera la memoria allocata dinamicamente
                 std::cerr << "Errore nel recupero di un ordine da Redis" << std::endl;
+                fallimentoOperazione(logID);
                 freeReplyObject(courierReply);
                 redisFree(c2r);
                 return;
@@ -614,6 +630,16 @@ void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::Respons
         // Nessun prodotto trovato in Redis
         response.send(Pistache::Http::Code::Ok, "Nessun corriere registrato!\n");
     }
+    auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+    double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+    std::cout << elapsed << std::endl;
+    if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        fallimentoOperazione(logID);
+        return;
+    }
+    successoOperazione(logID);
     freeReplyObject(reply);
     redisFree(c2r);  // Chiudi la connessione a Redis
     return;
@@ -622,6 +648,9 @@ void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::Respons
 //curl -X POST http://localhost:5003/32132132132/ordini/1
 void consegna(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
+    int logID;
+    char comando[100];
     // Recupera l'email dal percorso
     std::string IVA = request.param(":piva").as<std::string>();
     std::string orderID = request.param(":orderID").as<std::string>();
@@ -640,19 +669,37 @@ void consegna(const Pistache::Rest::Request& request, Pistache::Http::ResponseWr
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID del Trasportatore\n");
         return;
     }
-
+    sprintf(comando, "Consegna dell'ordine con ID = %d", ID);
+    logID = inserimentoOperazione(trasporterID, comando);
+    if (logID == -1)
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+        return;
+    }
     bool esito = consegnaOrdine(ID);
+    auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+    double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+    std::cout << elapsed << std::endl;
+    if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        fallimentoOperazione(logID);
+        return;
+    }
     if (esito) {
         response.send(Pistache::Http::Code::Ok, "Ordine consegnato\n");
+        successoOperazione(logID);
     } else {
         response.send(Pistache::Http::Code::Unauthorized, "C'è stato un errore nella consegna\n (Controllare che l'ordine non sia già stato consegnato!)\n");
+        fallimentoOperazione(logID);
     }
 }
 
 //curl -X PUT -H "Content-Type: application/json" -d '{"nome": "Eugenio", "cognome": "Montale"}' http://localhost:5003/32132132132/corrieri/
 void putCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
-
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
+    int logID;
     // Recupera l'email del trasportatore dai parametri
     std::string IVA = request.param(":piva").as<std::string>();
     if (IVA.empty() || IVA.length() != 11) {
@@ -690,19 +737,37 @@ void putCorriere(const Pistache::Rest::Request& request, Pistache::Http::Respons
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID del Trasportatore\n");
         return;
     }
-
+    logID = inserimentoOperazione(trasporterID, "Inserimento di un nuovo corriere");
+    if (logID == -1)
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+        return;
+    }
     bool esito = registraCorriere(trasporterID, nome.c_str(), cognome.c_str());
+    auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+    double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+    std::cout << elapsed << std::endl;
+    if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        fallimentoOperazione(logID);
+        return;
+    }
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Courier added to system\n");
+        successoOperazione(logID);
     } else {
         response.send(Pistache::Http::Code::Unauthorized, "Failed to add the courier to system\n");
+        fallimentoOperazione(logID);
     }
 }
 
 //curl -X PUT -H "Content-Type: application/json" -d '{"ordine": 1, "corriere": 1}' http://localhost:5003/32132132132/ordini/
 void accettaOrdine(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
-
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
+    int logID;
+    char comando[100];
     std::string IVA = request.param(":piva").as<std::string>();
 
     if (IVA.empty() || IVA.length() != 11) {
@@ -734,7 +799,7 @@ void accettaOrdine(const Pistache::Rest::Request& request, Pistache::Http::Respo
     {
         response.send(Pistache::Http::Code::Bad_Request, "CourierID must be a positive integer\n");
         return;
-    } 
+    }
 
     // Recupera l'ID del cliente basato sull'email
     int trasporterID = recuperaCourierID(IVA);
@@ -742,19 +807,39 @@ void accettaOrdine(const Pistache::Rest::Request& request, Pistache::Http::Respo
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID del Trasportatore\n");
         return;
     }
+    sprintf(comando, "Presa in carico dell'ordine con ID = %d", orderID);
+    logID = inserimentoOperazione(trasporterID, comando);
+    if (logID == -1)
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+        return;
+    }
     
     bool esito = prendiOrdine(trasporterID, courierID, orderID);
-    
+    auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+    double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+    std::cout << elapsed << std::endl;
+    if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        fallimentoOperazione(logID);
+        return;
+    }
     if (esito) {
         response.send(Pistache::Http::Code::Ok, "Ordine preso in carico\n");
+        successoOperazione(logID);
     } else {
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel prendere in carico l'ordine\n (Un altro trasportatore potrebbe averlo già preso in carico)\n");
+        fallimentoOperazione(logID);
     }
 }
 
 //curl -X DELETE http://localhost:5003/32132132132/corrieri/1
 void deleteCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
+    int logID;
+    char comando[100];
     // Recupera l'email dal percorso
     std::string IVA = request.param(":piva").as<std::string>();
     std::string courierID = request.param(":courierID").as<std::string>();
@@ -774,15 +859,33 @@ void deleteCorriere(const Pistache::Rest::Request& request, Pistache::Http::Resp
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID del Trasportatore\n");
         return;
     }
-
+    sprintf(comando, "Rimozione del corriere con ID = %d", ID)
+    logID = inserimentoOperazione(trasporterID, comando);
+    if (logID == -1)
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+        return;
+    }
     bool esito = rimuoviCorriere(trasporterID, ID);
+    auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+    double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+    std::cout << elapsed << std::endl;
+    if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        fallimentoOperazione(logID);
+        return;
+    }
     if (esito) {
         response.send(Pistache::Http::Code::Ok, "Courier deleted from system\n");
+        successoOperazione(logID);
     } else {
         response.send(Pistache::Http::Code::Unauthorized, "Failed to remove the courier from system\n");
+        fallimentoOperazione(logID);
     }
 }
 
+// FUNZIONI AUSILIARIE
 int recuperaCourierID(std::string IVA) 
 {
     char comando[1000];
@@ -804,5 +907,67 @@ int recuperaCourierID(std::string IVA)
     return ID;
 }
 
+int inserimentoOperazione(int customerID, const char* operazione)
+{
+    int logID;
+    PGresult *res;
+    char comando[1000];
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME_HANDLER, PASSWORD_HANDLER, LOG_DB_NAME); // Effettua la connessione al database dei log
+    try
+    {
+        sprintf(comando, "INSERT INTO cliente(Cliente_Id, TipoUser, OperationType, Data_inizio) VALUES(%d, 'produttore', '%s', NOW()) RETURNING Id", customerID, operazione);
+        res = db.ExecSQLtuples(comando);
+        logID = atoi(PQgetvalue(res, 0, PQfnumber(res, "Id")));
+        PQclear(res);
+        return logID;
+    }
+    catch(...)
+    {
+        std::cerr << "Errore nel database dei log\n";
+        PQclear(res);
+        return -1;
+    }
+}
 
+bool successoOperazione(int logID)
+{
+    PGresult *res;
+    char comando[1000];
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME_HANDLER, PASSWORD_HANDLER, LOG_DB_NAME); // Effettua la connessione al database dei log
+    try
+    {
+        sprintf(comando, "UPDATE cliente SET Data_termine = NOW(), Esito = 'Successo' WHERE Id = %d", logID);
+        res = db.ExecSQLcmd(comando);
+        PQclear(res);
+        return true;
+    }
+    catch(...)
+    {
+        std::cerr << "Errore nel database dei log\n";
+        PQclear(res);
+        return false;
+    }
+
+}
+
+bool fallimentoOperazione(int logID)
+{
+    PGresult *res;
+    char comando[1000];
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME_HANDLER, PASSWORD_HANDLER, LOG_DB_NAME); // Effettua la connessione al database dei log
+    try
+    {
+        sprintf(comando, "UPDATE cliente SET Data_termine = NOW(), Esito = 'Fallito' WHERE Id = %d", logID);
+        res = db.ExecSQLcmd(comando);
+        PQclear(res);
+        return true;
+    }
+    catch(...)
+    {
+        std::cerr << "Errore nel database dei log\n";
+        PQclear(res);
+        return false;
+    }
+
+}
 

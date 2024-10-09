@@ -35,11 +35,16 @@
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
 
+#define USERNAME_HANDLER "handler"
+#define PASSWORD_HANDLER "handler"
+#define LOG_DB_NAME "mewinglogdb"
+
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
 #define USERNAME_TRAS "courier"
 #define PASSWORD_TRAS "courier"
 #define DB_NAME "mewingdb"
+#define TEMPO_LIMITE 1 // Si considera come tempo limite un secondo
 
 void defineRoutes(Pistache::Rest::Router& router);
 
@@ -49,11 +54,15 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
 void getCorrenti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void getCorrieri(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void getRegistrati(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-void getProdottiOrdine(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void accettaOrdine(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void putCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void deleteCorriere(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 void consegna(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 int recuperaCourierID(std::string IVA);
+
+//Operazione con il Database dei Log
+int inserimentoOperazione(int customerID, const char* operazione);
+bool successoOperazione(int logID);
+bool fallimentoOperazione(int logID);
 
 #endif // ROUTES_H

@@ -22,6 +22,10 @@
 #define REDIS_IP "localhost"
 #define REDIS_PORT 6379
 
+#define USERNAME_HANDLER "handler"
+#define PASSWORD_HANDLER "handler"
+#define LOG_DB_NAME "mewinglogdb"
+
 #define HOSTNAME "localhost"
 #define DB_PORT "5432"
 #define USERNAMEP "producer"
