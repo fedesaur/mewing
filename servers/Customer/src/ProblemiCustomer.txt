@@ -1,7 +1,0 @@
-aggiungi customer dà errore json
-
-
-
-indirizzi non vengono reperiti da redis
-
-
