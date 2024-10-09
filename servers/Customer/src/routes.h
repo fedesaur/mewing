@@ -36,6 +36,7 @@
 #define USERNAME "admin"
 #define PASSWORD "admin"
 #define DB_NAME "mewingdb"
+#define TEMPO_LIMITE 1 // Si considera come tempo limite un secondo
 
 void defineRoutes(Pistache::Rest::Router& router);
 
