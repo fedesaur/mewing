@@ -23,7 +23,6 @@
 #include "../metodi/ricercaOrdini.h"
 #include "../metodi/consegnaOrdine.h"
 #include "../metodi/ordiniCorrenti.h"
-#include "../metodi/prodottiOrdine.h"
 
 #include <pistache/http.h>
 #include <pistache/endpoint.h>

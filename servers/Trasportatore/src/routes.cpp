@@ -172,7 +172,7 @@ void getOrdini(const Pistache::Rest::Request& request, Pistache::Http::ResponseW
         response.send(Pistache::Http::Code::Bad_Request, "IVA not provided\n");
         return;
     }
-    int trasporterID = recuperaCourierID(IVA) //Controlla che l'utente è nel sistema
+    int trasporterID = recuperaCourierID(IVA); //Controlla che l'utente è nel sistema
     if (trasporterID <= 0)
     {
         response.send(Pistache::Http::Code::Unauthorized, "Il Trasportatore non è nel sistema!\n");
@@ -405,7 +405,7 @@ void getCorrenti(const Pistache::Rest::Request& request, Pistache::Http::Respons
         fallimentoOperazione(logID);
         return;
     }
-    successoOperazione(logID)
+    successoOperazione(logID);
     freeReplyObject(reply);
     redisFree(c2r);  // Chiudi la connessione a Redis
     return;
@@ -859,7 +859,7 @@ void deleteCorriere(const Pistache::Rest::Request& request, Pistache::Http::Resp
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID del Trasportatore\n");
         return;
     }
-    sprintf(comando, "Rimozione del corriere con ID = %d", ID)
+    sprintf(comando, "Rimozione del corriere con ID = %d", ID);
     logID = inserimentoOperazione(trasporterID, comando);
     if (logID == -1)
     {

@@ -281,7 +281,7 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
         response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
         return;
     }
-    int supplierID = recuperaSupplierID(email); //Controlla che l'utente è nel sistema
+    int supplierID = recuperaSupplierID(MAIL); //Controlla che l'utente è nel sistema
     if (supplierID <= 0)
     {
         response.send(Pistache::Http::Code::Unauthorized, "Il fornitore non è nel sistema!\n");
@@ -403,6 +403,9 @@ void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::Respon
         return;
     }
     bool esito = modificaInfoF(email.c_str(), nome.c_str(), IVA.c_str(), telefono.c_str());
+    auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
+    double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
+    std::cout << elapsed << std::endl;
     if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");

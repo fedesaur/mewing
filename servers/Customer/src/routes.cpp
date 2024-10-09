@@ -38,7 +38,6 @@ void autenticaCustomer(const Pistache::Rest::Request& request, Pistache::Http::R
     if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
-        fallimentoOperazione(logID);
         return;
     }
     if (ID > 0) {
@@ -121,7 +120,6 @@ void creaCustomer(const Pistache::Rest::Request& request, Pistache::Http::Respon
     if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
-        fallimentoOperazione(logID);
         return;
     }
     if (esito) {
