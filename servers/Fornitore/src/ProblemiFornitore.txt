@@ -1,6 +1,0 @@
-Quando faccio update prodotto mi dà problemi con lo stream redis
-
-quando faccio get prodotti non finisce mai
-
-
-
