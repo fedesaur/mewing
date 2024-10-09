@@ -1066,7 +1066,7 @@ int inserimentoOperazione(int customerID, const char* operazione)
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_HANDLER, PASSWORD_HANDLER, LOG_DB_NAME); // Effettua la connessione al database dei log
     try
     {
-        sprintf(comando, "INSERT INTO cliente(Cliente_Id, TipoUser, OperationType, Data_inizio) VALUES(%d, 'customer', '%s', NOW()) RETURNING Id", customerID, operazione);
+        sprintf(comando, "INSERT INTO cliente(Cliente_id, TipoUser, OperationType, Data_inizio) VALUES(%d, 'customer', '%s', NOW()) RETURNING Id", customerID, operazione);
         res = db.ExecSQLtuples(comando);
         logID = atoi(PQgetvalue(res, 0, PQfnumber(res, "Id")));
         PQclear(res);
