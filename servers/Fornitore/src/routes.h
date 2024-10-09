@@ -39,4 +39,8 @@ void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::Respon
 void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 int recuperaSupplierID(const std::string& email);
 
+//Operazione con il Database dei Log
+int inserimentoOperazione(int customerID, const char* operazione);
+bool successoOperazione(int logID);
+bool fallimentoOperazione(int logID);
 #endif // ROUTES_H

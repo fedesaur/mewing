@@ -942,7 +942,6 @@ int recuperaCustomerID(std::string email)
     return ID;
 }
 
-
 int inserimentoOperazione(int customerID, const char* operazione)
 {
     int logID;

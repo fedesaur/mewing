@@ -15,35 +15,6 @@ void defineRoutes(Pistache::Rest::Router& router)
     Pistache::Rest::Routes::Delete(router, "/:email/prodotti/:idProdotto",   Pistache::Rest::Routes::bind(&eliminaProdotto));
 }
 
-int recuperaSupplierID(const std::string& email) 
-{
-    int ID;
-    PGresult *res;
-    char comando[1000];
-    Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
-
-    // Prepara la query per cercare l'ID cliente tramite l'email
-    sprintf(comando, "SELECT id FROM fornitore WHERE mail = '%s' ", email.c_str());
-    
-    try
-    {
-        res = db.ExecSQLtuples(comando);
-    	int rows = PQntuples(res);
-		ID = 0;
-    	if (rows > 0) // Se viene trovato un utente con quella mail...
-    	{
-			//...vengono recuperati i suoi dati ed inviati al server tramite Redis
-        	ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
-    	}
-    }
-    catch(...)
-    {
-        ID = -1;
-    }
-    PQclear(res);
-    return ID;
-}
-
 //curl -X GET http://localhost:5002/autentica/prova1@prova1.it
 void autenticaFornitore(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
@@ -131,6 +102,7 @@ void creaFornitore(const Pistache::Rest::Request& request, Pistache::Http::Respo
 //curl -X PUT -H "Content-Type: application/json" -d '{"nomeProdotto": "nome", "descrizioneProdotto": "descrizione", "prezzoProdotto": 1.23345}' http://localhost:5002/prova1@prova1.it/prodotti/
 void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    int logID;
     auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
     // Recupera l'email del fornitore tra i parametri
     std::string email = request.param(":email").as<std::string>();
@@ -149,7 +121,12 @@ void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
         response.send(Pistache::Http::Code::Unauthorized, "Il fornitore non è nel sistema!\n");
         return;
     }
-
+    logID = inserimentoOperazione(supplierID, "Aggiunta di un prodotto nel database");
+    if (logID == -1)
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+        return;
+    }
     bool esito = aggiungiFornito(supplierID, nomeProdotto.c_str(), descrizioneProdotto.c_str(), prezzoProdotto);
     auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
     double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
@@ -157,19 +134,23 @@ void aggiungiProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
     if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        fallimentoOperazione(logID);
         return;
     }
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Product added to system\n");
+        successoOperazione(logID);
     } else {
         response.send(Pistache::Http::Code::Unauthorized, "Failed to add the product to system\n");
+        fallimentoOperazione(logID);
     }
-    return;
 }
 
 //curl -X DELETE http://localhost:5002/prova1@prova1.it/prodotti/1
 void eliminaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    int logID;
+    char comando[100];
     auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
     // Recupera l'email dal percorso
     std::string email = request.param(":email").as<std::string>();
@@ -190,6 +171,14 @@ void eliminaProdotto(const Pistache::Rest::Request& request, Pistache::Http::Res
         response.send(Pistache::Http::Code::Unauthorized, "Il fornitore non è nel sistema!\n");
         return;
     }
+    sprintf(comando, "Eliminazione del prodotto con ID = %d", productID);
+    logID = inserimentoOperazione(supplierID, comando);
+    if (logID == -1)
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+        return;
+    }
+    
     bool esito = rimuoviFornito(supplierID, productID); // Ora chiama la funzione autentica
     auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
     double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
@@ -197,18 +186,23 @@ void eliminaProdotto(const Pistache::Rest::Request& request, Pistache::Http::Res
     if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        fallimentoOperazione(logID);
         return;
     }
     if (esito) {
         response.send(Pistache::Http::Code::Ok, "Product deleted from system\n");
+        successoOperazione(logID);
     } else {
         response.send(Pistache::Http::Code::Unauthorized, "Failed to remove the product from system\n");
+        fallimentoOperazione(logID);
     }
 }
 
 //curl -X POST -H "Content-Type: application/json" -d '{"nomeProdotto": "nome", "descrizioneProdotto": "descrizione", "prezzoProdotto": 1.23345}' http://localhost:5002/prova1@prova1.it/prodotti/1
 void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    int logID;
+    char comando[100];
     auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
 
     // Recupera l'email del fornitore tra i parametri
@@ -241,6 +235,14 @@ void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
         response.send(Pistache::Http::Code::Unauthorized, "Il fornitore non è nel sistema!\n");
         return;
     }
+    sprintf(comando, "Modifica delle informazioni del prodotto con ID = %d", ID);
+    logID = inserimentoOperazione(supplierID, comando);
+    if (logID == -1)
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+        return;
+    }
+    
     bool esito = modificaFornito(nomeProdotto.c_str(), descrizioneProdotto.c_str(), prezzoProdotto, ID);
     auto finish = std::chrono::high_resolution_clock::now(); // Memorizza il tempo di fine dell'operazione
     double elapsed = std::chrono::duration_cast<std::chrono::duration<double>> (finish-start).count();
@@ -248,18 +250,22 @@ void modificaProdotto(const Pistache::Rest::Request& request, Pistache::Http::Re
     if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        fallimentoOperazione(logID);
         return;
     }
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Product's attributes modified from system\n");
+        successoOperazione(logID);
     } else {
         response.send(Pistache::Http::Code::Unauthorized, "Failed to change product's attributes\n");
+        fallimentoOperazione(logID);
     }
 }
 
 //curl -X GET http://localhost:5002/prova1@prova1.it/prodotti/
 void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
 {
+    int logID;
     auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
     std::stringstream ss;
     redisContext *c2r; // c2r contiene le info sul contesto
@@ -275,7 +281,18 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
         response.send(Pistache::Http::Code::Bad_Request, "Email not provided\n");
         return;
     }
-    
+    int supplierID = recuperaSupplierID(email); //Controlla che l'utente è nel sistema
+    if (supplierID <= 0)
+    {
+        response.send(Pistache::Http::Code::Unauthorized, "Il fornitore non è nel sistema!\n");
+        return;
+    }
+    logID = inserimentoOperazione(supplierID, "Recupero dei prodotti forniti");
+    if (logID == -1)
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+        return;
+    }
     bool pubblicati = recuperaForniti(MAIL.c_str()); // Immette i prodotti presenti nel carrello nello stream
     if (!pubblicati) 
     {
@@ -313,7 +330,9 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
                 FORNITI[i].descrizione = (productReply->element[5]->str);
                 FORNITI[i].prezzo = std::atof(productReply->element[7]->str);
             } else {
+                delete[] FORNITI; // Libera la memoria allocata dinamicamente
                 std::cerr << "Errore nel recupero di un prodotto da Redis" << std::endl;
+                fallimentoOperazione(logID);
                 freeReplyObject(productReply);
                 redisFree(c2r);
                 return;
@@ -335,6 +354,7 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
         if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
         {
             response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+            fallimentoOperazione(logID);
             return;
         }
         response.send(Pistache::Http::Code::Ok, ss.str()); // Invia la risposta con i prodotti
@@ -343,6 +363,7 @@ void getProdotti(const Pistache::Rest::Request& request, Pistache::Http::Respons
         // Nessun prodotto trovato in Redis
         response.send(Pistache::Http::Code::Ok, "Nessun prodotto fornito!\n");
     }
+    successoOperazione(logID);
     freeReplyObject(reply);
     redisFree(c2r);  // Chiudi la connessione a Redis
     return;
@@ -354,6 +375,7 @@ void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::Respon
 {
     // Recupera l'email del fornitore tra i parametri
     auto start = std::chrono::high_resolution_clock::now(); // Memorizza il tempo d'inizio dell'operazione
+    int logID;
     std::string email = request.param(":email").as<std::string>();
     json dati = json::parse(request.body());
     // Controlla se i dati forniti dall'utente sono presenti e corretti
@@ -367,18 +389,126 @@ void modificaInfo(const Pistache::Rest::Request& request, Pistache::Http::Respon
     if (nome.length() > 100) response.send(Pistache::Http::Code::Bad_Request, "Name length is above 100 characters\n");
     if (IVA.length() != 11 || !isNumber(IVA) ) response.send(Pistache::Http::Code::Bad_Request, "IVA must be a string of 11 numbers\n");
     if (telefono.length() > 15 || telefono.length() < 10 || !isNumber(telefono)) response.send(Pistache::Http::Code::Bad_Request, "Telephone must be a string a 10-15 numbers\n");
-
+    
+    int supplierID = recuperaSupplierID(email);
+    if (supplierID <= 0) 
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente");
+        return;
+    }
+    logID = inserimentoOperazione(supplierID, "Rimozione delle informazioni personali");
+    if (logID == -1)
+    {
+        response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel sistema di monitoraggio\n");
+        return;
+    }
     bool esito = modificaInfoF(email.c_str(), nome.c_str(), IVA.c_str(), telefono.c_str());
     if (elapsed > TEMPO_LIMITE) // Se il tempo dell'operazione è superiore al tempo limite, viene ritornato un timeout
     {
         response.send(Pistache::Http::Code::Internal_Server_Error, "La richiesta ha necessitato troppo tempo\n");
+        fallimentoOperazione(logID);
         return;
     }
     if (esito) {
         response.send(Pistache::Http::Code::Created, "Info changes\n");
+        successoOperazione(logID);
     } else {
         response.send(Pistache::Http::Code::Unauthorized, "Failed to change your info\n");
+        fallimentoOperazione(logID);
     }
 }
 
+// FUNZIONI AUSILIARIE
+int recuperaSupplierID(const std::string& email) 
+{
+    int ID;
+    PGresult *res;
+    char comando[1000];
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME, PASSWORD, DB_NAME); // Effettua la connessione al database
 
+    // Prepara la query per cercare l'ID cliente tramite l'email
+    sprintf(comando, "SELECT id FROM fornitore WHERE mail = '%s' ", email.c_str());
+    
+    try
+    {
+        res = db.ExecSQLtuples(comando);
+    	int rows = PQntuples(res);
+		ID = 0;
+    	if (rows > 0) // Se viene trovato un utente con quella mail...
+    	{
+			//...vengono recuperati i suoi dati ed inviati al server tramite Redis
+        	ID = atoi(PQgetvalue(res, 0, PQfnumber(res, "id")));
+    	}
+    }
+    catch(...)
+    {
+        ID = -1;
+    }
+    PQclear(res);
+    return ID;
+}
+
+
+int inserimentoOperazione(int customerID, const char* operazione)
+{
+    int logID;
+    PGresult *res;
+    char comando[1000];
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME_HANDLER, PASSWORD_HANDLER, LOG_DB_NAME); // Effettua la connessione al database dei log
+    try
+    {
+        sprintf(comando, "INSERT INTO cliente(Cliente_Id, TipoUser, OperationType, Data_inizio) VALUES(%d, 'produttore', '%s', NOW()) RETURNING Id", customerID, operazione);
+        res = db.ExecSQLtuples(comando);
+        logID = atoi(PQgetvalue(res, 0, PQfnumber(res, "Id")));
+        PQclear(res);
+        return logID;
+    }
+    catch(...)
+    {
+        std::cerr << "Errore nel database dei log\n";
+        PQclear(res);
+        return -1;
+    }
+}
+
+bool successoOperazione(int logID)
+{
+    PGresult *res;
+    char comando[1000];
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME_HANDLER, PASSWORD_HANDLER, LOG_DB_NAME); // Effettua la connessione al database dei log
+    try
+    {
+        sprintf(comando, "UPDATE cliente SET Data_termine = NOW(), Esito = 'Successo' WHERE Id = %d", logID);
+        res = db.ExecSQLcmd(comando);
+        PQclear(res);
+        return true;
+    }
+    catch(...)
+    {
+        std::cerr << "Errore nel database dei log\n";
+        PQclear(res);
+        return false;
+    }
+
+}
+
+bool fallimentoOperazione(int logID)
+{
+    PGresult *res;
+    char comando[1000];
+    Con2DB db(HOSTNAME, DB_PORT, USERNAME_HANDLER, PASSWORD_HANDLER, LOG_DB_NAME); // Effettua la connessione al database dei log
+    try
+    {
+        sprintf(comando, "UPDATE cliente SET Data_termine = NOW(), Esito = 'Fallito' WHERE Id = %d", logID);
+        res = db.ExecSQLcmd(comando);
+        PQclear(res);
+        return true;
+    }
+    catch(...)
+    {
+        std::cerr << "Errore nel database dei log\n";
+        PQclear(res);
+        return false;
+    }
+
+}
