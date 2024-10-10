@@ -1,5 +1,5 @@
 ## mewing
-#Progetto di Ingegneria del Software: Backend di un sito di e-commerce
+Progetto di Ingegneria del Software: Backend di un sito di e-commerce
 
 Per poter eseguire il progetto, è necessario prima installare le librerie necessarie per la compilazione eseguendo il seguente comando da terminale:
 ```
@@ -25,7 +25,7 @@ curl -X GET http://localhost:5001/autentica/abc@abc.it
 > Permette di effettuare l'autenticazione nel Customer
 ```
 
-#Studenti che hanno collaborato al progetto:
+##Studenti che hanno collaborato al progetto:
 -Edoardo Bouquillon (2014320);
 -Simone Camagna (1997716);
 -Federica Sardo (1760539);
