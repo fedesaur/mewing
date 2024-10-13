@@ -4,31 +4,24 @@ bool prendiOrdine(int courierID, int corriere, int ordine)
 {
     int rows;
     char comando[1000];
-    int RIGHE_CORRIERI;
-    int RIGHE_ORDINI;
     PGresult *res;
     Con2DB db(HOSTNAME, DB_PORT, USERNAME_TRAS, PASSWORD_TRAS, DB_NAME); // Effettua la connessione al database
     try
     {
-        // Prima di prendere in carico un ordine, controlla che un altro trasportatore non l'abbia già preso in carico
         sprintf(comando, "SELECT * FROM ordine WHERE id = %d", ordine);
         res = db.ExecSQLtuples(comando);
-        rows = PQntuples(res);
-        if (rows == 0) return false; // Se l'ordine non esiste, impedisce l'operazione
+        if (PQntuples(res) == 0) return false; // Se l'ordine non esiste, impedisce l'operazione
         PQclear(res); //Altrimenti la permette
         
         sprintf(comando, "SELECT * FROM transord WHERE ordine = %d", ordine);
         res = db.ExecSQLtuples(comando);
-        rows = PQntuples(res);
-        if (rows > 0) return false; // Se qualcuno l'ha già preso in carico, impedisce l'operazione
+        if (PQntuples(res) > 0) return false; // Se qualcuno l'ha già preso in carico, impedisce l'operazione
         PQclear(res); //Altrimenti la permette
-
         
         
         sprintf(comando, "SELECT * FROM transord WHERE ordine = %d AND trasportatore = %d", ordine, courierID);
         res = db.ExecSQLtuples(comando);
-        rows = PQntuples(res);
-        if (rows > 0) return false; // Se il trasportatore ha già preso in carico l'ordine, impedisce di prenderlo in carico di nuovo
+        if (PQntuples(res) > 0) return false; // Se il trasportatore ha già preso in carico l'ordine, impedisce di prenderlo in carico di nuovo
         PQclear(res); //Altrimenti la permette
         
         // Prende in carico l'ordine
@@ -49,6 +42,7 @@ bool prendiOrdine(int courierID, int corriere, int ordine)
     }
     catch(...)
     {
+        PQclear(res);
         return false;
     }
 }
