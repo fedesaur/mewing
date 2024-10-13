@@ -807,7 +807,7 @@ void accettaOrdine(const Pistache::Rest::Request& request, Pistache::Http::Respo
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID del Trasportatore\n");
         return;
     }
-    sprintf(comando, "Presa in carico dell'ordine con ID = %d", orderID);
+    sprintf(comando, "Presa in carico ordine con ID = %d", orderID);
     logID = inserimentoOperazione(trasporterID, comando);
     if (logID == -1)
     {

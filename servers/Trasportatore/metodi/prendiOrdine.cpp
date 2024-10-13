@@ -11,11 +11,19 @@ bool prendiOrdine(int courierID, int corriere, int ordine)
     try
     {
         // Prima di prendere in carico un ordine, controlla che un altro trasportatore non l'abbia già preso in carico
+        sprintf(comando, "SELECT * FROM ordine WHERE id = %d", ordine);
+        res = db.ExecSQLtuples(comando);
+        rows = PQntuples(res);
+        if (rows == 0) return false; // Se l'ordine non esiste, impedisce l'operazione
+        PQclear(res); //Altrimenti la permette
+        
         sprintf(comando, "SELECT * FROM transord WHERE ordine = %d", ordine);
         res = db.ExecSQLtuples(comando);
         rows = PQntuples(res);
         if (rows > 0) return false; // Se qualcuno l'ha già preso in carico, impedisce l'operazione
         PQclear(res); //Altrimenti la permette
+
+        
         
         sprintf(comando, "SELECT * FROM transord WHERE ordine = %d AND trasportatore = %d", ordine, courierID);
         res = db.ExecSQLtuples(comando);

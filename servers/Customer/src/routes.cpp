@@ -899,7 +899,7 @@ void annullaOrd(const Pistache::Rest::Request& request, Pistache::Http::Response
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente\n");
         return;
     }
-    sprintf(comando, "Annullamento dell'ordine con ID = %d", ordineID);
+    sprintf(comando, "Annullamento ordine con ID = %d", ordineID);
     logID = inserimentoOperazione(customerID, comando);
     if (logID == -1)
     {
@@ -1000,7 +1000,7 @@ void removeIndirizzo(const Pistache::Rest::Request& request, Pistache::Http::Res
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID cliente");
         return;
     }
-    sprintf(comando, "Rimozione dell'indirizzo con ID = %d", addressID);
+    sprintf(comando, "Rimozione indirizzo con ID = %d", addressID);
     logID = inserimentoOperazione(customerID, comando);
     if (logID == -1)
     {
