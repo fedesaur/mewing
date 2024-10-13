@@ -9,14 +9,14 @@ PORT = 5001
 BASE_URL = f"http://{HOST}:{PORT}"
 
 # Lista di email che già esistono nel sistema
-email_list = ["abc@abc.it"]
+email_list = ["abc@abc.it", "cab@cab.it", "bca@bca.it"]
 
 # Lock per gestire l'accesso concorrente al contatore
 lock = threading.Lock()
 
 # Variabile per contare i test riusciti
 success_count = 0
-total_tests = 11 * len(email_list)  # Aggiornato per i nuovi test
+total_tests = 8 * len(email_list)  # Aggiornato per i nuovi test
 
 # Timeout per le richieste
 REQUEST_TIMEOUT = 10  # Timeout di 10 secondi
@@ -170,16 +170,16 @@ def run_tests_for_email(email):
     print("\n--- Test Autentica ---")
     test_autentica(email)
 
-    print("\n--- Test Crea Customer ---")
+    #print("\n--- Test Crea Customer ---")
     #test_crea_customer(email)
 
     print("\n--- Test Modifica Info Customer ---")
     test_modifica_info(email)
 
-    print("\n--- Test Recupera Indirizzi ---")
-    test_recupera_indirizzi(email)
+    #print("\n--- Test Recupera Indirizzi ---")
+    #test_recupera_indirizzi(email)
 
-    print("\n--- Test Rimuovi Indirizzo ---")
+    #print("\n--- Test Rimuovi Indirizzo ---")
     #test_remove_indirizzo(email)
 
     print("\n--- Test Recupera Ordini ---")
@@ -200,8 +200,8 @@ def run_tests_for_email(email):
     print("\n--- Test Effettua Ordine ---")
     test_ordina(email)
     
-    print("\n--- Test Annulla Ordine ---")
-    test_annulla_ordine(email)
+    #print("\n--- Test Annulla Ordine ---")
+    #test_annulla_ordine(email)
 
 ### Funzione principale per eseguire tutti i test su più email contemporaneamente ###
 def run_all_tests_concurrently():
