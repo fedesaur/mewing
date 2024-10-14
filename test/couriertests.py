@@ -66,7 +66,7 @@ def test_delete_corriere():
     # Test creazione trasportatore
 def test_crea_trasportatore():
     nuova_piva = "12312314444"  # Nuova PIVA
-    response = requests.put(f"{BASE_URL}/autentica/", json={"nome": "AmaZZon", "piva": "12312314444", "via" : "Via del Denaro", "civico": 7, "cap" : "77777", "city" : "Napoli", "stato" : "Montecarlo"})
+    response = requests.put(f"{BASE_URL}/autentica/", json={"nome": "AmaZZon", "piva": "12312314333", "via" : "Via del Denaro", "civico": 7, "cap" : "77777", "city" : "Napoli", "stato" : "Montecarlo"})
     print(f"Risposta: {response.text}")
 
 if __name__ == "__main__":
@@ -75,5 +75,5 @@ if __name__ == "__main__":
     test_crea_corriere()
     test_get_corrieri()
     test_accetta_ordine()
-    #test_consegna_ordine()
+    test_consegna_ordine()
     test_crea_trasportatore()

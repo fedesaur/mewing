@@ -669,7 +669,7 @@ void consegna(const Pistache::Rest::Request& request, Pistache::Http::ResponseWr
         response.send(Pistache::Http::Code::Internal_Server_Error, "Errore nel recupero dell'ID del Trasportatore\n");
         return;
     }
-    sprintf(comando, "Consegna dell'ordine con ID = %d", ID);
+    sprintf(comando, "Consegna ordine con ID = %d", ID);
     logID = inserimentoOperazione(trasporterID, comando);
     if (logID == -1)
     {
